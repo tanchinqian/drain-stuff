@@ -23,7 +23,7 @@ export interface RuleOutput extends Synthetic {rule:string;action:string;why:str
 export interface BatchChecks {ambientReached:boolean;didNotReheat:boolean;manualMaturity:boolean;intakeChecked:boolean;plasticsFound:boolean;glassFound:boolean;bayCovered:boolean;sumpChecked:boolean;rainExpected:boolean;photoUrl?:string}
 export interface BatchDetail extends Batch {readings:BatchReading[];rules:RuleOutput[];checks:BatchChecks}
 export interface Config extends Synthetic {contractVersion:string;placeholderLabel:string;doseCapLPerM2:number;pilotDoses:{label:string;lPerM2:number}[];drainDownLimitH:number;minimumN:number;heavyRainMmHr:number;temperature:{goodMin:number;goodMax:number;days:number;turnBelow:number;coolAbove:number};moisture:{min:number;max:number}}
-export interface TestInput {phase:TestResult['phase'];metric:Metric;value:number;pointId:string;n:number}
+export interface TestInput {phase:TestResult['phase'];metric:Metric;value:number;pointId:string;n:number;soilTexture?:string}
 export interface AllocationInput {featureId:string;doseLabel:string;lPerM2:number;appliedBy:string}
 export type FaultAction='inspected'|'cleaned'|'work_order';
 export interface Ok extends Synthetic {ok:true}
