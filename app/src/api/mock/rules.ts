@@ -11,7 +11,7 @@ export function evaluateRules(readings:BatchReading[],checks:BatchChecks,config:
  const latest=readings.at(-1);const outputs:RuleOutput[]=[];
  const add=(rule:string,action:string,why:string,severity:1|2|3)=>outputs.push({rule,action,why,severity,synthetic:true});
  if(latest){
-  if(latest.tempC<config.temperature.turnBelow)add('Low temperature','Turn pile','Reading is below the configured temperature band.',2);
+  if(latest.tempC<config.temperature.turnBelow&&!checks.ambientReached)add('Low temperature','Turn pile','Reading is below the configured temperature band.',2);
   if(latest.tempC>config.temperature.coolAbove)add('High temperature','Turn or spread to cool','Reading exceeds the configured cooling threshold.',3);
   const goodDays=new Set(readings.filter(r=>r.tempC>=config.temperature.goodMin&&r.tempC<=config.temperature.goodMax).map(r=>r.t.slice(0,10))).size;
   if(goodDays>=config.temperature.days)add('Temperature history','Temperature band recorded','Configured band was recorded on at least three separate days; this does not establish maturity.',1);
