@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import type {PartId} from '../api/types';
-export const palette={ink:0x2F2B26,ink2:0x5E564B,ink3:0x6F665A,panel:0xF2EEE4,ground:0xE9E4D8,well:0xDDD6C6,well2:0xE2DCCB,heat0:0xE8DEC6,heat1:0xD8B978,heat2:0xBC7A44,heat3:0x8E3A2E,control:0x7B4DAF,decompact:0xB07A12,compost:0xB03A78};
+export const palette={ink:0x2F2B26,ink2:0x5E564B,ink3:0x6F665A,panel:0xF2EEE4,ground:0xE9E4D8,well:0xDDD6C6,well2:0xE2DCCB,heat0:0xE8DEC6,heat1:0xD8B978,heat2:0xBC7A44,heat3:0x8E3A2E,control:0x7B4DAF,decompaction:0xB07A12,compost:0xB03A78};
 export function roofGeometry(w=2.18,d=1.93,h=.64){const x=w/2,z=d/2,g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute([-x,0,-z,x,0,-z,0,h,-z,-x,0,z,x,0,z,0,h,z],3));g.setIndex([0,2,1,3,4,5,0,3,5,0,5,2,1,2,5,1,5,4,0,1,4,0,4,3]);g.computeVertexNormals();return g;}
 const frac=(n:number)=>{const v=Math.sin(n*127.1+311.7)*43758.5453;return v-Math.floor(v);};
 export function createDrainParts(featureId:string):Record<PartId,THREE.Group>{

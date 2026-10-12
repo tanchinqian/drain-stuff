@@ -6,12 +6,13 @@ import type {Feature,House,Zone,ZoneRain} from '../api/types';
 import {useSelection} from '../state';
 import {palette,roofGeometry} from './geometry';
 import {useNavigate} from 'react-router-dom';
+import FitCamera from './FitCamera';
 type Props={houses:House[];zones:Zone[];features:Feature[];rain:ZoneRain[];layer:'water'|'rain';move:boolean;reset:number};
 const heat=(rain:number)=>rain>60?palette.heat3:rain>=40?palette.heat2:rain>=20?palette.heat1:palette.heat0;
 function SceneContent({houses,zones,features,rain,layer,move,reset}:Props){
  const positions=useSelection(s=>s.housePositions),selected=useSelection(s=>s.houseId),select=useSelection(s=>s.selectHouse),selectZone=useSelection(s=>s.selectZone),moveHouse=useSelection(s=>s.moveHouse);const navigate=useNavigate();const controls=useRef<ComponentRef<typeof OrbitControls>>(null);const roof=useMemo(()=>roofGeometry(),[]);
  const centres=[[-4.9,-4.05],[4.9,-4.05],[-4.9,4.05],[4.9,4.05]];
- return <><color attach="background" args={['#E2DCCB']}/><ambientLight intensity={1.35}/><directionalLight position={[-6,13,8]} intensity={1.65}/><directionalLight position={[9,5,-6]} intensity={.35}/>
+ return <><FitCamera width={29.3} height={18.5}/><color attach="background" args={['#E2DCCB']}/><ambientLight intensity={1.35}/><directionalLight position={[-6,13,8]} intensity={1.65}/><directionalLight position={[9,5,-6]} intensity={.35}/>
  <mesh position={[0,-.23,0]}><boxGeometry args={[20.6,.3,17.5]}/><meshStandardMaterial color={palette.panel}/><Edges color={palette.ink3}/></mesh>
  {zones.map((zone,i)=><group key={zone.id}><mesh position={[centres[i][0],-.05,centres[i][1]]} onClick={e=>{e.stopPropagation();selectZone(zone.id);}}><boxGeometry args={[8.85,.08,6.65]}/><meshStandardMaterial color={layer==='rain'?heat(rain.find(r=>r.zone===zone.id)?.peakMmPerHr||zone.peakMmPerHr):heat(zone.housesHoldingWater6h*16)}/></mesh><Html center position={[Math.sign(centres[i][0])*8.6,.3,Math.sign(centres[i][1])*6.9]}><div className="scene-label zone">Zone {zone.id}<small>{rain.find(r=>r.zone===zone.id)?.peakMmPerHr||zone.peakMmPerHr} mm/h · {zone.housesHoldingWater6h}/6 hold water</small></div></Html></group>)}
  <Instances limit={24}><boxGeometry args={[1.98,1.2,1.72]}/><meshStandardMaterial roughness={1}/>{houses.map(h=>{const p=positions[h.id]||[h.x,h.y];return <Instance key={h.id} position={[p[0],.64,p[1]]} color={layer==='water'&&h.holdsWater6h?palette.heat1:palette.panel}/>;})}</Instances>
