@@ -1,12 +1,87 @@
-import {useEffect,useState} from 'react';
-import {useParams,useSearchParams,Link} from 'react-router-dom';
-import {useQuery} from '@tanstack/react-query';
-import {api} from '../api/client';
-import type {PartId} from '../api/types';
-import {useSelection} from '../state';
-import DrainScene,{type Assembly,type Offsets,type ViewMode} from '../three/DrainScene';
-import PartPanel from '../components/PartPanel';
+import { useParams, Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { api } from '../api/client';
+import ModelWorkspace from '../components/ModelWorkspace';
 import Status from '../components/Status';
-import {QueryState} from '../components/QueryState';
-import {armName,dateOnly,testMean} from '../utils';
-export default function FeatureDetail(){const {id='S1'}=useParams(),[params]=useSearchParams();const select=useSelection(s=>s.selectPart),selected=useSelection(s=>s.partId);const [mode,setMode]=useState<ViewMode>('Operator'),[assembly,setAssembly]=useState<Assembly>('exploded'),[explode,setExplode]=useState(65),[cutAxis,setCutAxis]=useState<'X'|'Z'>('X'),[cutPosition,setCutPosition]=useState(0),[offsets,setOffsets]=useState<Offsets>({}),[move,setMove]=useState(false),[isolate,setIsolate]=useState(false),[hidden,setHidden]=useState<PartId[]>([]),[labels,setLabels]=useState(true),[wireframe,setWireframe]=useState(false),[edges,setEdges]=useState(true),[reset,setReset]=useState(0);const result=useQuery({queryKey:['feature-detail',id],queryFn:async()=>{const [feature,faults,trials]=await Promise.all([api.feature(id),api.faults(),api.trials()]);return {feature,faults,trial:trials.find(t=>t.featureId===id)};}});const data=result.data;useEffect(()=>{if(!data)return;const requested=params.get('part');select(data.feature.parts.find(p=>p.partId===requested)?.partId||data.feature.parts.find(p=>p.status==='fault'||p.status==='offline')?.partId||'sock');},[id,params,data?.feature.id,select]);const part=data?.feature.parts.find(p=>p.partId===selected);const baseline=data?.trial&&testMean(data.trial.tests,'baseline'),after=data?.trial&&testMean(data.trial.tests,'retest');return <QueryState loading={result.isPending} error={result.error}>{data&&part&&<><div className="page-heading"><div><h1>{id} · {data.feature.name}</h1><p className="sub">Zone {data.feature.zone} · Installed {dateOnly(data.feature.installedAt)} · synthetic</p></div><Link className="button" to="/">Back to Overview</Link></div><div className="summary-strip"><div><small>Trial arm</small>{data.feature.arm?armName[data.feature.arm]:'No soil-treatment arm'}</div><div><small>Pilot dose</small>{data.trial?.doseLabel||'No compost allocated'}</div><div><small>Next re-test</small>{data.trial?dateOnly(data.trial.nextRetestDue):'No trial scheduled'}</div><div><small>Owner of record</small>{data.trial?.owner?.name||data.feature.ownerOfRecord}</div></div><div className="panel-heading"><div className="segments">{(['Operator','Debug','Troubleshoot'] as const).map(value=><button key={value} aria-pressed={mode===value} onClick={()=>setMode(value)}>{value}</button>)}</div><span className="small">Illustrative CAD-style assembly · synthetic readings</span></div><div className="detail-grid"><aside className="part-list" aria-label="Model parts">{data.feature.parts.map(p=><button key={p.partId} aria-pressed={selected===p.partId} onClick={()=>select(p.partId)}><span className={'status-mark '+p.status}/>{p.name}</button>)}</aside><section className="panel"><DrainScene featureId={id} parts={data.feature.parts} mode={mode} assembly={assembly} explode={explode} cutAxis={cutAxis} cutPosition={cutPosition} offsets={offsets} onMove={(partId,position)=>setOffsets(previous=>({...previous,[partId]:position}))} move={move} isolate={isolate} hidden={hidden} labels={labels} wireframe={wireframe} edges={edges} reset={reset}/><div className="part-settings"><div className="segments">{(['exploded','assembled','section'] as const).map(value=><button key={value} aria-pressed={assembly===value} onClick={()=>{setAssembly(value);if(value==='assembled')setExplode(0);if(value==='exploded'&&!explode)setExplode(65);}}>{value==='exploded'?'Exploded':value==='assembled'?'Assembled':'Cross-section'}</button>)}</div><div className="field"><label htmlFor="explode">Explode <output>{explode}%</output></label><input id="explode" aria-label="Explode drainage assembly" type="range" min="0" max="100" value={explode} onChange={e=>{setExplode(Number(e.target.value));setAssembly('exploded');}}/></div><div className="field"><label htmlFor="cut-axis">Section axis</label><select id="cut-axis" value={cutAxis} onChange={e=>{setCutAxis(e.target.value as 'X'|'Z');setAssembly('section');}}><option>X</option><option>Z</option></select></div><div className="field"><label htmlFor="cut-position">Cut position</label><input id="cut-position" aria-label="Section cut position" type="range" min="-3.5" max="5.5" step=".1" value={cutPosition} onChange={e=>{setCutPosition(Number(e.target.value));setAssembly('section');}}/></div><label className="check"><input type="checkbox" checked={labels} onChange={e=>setLabels(e.target.checked)}/>Part labels</label>{mode==='Debug'&&<div className="inline"><label className="check"><input type="checkbox" checked={wireframe} onChange={e=>setWireframe(e.target.checked)}/>Wireframe</label><label className="check"><input type="checkbox" checked={edges} onChange={e=>setEdges(e.target.checked)}/>Edges</label><p className="small">Part bounds are illustrative; units are schematic metres.</p></div>}<div className="actions"><button aria-pressed={move} onClick={()=>setMove(!move)}>Move part</button><button aria-pressed={isolate} onClick={()=>setIsolate(!isolate)}>Isolate part</button><button onClick={()=>setHidden(values=>[...values,selected])}>Hide part</button><button onClick={()=>{setHidden([]);setIsolate(false);}}>Show all</button><button onClick={()=>{setOffsets({});setHidden([]);setIsolate(false);}}>Reset parts</button><button onClick={()=>setReset(v=>v+1)}>Reset view</button></div><div className="coordinate-grid">{(['X','Y','Z'] as const).map((axis,i)=><label className="field" key={axis}>Part shift {axis}<input type="number" step=".1" min="-5" max="5" value={(offsets[selected]||[0,0,0])[i]} onChange={event=>{const value=Number(event.target.value);if(Number.isFinite(value)){const next:[number,number,number]=[...(offsets[selected]||[0,0,0])];next[i]=Math.max(-5,Math.min(5,value));setOffsets(current=>({...current,[selected]:next}));}}}/></label>)}</div><p className="scene-caption">Drag to orbit · Scroll to zoom · In Move part, drag a mesh. Geometry and dimensions are illustrative.</p></div></section><PartPanel part={part} fault={data.faults.find(f=>f.featureId===id&&f.partId===selected&&f.status!=='closed')} mode={mode}/></div>{data.trial&&<section className="panel" style={{marginTop:18}}><h2>Keep the comparison traceable</h2><p className="sub">{baseline?.value??'No baseline'} → {after?.value??'No re-test'} mm/h · Same marked points · n = {after?.n??baseline?.n??0} · synthetic</p><p className="takeaway">Pilot, small sample, not proof. <Link to={'/trials?feature='+id}>Open trial protocol and lineage</Link></p><Status status={data.trial.guardrails.drainDownFlag?'watch':'ok'}/></section>}</>}</QueryState>;}
+import { QueryState } from '../components/QueryState';
+import { armName, dateOnly, testMean } from '../utils';
+export default function FeatureDetail() {
+  const { id = 'S1' } = useParams();
+  const result = useQuery({
+    queryKey: ['feature-detail', id],
+    queryFn: async () => {
+      const [feature, faults, trials, sensors, config] = await Promise.all([
+        api.feature(id),
+        api.faults(),
+        api.trials(),
+        api.sensors({ ownerId: id }),
+        api.config(),
+      ]);
+      return { feature, faults, sensors, config, trial: trials.find((t) => t.featureId === id) };
+    },
+  });
+  const data = result.data;
+  const baseline = data?.trial && testMean(data.trial.tests, 'baseline'),
+    after = data?.trial && testMean(data.trial.tests, 'retest');
+  return (
+    <QueryState loading={result.isPending} error={result.error}>
+      {data && (
+        <>
+          <div className="page-heading">
+            <div>
+              <h1>
+                {id} · {data.feature.name}
+              </h1>
+              <p className="sub">
+                Zone {data.feature.zone} · Installed {dateOnly(data.feature.installedAt)} ·
+                synthetic
+              </p>
+            </div>
+            <Link className="button" to="/">
+              Back to Overview
+            </Link>
+          </div>
+          <div className="summary-strip">
+            <div>
+              <small>Trial arm</small>
+              {data.feature.arm ? armName[data.feature.arm] : 'No soil-treatment arm'}
+            </div>
+            <div>
+              <small>Pilot dose</small>
+              {data.trial?.doseLabel || 'No compost allocated'}
+            </div>
+            <div>
+              <small>Next re-test</small>
+              {data.trial ? dateOnly(data.trial.nextRetestDue) : 'No trial scheduled'}
+            </div>
+            <div>
+              <small>Owner of record</small>
+              {data.trial?.owner?.name || data.feature.ownerOfRecord}
+            </div>
+          </div>
+          <ModelWorkspace
+            ownerId={id}
+            parts={data.feature.parts}
+            sensors={data.sensors}
+            config={data.config}
+            faults={data.faults}
+          />
+          {data.trial && (
+            <section className="panel" style={{ marginTop: 18 }}>
+              <h2>Keep the comparison traceable</h2>
+              <p className="sub">
+                {baseline?.value ?? 'No baseline'} → {after?.value ?? 'No re-test'} mm/h · Same
+                marked points · n = {after?.n ?? baseline?.n ?? 0} · synthetic
+              </p>
+              <p className="takeaway">
+                Pilot, small sample, not proof.{' '}
+                <Link to={'/trials?feature=' + id}>Open trial protocol and lineage</Link>
+              </p>
+              <Status status={data.trial.guardrails.drainDownFlag ? 'watch' : 'ok'} />
+            </section>
+          )}
+        </>
+      )}
+    </QueryState>
+  );
+}
