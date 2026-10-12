@@ -1,0 +1,8 @@
+app/node_modules/
+app/dist/
+app/.npm-cache/
+app/test-results/
+app/playwright-report/
+app/.env.local
+debug.log
+*.log
