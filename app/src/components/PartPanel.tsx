@@ -63,14 +63,14 @@ export default function PartPanel({
               </strong>
             </div>
             <p className="small">
-              {dateTime(r.t)} Â· {r.n ? 'n = ' + r.n + ' Â· ' : ''}synthetic
+              {dateTime(r.t)} · {r.n ? 'n = ' + r.n + ' · ' : ''}synthetic
             </p>
           </div>
         ))
       ) : sensors.length ? null : (
         <p className="empty">
           {part.status === 'offline'
-            ? 'No current reading â€” sensor offline.'
+            ? 'No current reading — sensor offline.'
             : 'No sensor reading for this part.'}
         </p>
       )}

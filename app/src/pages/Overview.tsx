@@ -55,7 +55,7 @@ export default function Overview() {
       <div className="page-heading">
         <div>
           <h1>Follow the water. Find the fault.</h1>
-          <p className="sub">Last reading: {dateTime(DEMO_NOW)} Â· Synthetic</p>
+          <p className="sub">Last reading: {dateTime(DEMO_NOW)} · Synthetic</p>
         </div>
         <div className="segments">
           {['Last storm', '7 days', '8 weeks'].map((r) => (
@@ -157,10 +157,10 @@ export default function Overview() {
               )}
               {showSensors && <SensorPositions sensors={sensorMarkers(data.sensors)} />}
               <p className="scene-caption">
-                Drag to orbit Â· Scroll to zoom Â· In Move houses, drag a house across the ground.
+                Drag to orbit · Scroll to zoom · In Move houses, drag a house across the ground.
               </p>
               <div className="heat-legend">
-                {['Under 20', '20â€“40', '40â€“60', 'Over 60 mm/h'].map((label, i) => (
+                {['Under 20', '20–40', '40–60', 'Over 60 mm/h'].map((label, i) => (
                   <span key={label}>
                     <i style={{ background: `var(--heat-${i})` }} />
                     {label}
@@ -231,7 +231,7 @@ export default function Overview() {
                       <span>
                         {f.type.replaceAll('_', ' ')}
                         <p className="small">
-                          {f.featureId} Â· Zone {f.zone}
+                          {f.featureId} · Zone {f.zone}
                         </p>
                       </span>
                     </Link>

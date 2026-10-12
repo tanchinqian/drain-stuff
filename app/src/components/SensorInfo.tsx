@@ -8,7 +8,7 @@ export function SensorTrust({ sensor }: { sensor: Sensor }) {
         aria-hidden="true"
         className={`status-mark ${sensor.status === 'suspect' ? 'fault' : sensor.status === 'offline' ? 'offline' : 'ok'}`}
       />
-      {sensor.status === 'suspect' ? 'Suspect' : sensor.status === 'offline' ? 'Offline' : 'OK'} Â·{' '}
+      {sensor.status === 'suspect' ? 'Suspect' : sensor.status === 'offline' ? 'Offline' : 'OK'} ·{' '}
       {sensor.drift === 'none' ? 'No drift flag' : `${sensor.drift} drift`}
     </span>
   );
@@ -17,7 +17,7 @@ export function SensorValue({ sensor }: { sensor: Sensor }) {
   return (
     <>
       {sensor.status === 'offline'
-        ? 'Unavailable â€” offline'
+        ? 'Unavailable — offline'
         : (sensor.lastText ??
           (sensor.lastValue === null
             ? 'Not measured'
@@ -39,10 +39,10 @@ export default function SensorInfo({ sensor }: { sensor: Sensor }) {
       </p>
       <SensorTrust sensor={sensor} />
       <p className="small">
-        {dateTime(sensor.lastAt)} Â· Synthetic Â· {sensor.unit}
+        {dateTime(sensor.lastAt)} · Synthetic · {sensor.unit}
       </p>
       <p>
-        <strong>{sensor.role === 'proxy' ? 'Proxy' : 'Reference'}</strong> Â· {sensor.proxyFor}
+        <strong>{sensor.role === 'proxy' ? 'Proxy' : 'Reference'}</strong> · {sensor.proxyFor}
       </p>
       <p className="small">Calibration / method check: {dateTime(sensor.calibratedAt)}</p>
       <p className="small">

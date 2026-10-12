@@ -9,7 +9,7 @@
     "preview": "vite preview --host 127.0.0.1",
     "lint": "eslint src",
     "format": "prettier --write src",
-    "test": "vitest run",
+    "test": "vitest run src",
     "test:e2e": "playwright test"
   },
   "dependencies": {
@@ -20,7 +20,7 @@
     "lucide-react": "^0.468.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",
-    "react-router-dom": "^6.30.1",
+    "react-router-dom": "^7.18.4",
     "recharts": "^2.15.4",
     "three": "0.170.0",
     "zustand": "^5.0.8"
@@ -38,10 +38,11 @@
     "globals": "^16.4.0",
     "postcss": "^8.5.6",
     "prettier": "^3.6.2",
-    "tailwindcss": "^3.4.18",
+    "@tailwindcss/vite": "^4.3.3",
+    "tailwindcss": "^4.3.3",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.46.0",
     "vite": "^6.4.0",
-    "vitest": "^3.2.4"
+    "vitest": "^4.1.11"
   }
 }

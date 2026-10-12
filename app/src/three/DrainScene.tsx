@@ -90,7 +90,7 @@ function Model(props: Props) {
           material.clippingPlanes = props.assembly === 'section' ? [plane] : [];
           const dim = !part.installed || (props.mode === 'Troubleshoot' && part.status === 'ok');
           const baseOpacity = Number(material.userData.baseOpacity ?? 1);
-          material.opacity = dim ? baseOpacity * .25 : baseOpacity;
+          material.opacity = dim ? baseOpacity * 0.25 : baseOpacity;
           material.transparent = dim || baseOpacity < 1 || object instanceof Line;
           material.depthWrite = !dim && baseOpacity === 1;
           if (material instanceof MeshStandardMaterial)
@@ -159,7 +159,7 @@ function Model(props: Props) {
                   {props.mode === 'Troubleshoot' && part.status !== 'ok' && (
                     <small>
                       {' '}
-                      Â· Check{' '}
+                      · Check{' '}
                       {props.parts
                         .filter((p) => p.status !== 'ok')
                         .findIndex((p) => p.partId === id) + 1}

@@ -6,3 +6,6 @@ app/playwright-report/
 app/.env.local
 debug.log
 *.log
+
+app/*.tsbuildinfo
+sites/

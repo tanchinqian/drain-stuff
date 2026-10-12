@@ -920,3 +920,9 @@ th {
     height: 300px;
   }
 }
+
+@media (max-width: 580px) {
+  .coordinate-grid {
+    grid-template-columns: 1fr;
+  }
+}

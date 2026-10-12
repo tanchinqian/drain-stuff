@@ -94,7 +94,7 @@ export default function ModelWorkspace({
             </button>
           ))}
         </div>
-        <span className="small">Illustrative CAD-style assembly Â· synthetic readings</span>
+        <span className="small">Illustrative CAD-style assembly · synthetic readings</span>
       </div>
       <label className="field mobile-part-picker">
         Model part

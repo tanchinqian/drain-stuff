@@ -304,7 +304,7 @@ export function generateMock(seed = 2026): Database {
                 role: 'Trial custodian',
                 since: '2026-08-10',
               },
-        soilTexture: f.id === 'T1' ? 'Not recorded' : 'Clay loam Â· synthetic',
+        soilTexture: f.id === 'T1' ? 'Not recorded' : 'Clay loam · synthetic',
         baselineDone: baseline,
         method: 'Fixed-point ring infiltration test',
         markedPoints: 3,
@@ -379,7 +379,10 @@ export function generateMock(seed = 2026): Database {
     for (const row of rows)
       row.sensorId = `${ownerId}-${row.metric === 'infiltration_mm_hr' ? 'INF-P1' : row.metric === 'sediment_mm' ? 'SEDIMENT' : 'OUTLET'}`;
   for (const fault of faults) {
-    fault.sensorIds = fault.partId === 'sock' ? [fault.featureId + '-INLET', fault.featureId + '-SEDIMENT', fault.featureId + '-VIS-sock'] : [fault.featureId + '-OUTLET'];
+    fault.sensorIds =
+      fault.partId === 'sock'
+        ? [fault.featureId + '-INLET', fault.featureId + '-SEDIMENT', fault.featureId + '-VIS-sock']
+        : [fault.featureId + '-OUTLET'];
     fault.sensorStatusesAtAlert = sensorSnapshot(database.sensors, fault.sensorIds);
   }
   faults.push({

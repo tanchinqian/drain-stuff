@@ -1,0 +1,42 @@
+# Drain Trial Console
+
+A local React operator console for a synthetic drainage and compost pilot. The existing Map desk interface includes selectable site houses, sixteen drainage parts, eight compost parts, a sensor register, fault provenance and guarded trial records.
+
+## Run in PowerShell
+
+Install a supported Node.js runtime with npm, then open PowerShell in this project folder:
+
+```powershell
+cd app
+npm.cmd ci
+npm.cmd run dev
+```
+
+`npm.cmd ci` is the fresh setup step. Open [Overview](http://127.0.0.1:5173/), [Sensors](http://127.0.0.1:5173/sensors), [S1 drainage model](http://127.0.0.1:5173/feature/S1) or [B-01 compost model](http://127.0.0.1:5173/batches/B-01). The default server binds to this computer only.
+
+## Data and API
+
+Without `VITE_API_BASE`, the app uses deterministic synthetic data. Its fixed clock is **12 October 2026, 09:40 Asia/Singapore** (`2026-10-12T01:40:00.000Z`), so age, due dates and new mock records do not advance with wall time. Records persist in this browser's local storage under `drain-trial-console-v1`; the current stored data version is 2. A browser with unavailable storage can still use the in-memory mock.
+
+`VITE_API_BASE` selects an HTTP backend instead of the mock. Leave it unset for the browser-local demo. A future backend supplies its API origin/base prefix; set it before starting Vite. The client appends paths such as `/config`, `/sensors`, `/fault-rules` and `/batch-parts/:id` directly to that base. The backend must implement contract **2.0.0**, defined in `app/src/api/types.ts`, with endpoint functions in `app/src/api/client.ts`, sensor filters, part catalogs, trust snapshots and the existing POST allocation gates. There is no bundled backend. The interface retains its synthetic data labels; real deployment requires reviewed labeling and validated configuration.
+
+## Checks
+
+From `app/`:
+
+```powershell
+npm.cmd run build
+npm.cmd run lint
+npm.cmd test
+npm.cmd run test:e2e
+```
+
+The browser checks need a Playwright Chromium installation. If a compatible Chromium is already installed, set `$env:PLAYWRIGHT_CHROMIUM_EXECUTABLE` to its executable path; otherwise install Playwright's browser with `npx.cmd playwright install chromium`. Playwright starts or reuses the local development server and writes refreshed captures to `docs/screens/`.
+
+The three browser checks cover the operator flow and allocation gates, every sensor row/site marker, register filters, sixteen/eight model parts and compost fault inputs. They also run axe WCAG A/AA checks on Overview, Detail, Compost, Sensors and Faults and check document overflow at 360px. These automated checks do not establish complete accessibility or field validity. The stage record in `docs/ADDENDUM_STAGES.md` records the executed results and review scope.
+
+## Limits and project records
+
+All houses, readings, faults, trials and batches are synthetic. Models are schematics; layer dimensions and thresholds require confirmation against MSMA and the local authority. Soil moisture is an indirect infiltration proxy; inexpensive compost moisture is relative and needs a human reference check. Manual infiltration tests, squeeze/smell logs and photo checklists remain human records. No hardware calibration, surveyed geometry, treatment proof or Lighthouse score is claimed.
+
+`PRODUCT.md` holds accepted scope. `DESIGN.md` and `.impeccable/design.json` record the incumbent system. `docs/addendum-review.md` records the independent finish review. The separately published Sites visualization is an exact uploaded attachment with its own source and hosting identity.

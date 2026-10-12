@@ -1,9 +1,121 @@
-import {useEffect,useRef} from 'react';
-import {useQuery} from '@tanstack/react-query';
-import {Link} from 'react-router-dom';
-import {api} from '../api/client';
-import type {Fault,House} from '../api/types';
-import {useSelection} from '../state';
-import {dateTime} from '../utils';
+import { useEffect, useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
+import { api } from '../api/client';
+import type { Fault, House } from '../api/types';
+import { useSelection } from '../state';
+import { dateTime } from '../utils';
 import Status from './Status';
-export default function HouseRecord({house,faults,inline}:{house:House;faults:Fault[];inline:boolean}){const close=useSelection(s=>s.selectHouse),positions=useSelection(s=>s.housePositions),move=useSelection(s=>s.moveHouse);const dialog=useRef<HTMLDialogElement>(null);const readings=useQuery({queryKey:['readings',house.drainId],queryFn:()=>api.readings(house.drainId)});const position=positions[house.id]||[house.x,house.y];useEffect(()=>{if(!inline){dialog.current?.showModal();return ()=>dialog.current?.close();}},[inline,house.id]);const content=<><div className="panel-heading"><h2>{house.id} · Drain {house.drainId}</h2><button onClick={()=>close(null)} aria-label="Close house record">Close</button></div><Status status={house.holdsWater6h?'watch':'ok'}/><p className="sub">Synthetic · {dateTime(house.lastReadingAt)}</p><hr className="divider"/><p>Owner of record: {house.ownerOfRecord}</p><p>Nearest feature: <Link to={'/feature/'+house.nearestFeature} onClick={()=>close(null)}>{house.nearestFeature}</Link></p><h3 style={{marginTop:20}}>Last five readings</h3><div className="table-wrap"><table><thead><tr><th>Time</th><th>Drain-down</th></tr></thead><tbody>{readings.data?.slice(-5).map(r=><tr key={r.t}><td>{dateTime(r.t)}</td><td>{r.value} {r.unit}</td></tr>)}</tbody></table></div><h3 style={{marginTop:20}}>Fault history</h3>{faults.filter(f=>f.featureId===house.drainId).map(f=><p key={f.id}>{f.id} · {f.type.replaceAll('_',' ')} · {f.status}</p>)}{!faults.some(f=>f.featureId===house.drainId)&&<p className="small">No faults recorded.</p>}<div className="coordinate-grid">{(['X','Z'] as const).map((axis,i)=><label className="field" key={axis}>{axis}, schematic m<input aria-label={'House '+axis+' position'} type="number" step=".25" min={i===0?-12:-10} max={i===0?12:10} value={position[i].toFixed(2)} onChange={e=>{const value=Number(e.target.value);if(Number.isFinite(value)){const next:[number,number]=[...position];next[i]=Math.max(i===0?-12:-10,Math.min(i===0?12:10,value));move(house.id,next);}}}/></label>)}</div><p className="small" style={{marginTop:12}}>Position edits affect this schematic only.</p></>;return inline?<section className="panel" style={{marginTop:16}} aria-label="Selected house">{content}</section>:<dialog ref={dialog} className="drawer" aria-label="House record" onClose={()=>close(null)}>{content}</dialog>;}
+export default function HouseRecord({
+  house,
+  faults,
+  inline,
+}: {
+  house: House;
+  faults: Fault[];
+  inline: boolean;
+}) {
+  const close = useSelection((s) => s.selectHouse),
+    positions = useSelection((s) => s.housePositions),
+    move = useSelection((s) => s.moveHouse);
+  const dialog = useRef<HTMLDialogElement>(null);
+  const readings = useQuery({
+    queryKey: ['readings', house.drainId],
+    queryFn: () => api.readings(house.drainId),
+  });
+  const position = positions[house.id] || [house.x, house.y];
+  useEffect(() => {
+    if (!inline) {
+      if (!dialog.current?.open) dialog.current?.showModal();
+    }
+  }, [inline, house.id]);
+  const content = (
+    <>
+      <div className="panel-heading">
+        <h2>
+          {house.id} · Drain {house.drainId}
+        </h2>
+        <button onClick={() => close(null)} aria-label="Close house record">
+          Close
+        </button>
+      </div>
+      <Status status={house.holdsWater6h ? 'watch' : 'ok'} />
+      <p className="sub">Synthetic · {dateTime(house.lastReadingAt)}</p>
+      <hr className="divider" />
+      <p>Owner of record: {house.ownerOfRecord}</p>
+      <p>
+        Nearest feature:{' '}
+        <Link to={'/feature/' + house.nearestFeature} onClick={() => close(null)}>
+          {house.nearestFeature}
+        </Link>
+      </p>
+      <h3 style={{ marginTop: 20 }}>Last five readings</h3>
+      <div className="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Drain-down</th>
+            </tr>
+          </thead>
+          <tbody>
+            {readings.data?.slice(-5).map((r) => (
+              <tr key={r.t}>
+                <td>{dateTime(r.t)}</td>
+                <td>
+                  {r.value} {r.unit}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <h3 style={{ marginTop: 20 }}>Fault history</h3>
+      {faults
+        .filter((f) => f.featureId === house.drainId)
+        .map((f) => (
+          <p key={f.id}>
+            {f.id} · {f.type.replaceAll('_', ' ')} · {f.status}
+          </p>
+        ))}
+      {!faults.some((f) => f.featureId === house.drainId) && (
+        <p className="small">No faults recorded.</p>
+      )}
+      <div className="coordinate-grid">
+        {(['X', 'Z'] as const).map((axis, i) => (
+          <label className="field" key={axis}>
+            {axis}, schematic m
+            <input
+              aria-label={'House ' + axis + ' position'}
+              type="number"
+              step=".25"
+              min={i === 0 ? -12 : -10}
+              max={i === 0 ? 12 : 10}
+              value={position[i].toFixed(2)}
+              onChange={(e) => {
+                const value = Number(e.target.value);
+                if (Number.isFinite(value)) {
+                  const next: [number, number] = [...position];
+                  next[i] = Math.max(i === 0 ? -12 : -10, Math.min(i === 0 ? 12 : 10, value));
+                  move(house.id, next);
+                }
+              }}
+            />
+          </label>
+        ))}
+      </div>
+      <p className="small" style={{ marginTop: 12 }}>
+        Position edits affect this schematic only.
+      </p>
+    </>
+  );
+  return inline ? (
+    <section className="panel" style={{ marginTop: 16 }} aria-label="Selected house">
+      {content}
+    </section>
+  ) : (
+    <dialog ref={dialog} className="drawer" aria-label="House record" onClose={() => close(null)}>
+      {content}
+    </dialog>
+  );
+}

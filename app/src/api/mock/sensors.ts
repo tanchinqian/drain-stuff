@@ -35,7 +35,11 @@ export function seedSensors(db: Database, now: string): Sensor[] {
       lastValue,
       role,
       proxyFor,
-      location: { x: Number(location[0].toFixed(2)), y: Number(location[1].toFixed(2)), z: Number(location[2].toFixed(2)) },
+      location: {
+        x: Number(location[0].toFixed(2)),
+        y: Number(location[1].toFixed(2)),
+        z: Number(location[2].toFixed(2)),
+      },
       siteLocation: {
         x: site[0] + (rows.length % 5) * 0.19,
         y: 0.18,
@@ -115,7 +119,7 @@ export function seedSensors(db: Database, now: string): Sensor[] {
         'media',
         `Soil temperature at ${depth} cm`,
         `Soil temperature, ${depth} cm`,
-        'Â°C',
+        '°C',
         29 - depth / 100,
         'proxy',
         'Environmental context for the infiltration proxy',
@@ -228,7 +232,9 @@ export function seedSensors(db: Database, now: string): Sensor[] {
                 ? 'thinned mulch'
                 : f.id === 'T2' && part.partId === 'cleanout'
                   ? 'missing cap'
-                  : f.id === 'S1' && part.partId === 'sock' ? 'Sediment buildup observed' : 'No issue recorded',
+                  : f.id === 'S1' && part.partId === 'sock'
+                    ? 'Sediment buildup observed'
+                    : 'No issue recorded',
         },
       );
     }
@@ -276,7 +282,7 @@ export function seedSensors(db: Database, now: string): Sensor[] {
       'bay',
       'Pile temperature probe, shallow',
       'Pile temperature, 10 cm',
-      'Â°C',
+      '°C',
       latest?.tempC ?? null,
       'reference',
       'Reference for pile heating',
@@ -289,7 +295,7 @@ export function seedSensors(db: Database, now: string): Sensor[] {
       'bay',
       'Pile temperature probe, deep',
       'Pile temperature, 50 cm',
-      'Â°C',
+      '°C',
       latest ? latest.tempC + 1 : null,
       'reference',
       'Reference for pile heating at depth',
@@ -302,7 +308,7 @@ export function seedSensors(db: Database, now: string): Sensor[] {
       'weather',
       'Air temperature probe',
       'Ambient temperature',
-      'Â°C',
+      '°C',
       batch.checks.ambientTempC,
       'reference',
       'Reference for ambient and maturity comparisons',
@@ -382,7 +388,7 @@ export function seedSensors(db: Database, now: string): Sensor[] {
       'curing',
       'Curing temperature probe',
       'Curing temperature',
-      'Â°C',
+      '°C',
       batch.status === 'active' ? null : (latest?.tempC ?? null),
       'reference',
       'Reference for return to ambient; no-reheat check is human',

@@ -1,0 +1,213 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-12T17:00:47.986Z",
+  "title": "Design System: Drain Trial Console",
+  "extensions": {
+    "colorMeta": {
+      "ground": {
+        "role": "neutral",
+        "displayName": "Desk cream"
+      },
+      "panel": {
+        "role": "neutral",
+        "displayName": "Paper cream"
+      },
+      "well": {
+        "role": "neutral",
+        "displayName": "Recessed sand"
+      },
+      "well2": {
+        "role": "neutral",
+        "displayName": "Light recessed sand"
+      },
+      "border": {
+        "role": "neutral",
+        "displayName": "Map border"
+      },
+      "ink": {
+        "role": "primary",
+        "displayName": "Brown ink"
+      },
+      "ink2": {
+        "role": "neutral",
+        "displayName": "Secondary brown"
+      },
+      "ink3": {
+        "role": "neutral",
+        "displayName": "Muted brown"
+      },
+      "heat-0": {
+        "role": "primary",
+        "displayName": "Pale sand heat"
+      },
+      "heat-1": {
+        "role": "primary",
+        "displayName": "Ochre sand heat"
+      },
+      "heat-2": {
+        "role": "primary",
+        "displayName": "Copper heat"
+      },
+      "heat-3": {
+        "role": "primary",
+        "displayName": "Brick heat and faults"
+      },
+      "arm-control": {
+        "role": "secondary",
+        "displayName": "Control violet"
+      },
+      "arm-decompact": {
+        "role": "secondary",
+        "displayName": "Decompaction ochre"
+      },
+      "arm-compost": {
+        "role": "secondary",
+        "displayName": "Compost magenta"
+      },
+      "rain-bar": {
+        "role": "primary",
+        "displayName": "Rain copper"
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Page h1; variable Archivo with 82% font stretch."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Panel h2; variable Archivo with 88% font stretch."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Record h3; inherits the body line height."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Operator copy and native controls; tabular numerals."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Supporting metadata and badges; not an uppercase eyebrow pattern."
+      }
+    },
+    "shadows": [],
+    "motion": [],
+    "breakpoints": [
+      {
+        "name": "compact-desktop",
+        "value": "1100px"
+      },
+      {
+        "name": "stacked-layout",
+        "value": "800px"
+      },
+      {
+        "name": "phone",
+        "value": "580px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Primary actions and pressed states use brown ink with reversed paper text.",
+      "html": "<button class=\"ds-button ds-primary ds-focus\">Save batch checks</button>",
+      "css": ".ds-button { display:inline-flex; align-items:center; justify-content:center; gap:7px; padding:9px 13px; min-height:44px; font:400 16px/1.45 'Archivo Variable', Archivo, sans-serif; background:var(--panel, #f2eee4); color:var(--ink, #2f2b26); border:1px solid var(--border, #cfc7b4); border-radius:4px; text-decoration:none; cursor:pointer; } .ds-button:hover { background:var(--well2, #e2dccb); } .ds-button[aria-pressed='true'], .ds-button.ds-primary { background:var(--ink, #2f2b26); color:var(--panel, #f2eee4); border-color:var(--ink, #2f2b26); } .ds-button:disabled { cursor:not-allowed; opacity:0.65; } .ds-focus:focus-visible { outline:2px solid var(--ink, #2f2b26); outline-offset:3px; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Paper actions change to the lighter well tone on hover.",
+      "html": "<button class=\"ds-button ds-focus\">Reset view</button>",
+      "css": ".ds-button { display:inline-flex; align-items:center; justify-content:center; gap:7px; padding:9px 13px; min-height:44px; font:400 16px/1.45 'Archivo Variable', Archivo, sans-serif; background:var(--panel, #f2eee4); color:var(--ink, #2f2b26); border:1px solid var(--border, #cfc7b4); border-radius:4px; text-decoration:none; cursor:pointer; } .ds-button:hover { background:var(--well2, #e2dccb); } .ds-button[aria-pressed='true'], .ds-button.ds-primary { background:var(--ink, #2f2b26); color:var(--panel, #f2eee4); border-color:var(--ink, #2f2b26); } .ds-button:disabled { cursor:not-allowed; opacity:0.65; } .ds-focus:focus-visible { outline:2px solid var(--ink, #2f2b26); outline-offset:3px; }"
+    },
+    {
+      "name": "Number Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Native numeric input with a visible label and focus outline.",
+      "html": "<label class=\"ds-field\">Part shift X<input class=\"ds-focus\" type=\"number\" step=\".1\" min=\"-5\" max=\"5\" value=\"0\"></label>",
+      "css": ".ds-field { display:grid; gap:6px; font:400 14px/1.45 'Archivo Variable', Archivo, sans-serif; color:var(--ink, #2f2b26); } .ds-field input, .ds-field select { font:400 16px/1.45 'Archivo Variable', Archivo, sans-serif; background:var(--panel, #f2eee4); color:var(--ink, #2f2b26); border:1px solid var(--border, #cfc7b4); border-radius:3px; padding:10px; min-height:44px; max-width:100%; width:100%; accent-color:var(--ink, #2f2b26); } .ds-focus:focus-visible { outline:2px solid var(--ink, #2f2b26); outline-offset:3px; }"
+    },
+    {
+      "name": "Native Select",
+      "kind": "input",
+      "refersTo": "select",
+      "description": "Native selectors support model parts, filters and section axes.",
+      "html": "<label class=\"ds-field\">Section axis<select class=\"ds-focus\"><option>X</option><option>Z</option></select></label>",
+      "css": ".ds-field { display:grid; gap:6px; font:400 14px/1.45 'Archivo Variable', Archivo, sans-serif; color:var(--ink, #2f2b26); } .ds-field input, .ds-field select { font:400 16px/1.45 'Archivo Variable', Archivo, sans-serif; background:var(--panel, #f2eee4); color:var(--ink, #2f2b26); border:1px solid var(--border, #cfc7b4); border-radius:3px; padding:10px; min-height:44px; max-width:100%; width:100%; accent-color:var(--ink, #2f2b26); } .ds-focus:focus-visible { outline:2px solid var(--ink, #2f2b26); outline-offset:3px; }"
+    },
+    {
+      "name": "Console Navigation",
+      "kind": "nav",
+      "refersTo": "navigation",
+      "description": "Wrapping text navigation uses ink/paper reversal for the current route.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Console pages\"><a class=\"ds-focus ds-active\" aria-current=\"page\" href=\"#overview\">Overview</a><a class=\"ds-focus\" href=\"#sensors\">Sensors</a><a class=\"ds-focus\" href=\"#faults\">Faults</a></nav>",
+      "css": ".ds-nav { display:flex; flex-wrap:wrap; gap:4px; padding:9px 22px; border-bottom:1px solid var(--border, #cfc7b4); font:400 16px/1.45 'Archivo Variable', Archivo, sans-serif; } .ds-nav a { padding:11px 16px; min-height:44px; color:var(--ink, #2f2b26); text-decoration:none; border-radius:4px; text-underline-offset:3px; } .ds-nav a:hover { text-decoration:underline; } .ds-nav a.ds-active { background:var(--ink, #2f2b26); color:var(--panel, #f2eee4); } @media (max-width:580px) { .ds-nav { padding:8px 12px; } .ds-nav a { padding:11px 12px; } } .ds-focus:focus-visible { outline:2px solid var(--ink, #2f2b26); outline-offset:3px; }"
+    },
+    {
+      "name": "Synthetic Data Badge",
+      "kind": "chip",
+      "refersTo": "badge",
+      "description": "A persistent bordered label identifies demonstration data.",
+      "html": "<span class=\"ds-badge\"><span class=\"ds-square\" aria-hidden=\"true\"></span>Synthetic demo data</span>",
+      "css": ".ds-badge { display:inline-flex; align-items:center; gap:8px; border:1px solid var(--border, #cfc7b4); padding:7px 10px; background:var(--panel, #f2eee4); color:var(--ink, #2f2b26); font:400 13px/1.45 'Archivo Variable', Archivo, sans-serif; border-radius:3px; } .ds-square { width:8px; height:8px; background:var(--ink, #2f2b26); display:inline-block; }"
+    },
+    {
+      "name": "Record Panel",
+      "kind": "card",
+      "refersTo": "panel",
+      "description": "Paper panels use thin borders and small corners without shadows.",
+      "html": "<section class=\"ds-panel\"><h2>Sensors on this part</h2><p>Calibration and trust accompany the latest reading.</p></section>",
+      "css": ".ds-panel { min-width:0; padding:22px; border:1px solid var(--border, #cfc7b4); background:var(--panel, #f2eee4); color:var(--ink, #2f2b26); border-radius:5px; font:400 16px/1.45 'Archivo Variable', Archivo, sans-serif; } .ds-panel h2 { margin:0 0 16px; font-size:21px; font-weight:600; font-stretch:88%; line-height:1.3; } .ds-panel p { margin:0; } @media (max-width:580px) { .ds-panel { padding:16px; } }"
+    },
+    {
+      "name": "Shape and Text Status",
+      "kind": "custom",
+      "refersTo": "status",
+      "description": "Geometric markers accompany explicit status text.",
+      "html": "<div class=\"ds-status-list\"><span class=\"ds-status\"><span class=\"ds-mark\" aria-hidden=\"true\"></span>OK</span><span class=\"ds-status\"><span class=\"ds-mark ds-watch\" aria-hidden=\"true\"></span>Watch</span><span class=\"ds-status\"><span class=\"ds-mark ds-fault\" aria-hidden=\"true\"></span>Fault</span><span class=\"ds-status\"><span class=\"ds-mark ds-offline\" aria-hidden=\"true\"></span>Sensor offline</span></div>",
+      "css": ".ds-status-list { display:grid; gap:12px; } .ds-status { display:inline-flex; align-items:center; gap:8px; color:var(--ink, #2f2b26); font:400 14px/1.45 'Archivo Variable', Archivo, sans-serif; white-space:nowrap; } .ds-mark { display:inline-block; width:11px; height:11px; background:var(--ink2, #5e564b); flex:none; } .ds-mark.ds-fault { background:var(--heat-3, #8e3a2e); clip-path:polygon(50% 0, 100% 100%, 0 100%); width:13px; } .ds-mark.ds-watch { background:var(--arm-decompact, #b07a12); border-radius:50%; } .ds-mark.ds-offline { background:var(--arm-control, #7b4daf); transform:rotate(45deg); width:9px; height:9px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Map desk",
+    "overview": "Map desk is a compact operator console with warm paper surfaces, brown ink and geometric site and assembly schematics. Archivo keeps headings firm and records readable. Thin borders, tonal wells and dark selected controls make the next inspection action easy to find.\n\nThe system serves practical inspection: operators move between a site view, model parts, sensor records and faults. Native controls, tabular numerals, explicit units and shape plus text states carry the information. The accepted world excludes blue and green, gradients, glow and decorative shadows.",
+    "keyCharacteristics": [
+      "Warm cream ground, paper panels and brown ink.",
+      "Compact Archivo hierarchy with tabular numerals.",
+      "Flat surfaces, thin borders and native controls.",
+      "Geometric schematics with text alternatives and explicit limits.",
+      "Shape plus text states, with color as a supporting cue."
+    ],
+    "rules": [
+      {
+        "name": "The State Readability Rule",
+        "body": "Pair each status color with its geometric marker and a written label; color alone never carries trust or fault state.",
+        "section": "colors"
+      },
+      {
+        "name": "The Flat Surface Rule",
+        "body": "Separate interface layers with the existing paper tones and borders, without gradients, glow or decorative shadows.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** preserve the warm cream and brown Map desk palette and Archivo hierarchy.",
+      "**Do** pair status and trust colors with geometric shapes and explicit text.",
+      "**Do** keep native controls, visible focus outlines and readable metric units.",
+      "**Do** preserve mobile stacking, the native part selector and panel-contained table overflow.",
+      "**Do** keep stable part and sensor IDs, keyboard record access and schematic/synthetic labels visible."
+    ],
+    "donts": [
+      "**Don't** introduce blue or green, gradients, glow or decorative interface shadows.",
+      "**Don't** use color as the only signal for a fault, trust state or selected record.",
+      "**Don't** replace practical controls with ornamental interactions or illegible model annotations.",
+      "**Don't** present schematic dimensions or synthetic readings as surveyed geometry or validated field evidence."
+    ]
+  }
+}
