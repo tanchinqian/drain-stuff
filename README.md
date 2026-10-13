@@ -16,7 +16,7 @@ npm.cmd run dev
 
 ## Try a storm at S1
 
-Open [S1](http://127.0.0.1:5173/feature/S1) and use **Try a storm at S1** above the detailed drainage assembly. Set rain intensity (0–120 mm/h), duration (5–120 minutes) and outlet blockage (0–100%), then select **Play storm** or scrub the timeline. Playback includes 180 minutes after rain; pause, reset and replay are available. Changing a setting resets the scenario. **Inspect drainage parts** jumps to the existing assembly below.
+Open [S1](http://127.0.0.1:5173/feature/S1) and use **Try a storm at S1** inside the collapsed storm section below the detailed drainage assembly. Set rain intensity (0–120 mm/h), duration (5–120 minutes) and outlet blockage (0–100%), then select **Play storm** or scrub the timeline. Playback includes 180 minutes after rain; pause, reset and replay are available. Changing a setting resets the scenario. **Inspect drainage parts** jumps to the assembly above.
 
 The scene follows runoff from houses through the inlet, soil layers and outlet. Numerical flows, surface ponding and cumulative overflow accompany the cyan water. This is an illustrative storage model with exaggerated visible depth, independent of sensor readings and trial records. See [storm assumptions, controls and evidence](docs/STORM_SIMULATION.md).
 
@@ -50,3 +50,7 @@ S1/S2/S3 have large clickable pins and direct trial links. Mapped houses can be 
 Models are schematics; layer dimensions and thresholds require confirmation against MSMA and the local authority. Soil moisture is an indirect infiltration proxy; inexpensive compost moisture is relative and needs a human reference check. Manual infiltration tests, squeeze/smell logs and photo checklists remain human records. No hardware calibration, surveyed geometry, treatment proof or Lighthouse score is claimed.
 
 `PRODUCT.md` holds accepted scope. `DESIGN.md` and `.impeccable/design.json` record the incumbent system. `docs/addendum-review.md` records the independent finish review. The separately published Sites visualization is an exact uploaded attachment with its own source and hosting identity.
+
+## Review round 1
+
+Overview leads with faults; Detail opens on the part model; compost bays have Model, Readings and Checks tabs. Advanced model controls are in Debug. Repair prompts remain drafts. Current radar and cyan water colours are intentionally preserved at the user's request. See [the local fix-round record](docs/fix-round-1.md).

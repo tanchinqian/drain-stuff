@@ -1,23 +1,101 @@
 import type { Fault } from './types';
 
-const record = 'Record the photos, date, readings and work in the fault log. Arrange a manual check after the next rain; the console does not run field tests automatically.';
-const surface = 'Check from the surface in safe weather. Do not enter a chamber or lift a cover alone. Keep away from flowing water.';
-const sensor = ['Check the input ID, last reading time and calibration record before acting on its value.', 'Ask the trained operator to compare it with a manual reference reading and check power, connections and placement without entering a chamber.', 'Keep the input marked suspect or offline until the comparison and calibration are recorded. Do not treat a missing value as zero.'];
+const record =
+  'Record the photos, date, readings and work in the fault log. Arrange a manual check after the next rain; the console does not run field tests automatically.';
+const surface =
+  'Check from the surface in safe weather. Do not enter a chamber or lift a cover alone. Keep away from flowing water.';
+const sensor = [
+  'Check the input ID, last reading time and calibration record before acting on its value.',
+  'Ask the trained operator to compare it with a manual reference reading and check power, connections and placement without entering a chamber.',
+  'Keep the input marked suspect or offline until the comparison and calibration are recorded. Do not treat a missing value as zero.',
+];
 export const repairSteps: Record<Fault['type'], string[]> = {
-  blockage: [surface, 'Photograph the inlet and filter sock (the fabric bag that traps sediment); note the date and sensor reading.', 'If rain is forecast within 24 hours, notify the owner of record and mark the inlet as restricted.', 'The owner arranges trained clearing or sock replacement and sediment disposal under the local procedure.', record],
-  sediment: [surface, 'Photograph and record the depth of deposited sand or silt at the inlet and bed.', 'Ask the owner to arrange removal without pushing the material into the downstream drain.', record],
-  standing_water: [surface, 'Record when rain ended, how long water has remained and the current depth. The 48-hour inspection prompt is a placeholder, to confirm.', 'Ask the owner to inspect trapped sediment and the underdrain (the pipe below the soil that carries water away). Do not probe a blocked pipe yourself.', 'The owner arranges trained clearance or repair; keep the affected area restricted until checked.', record],
+  blockage: [
+    surface,
+    'Photograph the inlet and filter sock (the fabric bag that traps sediment); note the date and sensor reading.',
+    'If rain is forecast within 24 hours, notify the owner of record and mark the inlet as restricted.',
+    'The owner arranges trained clearing or sock replacement and sediment disposal under the local procedure.',
+    record,
+  ],
+  sediment: [
+    surface,
+    'Photograph and record the depth of deposited sand or silt at the inlet and bed.',
+    'Ask the owner to arrange removal without pushing the material into the downstream drain.',
+    record,
+  ],
+  standing_water: [
+    surface,
+    'Record when rain ended, how long water has remained and the current depth. The 48-hour inspection prompt is a placeholder, to confirm.',
+    'Ask the owner to inspect trapped sediment and the underdrain (the pipe below the soil that carries water away). Do not probe a blocked pipe yourself.',
+    'The owner arranges trained clearance or repair; keep the affected area restricted until checked.',
+    record,
+  ],
   sensor_suspect: [...sensor, record],
   sensor_offline: [...sensor, record],
-  mulch_loss: [surface, 'Photograph bare areas and displaced mulch (the loose protective surface layer). Check whether rain moved it into an inlet.', 'Ask the owner to restore the approved mulch depth and secure the cause of washout. Keep loose material out of open drains.', record],
-  scour: [surface, 'Photograph channels cut into the soil by flowing water. Record nearby displaced material.', 'The owner arranges repair of the inlet flow spreader and eroded soil before replacing planting.', record],
-  sparse_planting: [surface, 'Photograph bare patches and note plant damage or dry soil.', 'The owner checks the cause and arranges suitable replacement planting without obstructing the drain.', record],
-  joint_leak: [surface, 'Photograph visible leakage and note the water level without touching or entering the pipe.', 'The owner arranges a trained check of the pipe joint and repair under the local procedure.', record],
-  missing_cap: [surface, 'Photograph the missing cap and keep people away from the opening.', 'Ask the owner to fit the correct cap and inspect for material that entered the pipe.', record],
-  not_heating: ['Check the batch age and compare both pile temperature probes with the air reference. A cooling mature batch may not need heating.', 'Ask the operator to check moisture with the approved manual method and review the recorded mix of food and dry material.', 'The operator adjusts moisture or dry material and turns the pile only under the site procedure, then records follow-up temperatures.', 'Keep maturity and allocation gates in place; a temperature rise alone does not prove maturity.'],
-  too_wet: ['Keep away from puddles and avoid direct contact with the material. Ask the operator to confirm the moisture proxy using the approved squeeze check and protective equipment.', 'Check the cover and whether rain or added water is entering the bay.', 'The operator adds suitable dry bulking material (coarse material that leaves air spaces) and mixes under the site procedure.', 'Record the action, manual check and follow-up moisture. Keep drainage to the collection sump clear.'],
-  putrid_smell: ['Do not lean into the bay to smell it. Move away from strong odour and notify the operator.', 'Keep other people clear; the operator checks wetness, trapped liquid and the cover from a safe position.', 'A trained operator arranges aeration and dry bulking material under the site procedure; do not enter an enclosed space.', 'Record the observation and follow-up checks. No gas sensor or safe-air claim is provided by this console.'],
-  ammonia_smell: ['Move away from strong odour; do not deliberately inhale it or lean into the pile. Notify the operator.', 'The operator reviews the food input and dry-carbon mix and checks moisture with the approved method.', 'The operator adjusts dry-carbon material under the site procedure, then records the change and follow-up observations.', 'Keep the batch on hold pending the maturity checks. The smell log is a human observation, not a gas measurement.'],
-  pests: ['Observe from a distance and photograph signs without handling pests or contaminated material.', 'Ask the operator to check exposed food, spilled inputs and gaps in the cover.', 'The operator removes spills, secures the cover and arranges approved pest management if activity persists.', 'Record the location and follow-up inspection; do not apply unapproved chemicals to compost.'],
-  leachate: ['Leachate is liquid draining from compost. Avoid contact and keep people away from overflow.', 'From the surface, photograph the cover, collection channel and sump; record recent rain and the level.', 'Notify the owner to arrange containment, collection and disposal under the local procedure. Do not release it into a storm drain.', 'The operator checks and repairs the cover or collection system, then records a post-rain check.'],
+  mulch_loss: [
+    surface,
+    'Photograph bare areas and displaced mulch (the loose protective surface layer). Check whether rain moved it into an inlet.',
+    'Ask the owner to restore the approved mulch depth and secure the cause of washout. Keep loose material out of open drains.',
+    record,
+  ],
+  scour: [
+    surface,
+    'Photograph channels cut into the soil by flowing water. Record nearby displaced material.',
+    'The owner arranges repair of the inlet flow spreader and eroded soil before replacing planting.',
+    record,
+  ],
+  sparse_planting: [
+    surface,
+    'Photograph bare patches and note plant damage or dry soil.',
+    'The owner checks the cause and arranges suitable replacement planting without obstructing the drain.',
+    record,
+  ],
+  joint_leak: [
+    surface,
+    'Photograph visible leakage and note the water level without touching or entering the pipe.',
+    'The owner arranges a trained check of the pipe joint and repair under the local procedure.',
+    record,
+  ],
+  missing_cap: [
+    surface,
+    'Photograph the missing cap and keep people away from the opening.',
+    'Ask the owner to fit the correct cap and inspect for material that entered the pipe.',
+    record,
+  ],
+  not_heating: [
+    'Check the batch age and compare both pile temperature probes with the air reference. A cooling mature batch may not need heating.',
+    'Ask the operator to check moisture with the approved manual method and review the recorded mix of food and dry material.',
+    'The operator adjusts moisture or dry material and turns the pile only under the site procedure, then records follow-up temperatures.',
+    'Keep maturity and allocation gates in place; a temperature rise alone does not prove maturity.',
+  ],
+  too_wet: [
+    'Keep away from puddles and avoid direct contact with the material. Ask the operator to confirm the moisture proxy using the approved squeeze check and protective equipment.',
+    'Check the cover and whether rain or added water is entering the bay.',
+    'The operator adds suitable dry bulking material (coarse material that leaves air spaces) and mixes under the site procedure.',
+    'Record the action, manual check and follow-up moisture. Keep drainage to the collection sump clear.',
+  ],
+  putrid_smell: [
+    'Do not lean into the bay to smell it. Move away from strong odour and notify the operator.',
+    'Keep other people clear; the operator checks wetness, trapped liquid and the cover from a safe position.',
+    'A trained operator arranges aeration and dry bulking material under the site procedure; do not enter an enclosed space.',
+    'Record the observation and follow-up checks. No gas sensor or safe-air claim is provided by this console.',
+  ],
+  ammonia_smell: [
+    'Move away from strong odour; do not deliberately inhale it or lean into the pile. Notify the operator.',
+    'The operator reviews the food input and dry-carbon mix and checks moisture with the approved method.',
+    'The operator adjusts dry-carbon material under the site procedure, then records the change and follow-up observations.',
+    'Keep the batch on hold pending the maturity checks. The smell log is a human observation, not a gas measurement.',
+  ],
+  pests: [
+    'Observe from a distance and photograph signs without handling pests or contaminated material.',
+    'Ask the operator to check exposed food, spilled inputs and gaps in the cover.',
+    'The operator removes spills, secures the cover and arranges approved pest management if activity persists.',
+    'Record the location and follow-up inspection; do not apply unapproved chemicals to compost.',
+  ],
+  leachate: [
+    'Leachate is liquid draining from compost. Avoid contact and keep people away from overflow.',
+    'From the surface, photograph the cover, collection channel and sump; record recent rain and the level.',
+    'Notify the owner to arrange containment, collection and disposal under the local procedure. Do not release it into a storm drain.',
+    'The operator checks and repairs the cover or collection system, then records a post-rain check.',
+  ],
 };

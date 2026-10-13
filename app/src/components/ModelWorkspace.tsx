@@ -24,7 +24,15 @@ export default function ModelWorkspace({
   faults: Fault[];
   kind?: 'drainage' | 'compost';
 }) {
-  const parts = useMemo(() => sourceParts.map(p => p.installed && sensors.some(s => p.sensorIds.includes(s.sensorId) && s.status !== 'ok') ? { ...p, status: 'offline' as const } : p), [sourceParts, sensors]);
+  const parts = useMemo(
+    () =>
+      sourceParts.map((p) =>
+        p.installed && sensors.some((s) => p.sensorIds.includes(s.sensorId) && s.status !== 'ok')
+          ? { ...p, status: 'offline' as const }
+          : p,
+      ),
+    [sourceParts, sensors],
+  );
   const [params] = useSearchParams();
   const [showSensors, setShowSensors] = useState(false);
   const [partSearch, setPartSearch] = useState('');
@@ -92,7 +100,15 @@ export default function ModelWorkspace({
       <div className="panel-heading">
         <div className="segments">
           {(['Operator', 'Debug', 'Troubleshoot'] as const).map((value) => (
-            <button key={value} aria-pressed={mode === value} onClick={() => { setMode(value); setShowSensors(value === 'Debug'); setMove(false); }}>
+            <button
+              key={value}
+              aria-pressed={mode === value}
+              onClick={() => {
+                setMode(value);
+                setShowSensors(value === 'Debug');
+                setMove(false);
+              }}
+            >
               {value}
             </button>
           ))}
@@ -133,8 +149,14 @@ export default function ModelWorkspace({
             .map((p) => (
               <button
                 key={p.partId}
-                className={p.installed && p.sensorIds.length ? 'part-status-' + p.status : undefined}
-                title={!p.installed || !p.sensorIds.length ? 'Check by eye: not installed or not monitored' : undefined}
+                className={
+                  p.installed && p.sensorIds.length ? 'part-status-' + p.status : undefined
+                }
+                title={
+                  !p.installed || !p.sensorIds.length
+                    ? 'Check by eye: not installed or not monitored'
+                    : undefined
+                }
                 aria-pressed={selected === p.partId}
                 onClick={() => select(p.partId)}
               >
@@ -170,7 +192,14 @@ export default function ModelWorkspace({
             reset={reset}
           />
           <p className="small">{config.schematic.label}</p>
-          {showSensors && <SensorPositions showPositions={mode === 'Debug'} sensors={sensorMarkers(sensors).filter(s => mode === 'Debug' || s.partId === selected)} />}
+          {showSensors && (
+            <SensorPositions
+              showPositions={mode === 'Debug'}
+              sensors={sensorMarkers(sensors).filter(
+                (s) => mode === 'Debug' || s.partId === selected,
+              )}
+            />
+          )}
           <div className="part-settings">
             <AssemblyControls {...controlProps} />
             <PartControls {...controlProps} />

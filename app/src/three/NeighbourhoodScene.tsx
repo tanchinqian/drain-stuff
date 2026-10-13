@@ -82,7 +82,7 @@ function SceneContent({
     <>
       <FitCamera
         width={73}
-        height={38}
+        height={44}
         controlsRef={controls}
         enabled={!move}
         target={[0, 0.2, 0]}

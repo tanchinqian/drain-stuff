@@ -68,7 +68,12 @@ export default function FeatureDetail() {
             config={data.config}
             faults={data.faults}
           />
-          {id === 'S1' && <details className="storm-disclosure"><summary>Try a storm at S1 (illustrative, not driven by sensors)</summary><StormPreview /></details>}
+          {id === 'S1' && (
+            <details className="storm-disclosure">
+              <summary>Try a storm at S1 (illustrative, not driven by sensors)</summary>
+              <StormPreview />
+            </details>
+          )}
           {data.trial && (
             <section className="panel" style={{ marginTop: 18 }}>
               <h2>Keep the comparison traceable</h2>

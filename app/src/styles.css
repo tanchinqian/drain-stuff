@@ -1,23 +1,96 @@
 @import 'tailwindcss';
-.proxy-note { display: inline; font-size: 13px; font-weight: 400; color: var(--ink2); }
-.compost-tabs { margin-bottom: 18px; }
-.compost-tabs [aria-selected='true'] { background: var(--ink); color: var(--panel); }
-[role='tabpanel'][hidden] { display: none; }
-.highlight-label { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--ink); background: var(--panel); padding: 3px 5px; white-space: nowrap; }
-.highlight-symbol { display: inline-grid; place-items: center; min-width: 24px; height: 24px; border: 2px solid var(--ink3); font-weight: 700; }
-.highlight-symbol.fault { border-color: var(--heat-3); }
-.highlight-symbol.watch { border-color: var(--arm-decompact); border-radius: 50%; }
-.highlight-symbol.offline { border-style: dotted; }
-.part-list button.part-status-fault { border: 2.5px solid var(--heat-3); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12'%3E%3Cpath d='M-3 3L3 -3M0 12L12 0M9 15L15 9' stroke='%238E3A2E' opacity='.25'/%3E%3C/svg%3E"); }
-.part-list button.part-status-watch { border: 2px dashed var(--arm-decompact); }
-.part-list button.part-status-offline { border: 2px dotted var(--ink3); }
-.attention-summary { margin-bottom: 18px; }
-.overview-map { grid-column: 1; grid-row: 1; }
-.attention-faults { grid-column: 2; grid-row: 1; align-self: start; }
-.map-zones { display: flex; flex-wrap: wrap; gap: 7px; margin: 12px 0; }
-.house-search { min-width: 220px; flex: 1; }
-details > summary { min-height: 44px; padding: 10px 0; cursor: pointer; }
-@media (max-width: 900px) { .overview-map, .attention-faults { grid-column: 1; grid-row: auto; } }
+.scene.neighbourhood-scene { height: clamp(240px, 40vw, 500px); }
+.compact-sensor { padding: 8px 0; }
+.detail-readings ol { list-style: decimal; padding-left: 20px; }
+@media (max-width: 600px) { nav.map-zones { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); } nav.map-zones button { font-size: 13px; } }
+.proxy-note {
+  display: inline;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--ink2);
+}
+.compost-tabs {
+  margin-bottom: 18px;
+}
+.compost-tabs [aria-selected='true'] {
+  background: var(--ink);
+  color: var(--panel);
+}
+[role='tabpanel'][hidden] {
+  display: none;
+}
+.highlight-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--ink);
+  background: var(--panel);
+  padding: 3px 5px;
+  white-space: nowrap;
+}
+.highlight-symbol {
+  display: inline-grid;
+  place-items: center;
+  min-width: 24px;
+  height: 24px;
+  border: 2px solid var(--ink3);
+  font-weight: 700;
+}
+.highlight-symbol.fault {
+  border-color: var(--heat-3);
+}
+.highlight-symbol.watch {
+  border-color: var(--arm-decompact);
+  border-radius: 50%;
+}
+.highlight-symbol.offline {
+  border-style: dotted;
+}
+.part-list button.part-status-fault {
+  border: 2.5px solid var(--heat-3);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12'%3E%3Cpath d='M-3 3L3 -3M0 12L12 0M9 15L15 9' stroke='%238E3A2E' opacity='.25'/%3E%3C/svg%3E");
+}
+.part-list button.part-status-watch {
+  border: 2px dashed var(--arm-decompact);
+}
+.part-list button.part-status-offline {
+  border: 2px dotted var(--ink3);
+}
+.attention-summary {
+  margin-bottom: 18px;
+}
+.overview-map {
+  grid-column: 1;
+  grid-row: 1;
+}
+.attention-faults {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: start;
+}
+.map-zones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 12px 0;
+}
+.house-search {
+  min-width: 220px;
+  flex: 1;
+}
+details > summary {
+  min-height: 44px;
+  padding: 10px 0;
+  cursor: pointer;
+}
+@media (max-width: 900px) {
+  .overview-map,
+  .attention-faults {
+    grid-column: 1;
+    grid-row: auto;
+  }
+}
 .register-search {
   margin: 16px 0;
 }

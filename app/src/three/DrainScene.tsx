@@ -79,7 +79,11 @@ function Model(props: Props) {
     controls = useRef<ComponentRef<typeof OrbitControls>>(null);
   const e = props.assembly === 'exploded' ? props.explode / 100 : 0;
   useEffect(() => {
-    plane.normal.set(props.cutAxis === 'X' ? -1 : 0, props.cutAxis === 'Y' ? -1 : 0, props.cutAxis === 'Z' ? -1 : 0);
+    plane.normal.set(
+      props.cutAxis === 'X' ? -1 : 0,
+      props.cutAxis === 'Y' ? -1 : 0,
+      props.cutAxis === 'Z' ? -1 : 0,
+    );
     plane.constant = props.cutPosition;
     props.parts.forEach((part) => {
       groups[part.partId]?.traverse((object) => {
@@ -157,9 +161,20 @@ function Model(props: Props) {
                 sensors={sensorMarkers(props.sensors).filter((s) => s.partId === id)}
               />
             )}
-            {part.installed && part.sensorIds.length > 0 && part.status !== 'ok' && <PartHighlight group={geometry} status={part.status} number={props.parts.filter(p => p.installed && p.status !== 'ok').findIndex(p => p.partId === id) + 1} name={part.name} />}
+            {part.installed && part.sensorIds.length > 0 && part.status !== 'ok' && (
+              <PartHighlight
+                group={geometry}
+                status={part.status}
+                number={
+                  props.parts
+                    .filter((p) => p.installed && p.status !== 'ok')
+                    .findIndex((p) => p.partId === id) + 1
+                }
+                name={part.name}
+              />
+            )}
             {selected === id && part.status === 'ok' && <SelectedBounds group={geometry} />}
-            {props.labels && (props.mode !== 'Operator' || selected === id) && (
+            {props.labels && (props.mode !== 'Operator' || (selected === id && part.status === 'ok')) && (
               <Html position={[label.x, label.y, label.z]} center>
                 <div className="scene-label">
                   {part.name}

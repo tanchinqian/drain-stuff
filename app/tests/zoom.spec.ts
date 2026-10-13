@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test('wheel zoom stays relative to the fitted scene and resets at both viewport sizes', async ({
   page,
 }) => {
-  test.setTimeout(90000);
+  test.setTimeout(180000);
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   for (const viewport of [

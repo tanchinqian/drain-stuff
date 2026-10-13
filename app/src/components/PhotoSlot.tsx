@@ -15,8 +15,12 @@ export default function PhotoSlot({
     <div className="photo-slot">
       <div className="field">
         <span>{label}</span>
-        <button type="button" onClick={() => input.current?.click()}>Choose {label.toLowerCase()}</button>
-        <span className="small">{filename || (value ? 'Saved image attached' : 'No image chosen')}</span>
+        <button type="button" onClick={() => input.current?.click()}>
+          Choose {label.toLowerCase()}
+        </button>
+        <span className="small">
+          {filename || (value ? 'Saved image attached' : 'No image chosen')}
+        </span>
         <input
           ref={input}
           hidden

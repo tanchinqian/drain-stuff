@@ -75,8 +75,8 @@ export default function Overview() {
       {data && (
         <>
           <p className="attention-summary">
-            {data.faults.filter((f) => f.status !== 'closed').length} faults open  / {' '}
-            {data.sensors.filter((s) => s.status === 'suspect').length} sensors suspect  / {' '}
+            {data.faults.filter((f) => f.status !== 'closed').length} faults open /{' '}
+            {data.sensors.filter((s) => s.status === 'suspect').length} sensors suspect /{' '}
             {data.sensors.filter((s) => s.status === 'offline').length} offline
           </p>
           <div className="overview-grid">
@@ -97,7 +97,7 @@ export default function Overview() {
                   >
                     <Status
                       status={
-                        (f.type === 'sensor_offline' || f.type === 'sensor_suspect')
+                        f.type === 'sensor_offline' || f.type === 'sensor_suspect'
                           ? 'offline'
                           : f.type === 'standing_water'
                             ? 'watch'
@@ -107,7 +107,8 @@ export default function Overview() {
                     <span>
                       {f.type.replaceAll('_', ' ')}
                       <p className="small">
-                        {f.featureId} · Zone {f.zone}
+                        {f.featureId} · {f.partId} · Zone {f.zone} ·{' '}
+                        {Math.max(0, Math.floor((Date.parse(DEMO_NOW) - Date.parse(f.openedAt)) / 3600000))} h ago
                       </p>
                     </span>
                   </Link>
@@ -218,14 +219,14 @@ export default function Overview() {
                     <option value="">Select a house</option>
                     {data.houses.map((h) => (
                       <option key={h.id} value={h.id}>
-                        {h.id}  /  Pilot  /  Zone {h.zone}
+                        {h.id} / Pilot / Zone {h.zone}
                       </option>
                     ))}
                     {site.houses
                       .filter((h) => !pilotByBuilding.has(h.id))
                       .map((h) => (
                         <option key={h.id} value={h.id}>
-                          {h.id}  /  Mapped house
+                          {h.id} / Mapped house
                         </option>
                       ))}
                   </SearchableSelect>

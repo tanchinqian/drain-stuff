@@ -89,24 +89,43 @@ export function AssemblyControls({
           }}
         />
       </div>
-      {mode === 'Debug' && <><div className="field"><span>Section axis</span><div className="segments" aria-label="Section axis">{(['X', 'Y', 'Z'] as const).map(axis => <button key={axis} aria-pressed={cutAxis === axis} onClick={() => { setCutAxis(axis); setAssembly('section'); }}>{axis}</button>)}</div></div>
-      <div className="field">
-        <label htmlFor="cut-position">Cut position</label>
-        <input
-          id="cut-position"
-          aria-label="Section cut position"
-          type="range"
-          min="-3.5"
-          max="5.5"
-          step=".1"
-          value={cutPosition}
-          onChange={(e) => {
-            setCutPosition(Number(e.target.value));
-            setAssembly('section');
-          }}
-        />
-      </div>
-      </>}
+      {mode === 'Debug' && (
+        <>
+          <div className="field">
+            <span>Section axis</span>
+            <div className="segments" aria-label="Section axis">
+              {(['X', 'Y', 'Z'] as const).map((axis) => (
+                <button
+                  key={axis}
+                  aria-pressed={cutAxis === axis}
+                  onClick={() => {
+                    setCutAxis(axis);
+                    setAssembly('section');
+                  }}
+                >
+                  {axis}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="field">
+            <label htmlFor="cut-position">Cut position</label>
+            <input
+              id="cut-position"
+              aria-label="Section cut position"
+              type="range"
+              min="-3.5"
+              max="5.5"
+              step=".1"
+              value={cutPosition}
+              onChange={(e) => {
+                setCutPosition(Number(e.target.value));
+                setAssembly('section');
+              }}
+            />
+          </div>
+        </>
+      )}
       <label className="check">
         <input
           type="checkbox"
@@ -115,10 +134,12 @@ export function AssemblyControls({
         />
         Sensors
       </label>
-      {mode === 'Debug' && <label className="check">
-        <input type="checkbox" checked={labels} onChange={(e) => setLabels(e.target.checked)} />
-        Part labels
-      </label>}
+      {mode === 'Debug' && (
+        <label className="check">
+          <input type="checkbox" checked={labels} onChange={(e) => setLabels(e.target.checked)} />
+          Part labels
+        </label>
+      )}
       {mode === 'Debug' && (
         <div className="inline">
           <label className="check">
@@ -155,9 +176,11 @@ export function PartControls({
     <>
       {' '}
       <div className="actions">
-        {mode === 'Debug' && <button aria-pressed={move} onClick={() => setMove(!move)}>
-          Move part
-        </button>}
+        {mode === 'Debug' && (
+          <button aria-pressed={move} onClick={() => setMove(!move)}>
+            Move part
+          </button>
+        )}
         <button aria-pressed={isolate} onClick={() => setIsolate(!isolate)}>
           Isolate part
         </button>
@@ -181,31 +204,32 @@ export function PartControls({
         </button>
         <button onClick={() => setReset((v) => v + 1)}>Reset view</button>
       </div>
-      {mode === 'Debug' && <div className="coordinate-grid">
-        {(['X', 'Y', 'Z'] as const).map((axis, i) => (
-          <label className="field" key={axis}>
-            Part shift {axis}
-            <input
-              type="number"
-              step=".1"
-              min="-5"
-              max="5"
-              value={(offsets[selected] || [0, 0, 0])[i]}
-              onChange={(event) => {
-                const value = Number(event.target.value);
-                if (Number.isFinite(value)) {
-                  const next: [number, number, number] = [...(offsets[selected] || [0, 0, 0])];
-                  next[i] = Math.max(-5, Math.min(5, value));
-                  setOffsets((current) => ({ ...current, [selected]: next }));
-                }
-              }}
-            />
-          </label>
-        ))}
-      </div>}
+      {mode === 'Debug' && (
+        <div className="coordinate-grid">
+          {(['X', 'Y', 'Z'] as const).map((axis, i) => (
+            <label className="field" key={axis}>
+              Part shift {axis}
+              <input
+                type="number"
+                step=".1"
+                min="-5"
+                max="5"
+                value={(offsets[selected] || [0, 0, 0])[i]}
+                onChange={(event) => {
+                  const value = Number(event.target.value);
+                  if (Number.isFinite(value)) {
+                    const next: [number, number, number] = [...(offsets[selected] || [0, 0, 0])];
+                    next[i] = Math.max(-5, Math.min(5, value));
+                    setOffsets((current) => ({ ...current, [selected]: next }));
+                  }
+                }}
+              />
+            </label>
+          ))}
+        </div>
+      )}
       <p className="scene-caption">
-        Drag to orbit · Scroll to zoom. Geometry and dimensions are
-        illustrative.
+        Drag to orbit · Scroll to zoom. Geometry and dimensions are illustrative.
       </p>
     </>
   );

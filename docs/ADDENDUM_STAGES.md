@@ -44,3 +44,16 @@ S1 now includes adjustable rain intensity (0–120 mm/h), duration (5–120 minu
 The implementation owner reports build, lint, all 16 unit tests and one targeted browser check at 1440 px and 390 px passed. The new unit coverage checks water balance, bounded storage, zero rainfall and a meaningful blocked-versus-clear ponding difference at minute 180. This storm pass does not claim a full browser-suite rerun. The [desktop](../.impeccable/review/storm-desktop.png) and [mobile](../.impeccable/review/storm-mobile.png) captures show the fully blocked scenario at minute 45 and the preserved assembly. The independent [storm review](storm-review.md) records **Ship** on source and screenshot evidence; the design detector remained unavailable with `cache_directory_failed`.
 
 The extension preserves the established cream/brown Archivo console and reuses existing cyan for physical water data. DESIGN.md and `.impeccable/design.json` remain unchanged. Their rainfall-only color wording and shared breakpoint inventory do not yet describe this water use and the local 600 px storm stacking rule; those differences are recorded in the storm document without a design-system rewrite. The model is illustrative and uncalibrated, and its outputs do not change sensor or trial records.
+
+## Review round 1 — current local refinement
+
+The user approved `CODEX_FIX_PROMPT.md` except colour tasks 1 and 2 and explicitly requested no push. Earlier stages and their verification counts above remain historical records. The current refinement preserves the cream/brown console, seven-colour rainfall field and cyan storm water.
+
+| Completed stage | Result |
+| --- | --- |
+| Overview and model controls | Open faults lead on phones; desktop keeps map and fault rail side by side. One searchable house selector, collapsed secondary charts, model before the collapsed storm, and simpler Operator controls with advanced settings in Debug. |
+| Fault evidence and repair prompts | Shape, patterned outlines and written states identify flagged parts; provenance explains inputs and triggers. Fault-specific repair drafts retain manual follow-up and local safety responsibilities. |
+| Compost and clarity | Keyboard-accessible Model, Readings and Checks tabs, retained unsaved form values, labelled photo controls, and inline proxy/calibration explanations. |
+| Verification and finish review | Final production build and lint passed, with all 18 unit tests and all 12 browser tests. Fresh desktop/mobile captures cover Overview, drainage detail and all three compost tabs. Independent manual review returned **Ship**, with no material fixes in supplied captures and sampled source. |
+
+The detector remained unavailable with `cache_directory_failed` and did not run. The manual disposition is limited to its reviewed evidence. The current source has 17 searchable dropdown call sites following house-selector consolidation and section-axis buttons; earlier search documents record their original 19-site stage. [The fix-round record](fix-round-1.md) records decisions, review scope and design-document drift. `DESIGN.md` and `.impeccable/design.json` remain preserved; this documentation handoff made no source or test changes and performed no commit or push.

@@ -9,7 +9,7 @@ import BatchReadingForm from '../components/BatchReadingForm';
 export default function CompostBay() {
   const { bay = 'B-01' } = useParams();
   const tabs = ['Model', 'Readings', 'Checks'] as const;
-  const [tab, setTab] = useState<typeof tabs[number]>('Model');
+  const [tab, setTab] = useState<(typeof tabs)[number]>('Model');
   const result = useQuery({
     queryKey: ['compost-bay', bay],
     queryFn: async () => {
@@ -57,23 +57,74 @@ export default function CompostBay() {
               {data.sensors.length}
             </div>
           </div>
-          <div className="segments compost-tabs" role="tablist" aria-label="Compost bay sections">{tabs.map((value, index) => <button key={value} role="tab" id={`tab-${value}`} aria-controls={`panel-${value}`} aria-selected={tab === value} tabIndex={tab === value ? 0 : -1} onClick={() => setTab(value)} onKeyDown={e => { const next = e.key === 'ArrowRight' ? (index + 1) % 3 : e.key === 'ArrowLeft' ? (index + 2) % 3 : e.key === 'Home' ? 0 : e.key === 'End' ? 2 : null; if (next !== null) { e.preventDefault(); setTab(tabs[next]); document.getElementById(`tab-${tabs[next]}`)?.focus(); } }}>{value}</button>)}</div>
-          <section role="tabpanel" id="panel-Model" aria-labelledby="tab-Model" hidden={tab !== 'Model'}>{tab === 'Model' && <ModelWorkspace
-            key={data.batch.id}
-            ownerId={data.batch.id}
-            parts={data.parts}
-            sensors={data.sensors}
-            config={data.config}
-            faults={data.faults}
-            kind="compost"
-          />}</section>
-          <section role="tabpanel" id="panel-Readings" aria-labelledby="tab-Readings" hidden={tab !== 'Readings'}>
+          <div className="segments compost-tabs" role="tablist" aria-label="Compost bay sections">
+            {tabs.map((value, index) => (
+              <button
+                key={value}
+                role="tab"
+                id={`tab-${value}`}
+                aria-controls={`panel-${value}`}
+                aria-selected={tab === value}
+                tabIndex={tab === value ? 0 : -1}
+                onClick={() => setTab(value)}
+                onKeyDown={(e) => {
+                  const next =
+                    e.key === 'ArrowRight'
+                      ? (index + 1) % 3
+                      : e.key === 'ArrowLeft'
+                        ? (index + 2) % 3
+                        : e.key === 'Home'
+                          ? 0
+                          : e.key === 'End'
+                            ? 2
+                            : null;
+                  if (next !== null) {
+                    e.preventDefault();
+                    setTab(tabs[next]);
+                    document.getElementById(`tab-${tabs[next]}`)?.focus();
+                  }
+                }}
+              >
+                {value}
+              </button>
+            ))}
+          </div>
+          <section
+            role="tabpanel"
+            id="panel-Model"
+            aria-labelledby="tab-Model"
+            hidden={tab !== 'Model'}
+          >
+            {tab === 'Model' && (
+              <ModelWorkspace
+                key={data.batch.id}
+                ownerId={data.batch.id}
+                parts={data.parts}
+                sensors={data.sensors}
+                config={data.config}
+                faults={data.faults}
+                kind="compost"
+              />
+            )}
+          </section>
+          <section
+            role="tabpanel"
+            id="panel-Readings"
+            aria-labelledby="tab-Readings"
+            hidden={tab !== 'Readings'}
+          >
             <BatchReadingForm
               key={`readings-${data.batch.id}`}
               batch={data.batch}
               config={data.config}
             />
-          </section><section role="tabpanel" id="panel-Checks" aria-labelledby="tab-Checks" hidden={tab !== 'Checks'}>
+          </section>
+          <section
+            role="tabpanel"
+            id="panel-Checks"
+            aria-labelledby="tab-Checks"
+            hidden={tab !== 'Checks'}
+          >
             <BatchChecksForm key={`checks-${data.batch.id}`} batch={data.batch} />
           </section>
         </>

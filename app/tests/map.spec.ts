@@ -42,7 +42,7 @@ test('trial pins are clickable and radar clouds preserve map-house controls', as
       const u = (footprint.x + 22) / 32,
         v = (footprint.z + 11 - u) / 23;
       const bounds = await scene.boundingBox();
-      const zoom = Math.min(bounds!.width / 73, bounds!.height / 38);
+      const zoom = Math.min(bounds!.width / 73, bounds!.height / 44);
       return {
         x:
           a!.x +

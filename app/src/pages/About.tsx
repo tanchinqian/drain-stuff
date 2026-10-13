@@ -46,7 +46,13 @@ export default function About() {
           </li>
         </ul>
         <h2>Schematic and sensor limits</h2>
-        <p>The optional S1 storm preview is an illustrative storage simulation, independent of sensor readings. Its exaggerated water depth is not a flood forecast. Highlighted parts identify recorded faults or suspect inputs; a highlight does not establish a cause. Draft repair steps require the local authority's procedure and a trained operator. Field re-tests remain manual.</p>
+        <p>
+          The optional S1 storm preview is an illustrative storage simulation, independent of sensor
+          readings. Its exaggerated water depth is not a flood forecast. Highlighted parts identify
+          recorded faults or suspect inputs; a highlight does not establish a cause. Draft repair
+          steps require the local authority's procedure and a trained operator. Field re-tests
+          remain manual.
+        </p>
         <p>
           The household map uses OpenStreetMap footprints and roads for a Gamelan / Rodat window in
           Bandar Bukit Raja Phase 1. It is not the complete phase boundary. Heights, roofs, pilot
