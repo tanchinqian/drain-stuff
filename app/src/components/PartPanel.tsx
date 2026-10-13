@@ -32,7 +32,7 @@ export default function PartPanel({
       <p className="small">Typical failure: {part.typicalFailure}</p>
       <h3 style={{ marginTop: 20 }}>Sensors on this part</h3>
       {sensors.map((s) => (
-        <SensorInfo key={s.sensorId} sensor={s} />
+        <SensorInfo key={s.sensorId} sensor={s} compact showPosition={mode === 'Debug'} />
       ))}
       {!sensors.length && (
         <p className="small">
@@ -75,7 +75,7 @@ export default function PartPanel({
         </p>
       )}
       <h3 style={{ marginTop: 20 }}>What looks wrong</h3>
-      <p style={{ marginTop: 8 }}>{part.issue}</p>
+      <p style={{ marginTop: 8 }}>{part.issue?.split('Diagnosing input:')[0]}</p>
       {part.steps?.length && (
         <>
           <div className="notice">

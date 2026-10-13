@@ -3,6 +3,7 @@ test('S1 storm controls, water response and responsive preview', async ({ page }
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto('/feature/S1');
+  await page.locator('.storm-disclosure > summary').click();
   await expect(page.getByRole('heading', { name: 'Try a storm at S1' })).toBeVisible();
   await page.getByRole('slider', { name: 'Storm timeline', exact: true }).fill('180');
   const clear = Number((await page.getByTestId('ponding').innerText()).replace(' mm', ''));

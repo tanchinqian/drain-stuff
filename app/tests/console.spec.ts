@@ -33,7 +33,8 @@ test('operator flow: selectable parts, explode and guarded baseline', async ({ p
 
   await page.getByRole('button', { name: 'Cross-section', exact: true }).click();
 
-  await page.getByLabel('Section axis', { exact: true }).selectOption('Z');
+  await page.getByRole('button', { name: 'Debug', exact: true }).click();
+  await page.getByRole('button', { name: 'Z', exact: true }).click();
 
   await page.locator('.part-list').getByRole('button', { name: 'Compost filter sock' }).click();
 

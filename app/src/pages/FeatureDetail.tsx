@@ -60,7 +60,6 @@ export default function FeatureDetail() {
               {data.trial?.owner?.name || data.feature.ownerOfRecord}
             </div>
           </div>
-          {id === 'S1' && <StormPreview />}
           <div id="drain-assembly" />
           <ModelWorkspace
             ownerId={id}
@@ -69,6 +68,7 @@ export default function FeatureDetail() {
             config={data.config}
             faults={data.faults}
           />
+          {id === 'S1' && <details className="storm-disclosure"><summary>Try a storm at S1 (illustrative, not driven by sensors)</summary><StormPreview /></details>}
           {data.trial && (
             <section className="panel" style={{ marginTop: 18 }}>
               <h2>Keep the comparison traceable</h2>

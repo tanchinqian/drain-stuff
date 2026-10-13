@@ -1,4 +1,3 @@
-import SearchableSelect from './SearchableSelect';
 import type { Dispatch, SetStateAction } from 'react';
 import type { PartId } from '../api/types';
 import type { Assembly, Offsets, ViewMode } from '../three/DrainScene';
@@ -10,8 +9,8 @@ export interface ControlProps {
   setAssembly: Dispatch<SetStateAction<Assembly>>;
   explode: number;
   setExplode: Dispatch<SetStateAction<number>>;
-  cutAxis: 'X' | 'Z';
-  setCutAxis: Dispatch<SetStateAction<'X' | 'Z'>>;
+  cutAxis: 'X' | 'Y' | 'Z';
+  setCutAxis: Dispatch<SetStateAction<'X' | 'Y' | 'Z'>>;
   cutPosition: number;
   setCutPosition: Dispatch<SetStateAction<number>>;
   offsets: Offsets;
@@ -90,21 +89,7 @@ export function AssemblyControls({
           }}
         />
       </div>
-      <div className="field">
-        <label htmlFor="cut-axis">Section axis</label>
-        <SearchableSelect
-          label="Section axis"
-          id="cut-axis"
-          value={cutAxis}
-          onChange={(e) => {
-            setCutAxis(e.target.value as 'X' | 'Z');
-            setAssembly('section');
-          }}
-        >
-          <option>X</option>
-          <option>Z</option>
-        </SearchableSelect>
-      </div>
+      {mode === 'Debug' && <><div className="field"><span>Section axis</span><div className="segments" aria-label="Section axis">{(['X', 'Y', 'Z'] as const).map(axis => <button key={axis} aria-pressed={cutAxis === axis} onClick={() => { setCutAxis(axis); setAssembly('section'); }}>{axis}</button>)}</div></div>
       <div className="field">
         <label htmlFor="cut-position">Cut position</label>
         <input
@@ -121,6 +106,7 @@ export function AssemblyControls({
           }}
         />
       </div>
+      </>}
       <label className="check">
         <input
           type="checkbox"
@@ -129,10 +115,10 @@ export function AssemblyControls({
         />
         Sensors
       </label>
-      <label className="check">
+      {mode === 'Debug' && <label className="check">
         <input type="checkbox" checked={labels} onChange={(e) => setLabels(e.target.checked)} />
         Part labels
-      </label>
+      </label>}
       {mode === 'Debug' && (
         <div className="inline">
           <label className="check">
@@ -154,6 +140,7 @@ export function AssemblyControls({
   );
 }
 export function PartControls({
+  mode,
   selected,
   offsets,
   setOffsets,
@@ -168,9 +155,9 @@ export function PartControls({
     <>
       {' '}
       <div className="actions">
-        <button aria-pressed={move} onClick={() => setMove(!move)}>
+        {mode === 'Debug' && <button aria-pressed={move} onClick={() => setMove(!move)}>
           Move part
-        </button>
+        </button>}
         <button aria-pressed={isolate} onClick={() => setIsolate(!isolate)}>
           Isolate part
         </button>
@@ -194,7 +181,7 @@ export function PartControls({
         </button>
         <button onClick={() => setReset((v) => v + 1)}>Reset view</button>
       </div>
-      <div className="coordinate-grid">
+      {mode === 'Debug' && <div className="coordinate-grid">
         {(['X', 'Y', 'Z'] as const).map((axis, i) => (
           <label className="field" key={axis}>
             Part shift {axis}
@@ -215,9 +202,9 @@ export function PartControls({
             />
           </label>
         ))}
-      </div>
+      </div>}
       <p className="scene-caption">
-        Drag to orbit · Scroll to zoom · In Move part, drag a mesh. Geometry and dimensions are
+        Drag to orbit · Scroll to zoom. Geometry and dimensions are
         illustrative.
       </p>
     </>

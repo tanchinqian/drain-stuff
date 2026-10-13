@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import type { Sensor } from '../api/types';
 import { SensorTrust } from './SensorInfo';
-export default function SensorPositions({ sensors }: { sensors: Sensor[] }) {
+export default function SensorPositions({ sensors, showPositions = true }: { sensors: Sensor[]; showPositions?: boolean }) {
   return (
     <details className="sensor-positions">
       <summary>Sensor markers · {sensors.length} inputs · Keyboard list</summary>
@@ -16,7 +16,7 @@ export default function SensorPositions({ sensors }: { sensors: Sensor[] }) {
             <SensorTrust sensor={s} />
             <span className="small">
               {' '}
-              · {s.metric} · position {s.location.x}, {s.location.y}, {s.location.z} m
+              · {s.metric} {showPositions && ` / position ${s.location.x}, ${s.location.y}, ${s.location.z} m`}
             </span>
           </li>
         ))}

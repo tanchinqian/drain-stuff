@@ -22,7 +22,7 @@ export interface Props {
   mode: ViewMode;
   assembly: Assembly;
   explode: number;
-  cutAxis: 'X' | 'Z';
+  cutAxis: 'X' | 'Y' | 'Z';
   cutPosition: number;
   offsets: Offsets;
   onMove: (id: PartId, position: [number, number, number]) => void;
@@ -78,7 +78,7 @@ function Model(props: Props) {
     controls = useRef<ComponentRef<typeof OrbitControls>>(null);
   const e = props.assembly === 'exploded' ? props.explode / 100 : 0;
   useEffect(() => {
-    plane.normal.set(props.cutAxis === 'X' ? -1 : 0, 0, props.cutAxis === 'Z' ? -1 : 0);
+    plane.normal.set(props.cutAxis === 'X' ? -1 : 0, props.cutAxis === 'Y' ? -1 : 0, props.cutAxis === 'Z' ? -1 : 0);
     plane.constant = props.cutPosition;
     props.parts.forEach((part) => {
       groups[part.partId]?.traverse((object) => {
@@ -151,7 +151,7 @@ function Model(props: Props) {
                 select(id);
               }}
             />
-            {props.showSensors && part.installed && (
+            {props.showSensors && part.installed && (props.mode === 'Debug' || selected === id) && (
               <SensorMarkers
                 sensors={sensorMarkers(props.sensors).filter((s) => s.partId === id)}
               />

@@ -6,7 +6,7 @@ export function SensorTrust({ sensor }: { sensor: Sensor }) {
     <span className="status">
       <span
         aria-hidden="true"
-        className={`status-mark ${sensor.status === 'suspect' ? 'fault' : sensor.status === 'offline' ? 'offline' : 'ok'}`}
+        className={`status-mark ${sensor.status === 'suspect' || sensor.status === 'offline' ? 'offline' : 'ok'}`}
       />
       {sensor.status === 'suspect' ? 'Suspect' : sensor.status === 'offline' ? 'Offline' : 'OK'} ·{' '}
       {sensor.drift === 'none' ? 'No drift flag' : `${sensor.drift} drift`}
@@ -25,7 +25,8 @@ export function SensorValue({ sensor }: { sensor: Sensor }) {
     </>
   );
 }
-export default function SensorInfo({ sensor }: { sensor: Sensor }) {
+export default function SensorInfo({ sensor, compact = false, showPosition = true }: { sensor: Sensor; compact?: boolean; showPosition?: boolean }) {
+  if (compact) return <div className="sensor-info compact-sensor" data-sensor-row={sensor.sensorId}><p><Link to={`/sensors?sensor=${encodeURIComponent(sensor.sensorId)}`}>{sensor.sensorId}</Link> / {sensor.metric} / <strong><SensorValue sensor={sensor} /></strong> / {sensor.role} / {sensor.status}</p><details><summary>Details</summary><SensorInfo sensor={sensor} showPosition={showPosition} /></details></div>;
   return (
     <div className="sensor-info" data-sensor-row={sensor.sensorId}>
       <h3>
@@ -45,10 +46,10 @@ export default function SensorInfo({ sensor }: { sensor: Sensor }) {
         <strong>{sensor.role === 'proxy' ? 'Proxy' : 'Reference'}</strong> · {sensor.proxyFor}
       </p>
       <p className="small">Calibration / method check: {dateTime(sensor.calibratedAt)}</p>
-      <p className="small">
+      {showPosition && <p className="small">
         Local position: {Number(sensor.location.x.toFixed(2))},{' '}
         {Number(sensor.location.y.toFixed(2))}, {Number(sensor.location.z.toFixed(2))} schematic m
-      </p>
+      </p>}
       <div className="sensor-rule-links">
         Fault rules:{' '}
         {sensor.usedByRules.map((rule) => (

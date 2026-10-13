@@ -25,14 +25,14 @@ export default function ModelWorkspace({
   kind?: 'drainage' | 'compost';
 }) {
   const [params] = useSearchParams();
-  const [showSensors, setShowSensors] = useState(true);
+  const [showSensors, setShowSensors] = useState(false);
   const [partSearch, setPartSearch] = useState('');
   const select = useSelection((s) => s.selectPart),
     selected = useSelection((s) => s.partId);
   const [mode, setMode] = useState<ViewMode>('Operator'),
     [assembly, setAssembly] = useState<Assembly>('exploded'),
     [explode, setExplode] = useState(65),
-    [cutAxis, setCutAxis] = useState<'X' | 'Z'>('X'),
+    [cutAxis, setCutAxis] = useState<'X' | 'Y' | 'Z'>('X'),
     [cutPosition, setCutPosition] = useState(0),
     [offsets, setOffsets] = useState<Offsets>({}),
     [move, setMove] = useState(false),
@@ -91,7 +91,7 @@ export default function ModelWorkspace({
       <div className="panel-heading">
         <div className="segments">
           {(['Operator', 'Debug', 'Troubleshoot'] as const).map((value) => (
-            <button key={value} aria-pressed={mode === value} onClick={() => setMode(value)}>
+            <button key={value} aria-pressed={mode === value} onClick={() => { setMode(value); setShowSensors(value === 'Debug'); setMove(false); }}>
               {value}
             </button>
           ))}
@@ -158,7 +158,7 @@ export default function ModelWorkspace({
             onMove={(partId, position) =>
               setOffsets((previous) => ({ ...previous, [partId]: position }))
             }
-            move={move}
+            move={mode === 'Debug' && move}
             isolate={isolate}
             hidden={hidden}
             labels={labels}
@@ -167,7 +167,7 @@ export default function ModelWorkspace({
             reset={reset}
           />
           <p className="small">{config.schematic.label}</p>
-          {showSensors && <SensorPositions sensors={sensorMarkers(sensors)} />}
+          {showSensors && <SensorPositions showPositions={mode === 'Debug'} sensors={sensorMarkers(sensors).filter(s => mode === 'Debug' || s.partId === selected)} />}
           <div className="part-settings">
             <AssemblyControls {...controlProps} />
             <PartControls {...controlProps} />
