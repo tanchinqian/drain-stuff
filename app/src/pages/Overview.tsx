@@ -61,7 +61,7 @@ export default function Overview() {
     <QueryState loading={result.isPending} error={result.error}>
       <div className="page-heading">
         <div>
-          <h1>Follow the water. Find the fault.</h1>
+          <h1>Overview</h1>
           <p className="sub">Last reading: {dateTime(DEMO_NOW)} · Synthetic</p>
         </div>
         <div className="segments">
@@ -74,22 +74,52 @@ export default function Overview() {
       </div>
       {data && (
         <>
-          <div className="summary-strip">
-            <div>
-              <small>Sensor / human inputs</small>
-              <Link to="/sensors">{data.sensors.length} registered</Link>
-            </div>
-            <div>
-              <small>Suspect inputs</small>
-              {data.sensors.filter((s) => s.status === 'suspect').length}
-            </div>
-            <div>
-              <small>Offline inputs</small>
-              {data.sensors.filter((s) => s.status === 'offline').length}
-            </div>
-          </div>
+          <p className="attention-summary">
+            {data.faults.filter((f) => f.status !== 'closed').length} faults open  / {' '}
+            {data.sensors.filter((s) => s.status === 'suspect').length} sensors suspect  / {' '}
+            {data.sensors.filter((s) => s.status === 'offline').length} offline
+          </p>
           <div className="overview-grid">
-            <section className="panel">
+            <section className="panel attention-faults" aria-label="Open faults">
+              <h2>Open faults</h2>
+              {data.faults
+                .filter((f) => f.status !== 'closed')
+                .slice(0, 5)
+                .map((f) => (
+                  <Link
+                    className="fault-link"
+                    key={f.id}
+                    to={partLink(
+                      f.featureId,
+                      f.partId,
+                      data.sensors.find((s) => s.ownerId === f.featureId)?.scope ?? 'drainage',
+                    )}
+                  >
+                    <Status
+                      status={
+                        f.type === 'sensor_offline'
+                          ? 'offline'
+                          : f.type === 'standing_water'
+                            ? 'watch'
+                            : 'fault'
+                      }
+                    />
+                    <span>
+                      {f.type.replaceAll('_', ' ')}
+                      <p className="small">
+                        {f.featureId} · Zone {f.zone}
+                      </p>
+                    </span>
+                  </Link>
+                ))}
+              <Link className="button" to="/faults">
+                View all {data.faults.filter((f) => f.status !== 'closed').length} open faults
+              </Link>
+              {data.faults.every((f) => f.status === 'closed') && (
+                <p className="empty">No open faults.</p>
+              )}
+            </section>
+            <section className="panel overview-map">
               <div className="panel-heading">
                 <div>
                   <h2>Every house, and where water remains</h2>
@@ -172,39 +202,31 @@ export default function Overview() {
                     <button onClick={() => setReset((r) => r + 1)}>Reset view</button>
                   </>
                 )}
-                <div>
-                  <span>House</span>
+                <div className="house-search">
+                  <span>Find a house</span>
                   <SearchableSelect
                     label="House"
                     aria-label="Select a house"
-                    value={houseId || ''}
+                    value={houseId || mappedHouseId || ''}
                     onChange={(e) => {
-                      setMappedHouseId(null);
-                      selectHouse(e.target.value || null);
+                      const id = e.target.value;
+                      const pilot = data.houses.some((h) => h.id === id);
+                      selectHouse(pilot ? id : null);
+                      setMappedHouseId(!pilot && id ? id : null);
                     }}
                   >
                     <option value="">Select a house</option>
                     {data.houses.map((h) => (
-                      <option key={h.id}>{h.id}</option>
+                      <option key={h.id} value={h.id}>
+                        {h.id}  /  Pilot  /  Zone {h.zone}
+                      </option>
                     ))}
-                  </SearchableSelect>
-                </div>
-                <div>
-                  <span>Map house</span>
-                  <SearchableSelect
-                    label="Map house"
-                    aria-label="Select a mapped house"
-                    value={mappedHouseId || ''}
-                    onChange={(e) => {
-                      selectHouse(null);
-                      setMappedHouseId(e.target.value || null);
-                    }}
-                  >
-                    <option value="">Select a mapped house</option>
                     {site.houses
                       .filter((h) => !pilotByBuilding.has(h.id))
                       .map((h) => (
-                        <option key={h.id}>{h.id}</option>
+                        <option key={h.id} value={h.id}>
+                          {h.id}  /  Mapped house
+                        </option>
                       ))}
                   </SearchableSelect>
                 </div>
@@ -289,73 +311,6 @@ export default function Overview() {
                 <MappedHouseRecord house={mappedHouse} onClose={() => setMappedHouseId(null)} />
               )}
             </section>
-            <aside className="right-rail">
-              <section className="panel">
-                <h2>Zones, worst first</h2>
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Zone</th>
-                      <th>Peak mm/h</th>
-                      <th>Held / 6</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {[...data.zones]
-                      .sort((a, b) => b.housesHoldingWater6h - a.housesHoldingWater6h)
-                      .map((z) => (
-                        <tr key={z.id}>
-                          <td>
-                            <button onClick={() => selectZone(z.id)}>{z.id}</button>
-                          </td>
-                          <td className="numeric">{z.peakMmPerHr}</td>
-                          <td className="numeric">{z.housesHoldingWater6h} / 6</td>
-                        </tr>
-                      ))}
-                  </tbody>
-                </table>
-                <p className="takeaway">Zone A needs the first check.</p>
-              </section>
-              <section className="panel">
-                <h2>Open faults</h2>
-                {data.faults
-                  .filter((f) => f.status !== 'closed')
-                  .slice(0, 5)
-                  .map((f) => (
-                    <Link
-                      className="fault-link"
-                      key={f.id}
-                      to={partLink(
-                        f.featureId,
-                        f.partId,
-                        data.sensors.find((s) => s.ownerId === f.featureId)?.scope ?? 'drainage',
-                      )}
-                    >
-                      <Status
-                        status={
-                          f.type === 'sensor_offline'
-                            ? 'offline'
-                            : f.type === 'standing_water'
-                              ? 'watch'
-                              : 'fault'
-                        }
-                      />
-                      <span>
-                        {f.type.replaceAll('_', ' ')}
-                        <p className="small">
-                          {f.featureId} · Zone {f.zone}
-                        </p>
-                      </span>
-                    </Link>
-                  ))}
-                <Link className="button" to="/faults">
-                  View all {data.faults.filter((f) => f.status !== 'closed').length} open faults
-                </Link>
-                {data.faults.every((f) => f.status === 'closed') && (
-                  <p className="empty">No open faults.</p>
-                )}
-              </section>
-            </aside>
           </div>
           <OverviewCharts
             rainfall={data.rainfall}

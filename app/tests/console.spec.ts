@@ -12,7 +12,7 @@ test('operator flow: selectable parts, explode and guarded baseline', async ({ p
   await page.goto('/');
 
   await expect(
-    page.getByRole('heading', { name: 'Follow the water. Find the fault.' }),
+    page.getByRole('heading', { name: 'Overview' }),
   ).toBeVisible();
 
   await expect(page.locator('.scene canvas')).toBeVisible();

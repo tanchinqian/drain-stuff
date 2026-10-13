@@ -43,10 +43,10 @@ test('search narrows options without changing selection, and clears on selection
     });
   }
   await page.goto('/');
-  await page.getByRole('searchbox', { name: 'Search map house options' }).fill('1174511531');
+  await page.getByRole('searchbox', { name: 'Search house options' }).fill('1174511531');
   await expect(
     page
-      .getByRole('combobox', { name: 'Select a mapped house', exact: true })
+      .getByRole('combobox', { name: 'Select a house', exact: true })
       .locator('option:not([hidden])'),
   ).toHaveCount(1);
 });

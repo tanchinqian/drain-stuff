@@ -18,14 +18,7 @@ import FitCamera from './FitCamera';
 import SensorMarkers from './SensorMarkers';
 import RainCloud from './RainCloud';
 import { sensorMarkers } from '../api/sensorViews';
-import {
-  featureCallouts,
-  mapBounds,
-  pilotByBuilding,
-  roadLabels,
-  site,
-  zoneCentres,
-} from '../site/layout';
+import { featureCallouts, mapBounds, pilotByBuilding, roadLabels, site } from '../site/layout';
 
 type Props = {
   sensors: Sensor[];
@@ -44,7 +37,6 @@ type Props = {
 
 function SceneContent({
   houses,
-  zones,
   features,
   rain,
   layer,
@@ -58,8 +50,6 @@ function SceneContent({
   const positions = useSelection((s) => s.housePositions),
     selected = useSelection((s) => s.houseId),
     select = useSelection((s) => s.selectHouse),
-    selectedZone = useSelection((s) => s.zoneId),
-    selectZone = useSelection((s) => s.selectZone),
     moveHouse = useSelection((s) => s.moveHouse);
   const navigate = useNavigate();
   const controls = useRef<ComponentRef<typeof OrbitControls>>(null);
@@ -92,7 +82,7 @@ function SceneContent({
     <>
       <FitCamera
         width={73}
-        height={50}
+        height={38}
         controlsRef={controls}
         enabled={!move}
         target={[0, 0.2, 0]}
@@ -227,23 +217,6 @@ function SceneContent({
           </Html>
         );
       })}
-      {zones.map((zone) => {
-        const [x, z] = zoneCentres[zone.id];
-        return (
-          <Html key={zone.id} center position={[x - 9, 0.2, z]} zIndexRange={[8, 0]}>
-            <button
-              className="scene-label zone map-zone-button"
-              aria-pressed={selectedZone === zone.id}
-              onClick={() => selectZone(zone.id)}
-            >
-              Zone {zone.id}
-              <small>
-                {rain.find((r) => r.zone === zone.id)?.peakMmPerHr ?? zone.peakMmPerHr} mm/h
-              </small>
-            </button>
-          </Html>
-        );
-      })}
       {features.map((f) => {
         const [x, z] = featureCallouts[f.id] || [f.x, f.y];
         return (
@@ -306,23 +279,35 @@ function SceneContent({
   );
 }
 export default function NeighbourhoodScene(props: Props) {
+  const selectZone = useSelection((s) => s.selectZone);
+  const zoneId = useSelection((s) => s.zoneId);
   return (
-    <div
-      className="scene neighbourhood-scene"
-      aria-label="Interactive 3D map of 589 mapped houses and 24 synthetic pilot households"
-      data-cloud-opacity={props.layer === 'rain' ? props.cloudOpacity : 0}
-    >
-      <Canvas
-        key={props.reset}
-        orthographic
-        camera={{ position: [32, 46, 35], zoom: 12, near: 0.1, far: 200 }}
-        frameloop="demand"
-        dpr={[1, 2]}
-        gl={{ antialias: true }}
-        fallback={<p>3D is unavailable. Switch to the Plan view.</p>}
+    <>
+      <nav className="map-zones" aria-label="Map zones">
+        {props.zones.map((z) => (
+          <button key={z.id} aria-pressed={zoneId === z.id} onClick={() => selectZone(z.id)}>
+            Zone {z.id}  /  {props.rain.find((r) => r.zone === z.id)?.peakMmPerHr ?? z.peakMmPerHr}{' '}
+            mm/h
+          </button>
+        ))}
+      </nav>
+      <div
+        className="scene neighbourhood-scene"
+        aria-label="Interactive 3D map of 589 mapped houses and 24 synthetic pilot households"
+        data-cloud-opacity={props.layer === 'rain' ? props.cloudOpacity : 0}
       >
-        <SceneContent {...props} />
-      </Canvas>
-    </div>
+        <Canvas
+          key={props.reset}
+          orthographic
+          camera={{ position: [32, 46, 35], zoom: 12, near: 0.1, far: 200 }}
+          frameloop="demand"
+          dpr={[1, 2]}
+          gl={{ antialias: true }}
+          fallback={<p>3D is unavailable. Switch to the Plan view.</p>}
+        >
+          <SceneContent {...props} />
+        </Canvas>
+      </div>
+    </>
   );
 }

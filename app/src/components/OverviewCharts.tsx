@@ -71,7 +71,11 @@ export default function OverviewCharts({
   return (
     <div className="charts-grid">
       <ChartFrame
-        title="Rain peaked at 63 mm/h"
+        title={
+          rainfall.length
+            ? `Rain peaked at ${Math.max(...rainfall.map((r) => r.mmPerHr))} mm/h`
+            : 'Rainfall'
+        }
         subtitle="Rainfall per 10 min and cumulative rain"
         headers={['Time', 'Rain mm/h', 'Cumulative mm']}
         rows={rainfall.map((r) => [dateTime(r.t), r.mmPerHr, r.cumulativeMm])}
@@ -111,43 +115,11 @@ export default function OverviewCharts({
         </ResponsiveContainer>
       </ChartFrame>
       <ChartFrame
-        title="S3 remains above the drain-down reference"
-        subtitle="Drain-down by feature"
-        headers={['Feature', 'Hours']}
-        rows={down.map((d) => [d.id, d.hours])}
-        takeaway={
-          '6 h is a placeholder, to confirm. ' +
-          down
-            .filter((d) => d.hours === null)
-            .map((d) => d.id)
-            .join(', ') +
-          ': no reading.'
-        }
-      >
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart
-            data={down.filter((d) => d.hours !== null)}
-            layout="vertical"
-            margin={{ top: 15, right: 25, left: 0, bottom: 8 }}
-            accessibilityLayer
-          >
-            <CartesianGrid horizontal={false} stroke="#CFC7B4" />
-            <XAxis type="number" unit=" h" domain={[0, 8]} />
-            <YAxis type="category" dataKey="id" width={36} />
-            <Tooltip content={<ChartTooltip />} />
-            <ReferenceLine
-              x={config.drainDownLimitH}
-              stroke="#5E564B"
-              strokeDasharray="4 4"
-              label={{ value: '6 h · to confirm', position: 'top', fill: '#5E564B', fontSize: 12 }}
-            />
-            <Bar dataKey="hours" name="Drain-down (h)" fill="#BC7A44" barSize={15} />
-          </BarChart>
-        </ResponsiveContainer>
-      </ChartFrame>
-      <ChartFrame
         title="The three arms show different trajectories"
         subtitle="Infiltration at fixed points over eight weeks"
+        hasData={trends.some(
+          (t) => t.control !== undefined || t.decompaction !== undefined || t.compost !== undefined,
+        )}
         headers={['Week', 'Control mm/h', 'Decompaction mm/h', 'Compost mm/h', 'n per point']}
         rows={trends.map((t) => [
           t.week,
@@ -183,40 +155,6 @@ export default function OverviewCharts({
           </LineChart>
         </ResponsiveContainer>
       </ChartFrame>
-      <ChartFrame
-        title="Sediment and blockage need follow-up"
-        subtitle="Recorded fault events by week"
-        headers={['Week', 'Sediment events', 'Blockage events']}
-        rows={incidents.map((t) => [t.week, t.sediment, t.blockage])}
-        takeaway="Stacked bars show event counts, not sediment depth. Inspect the fault log for the individual records."
-      >
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart
-            data={incidents}
-            margin={{ top: 15, right: 15, left: 0, bottom: 8 }}
-            accessibilityLayer
-          >
-            <CartesianGrid vertical={false} stroke="#CFC7B4" />
-            <XAxis dataKey="week" minTickGap={22} />
-            <YAxis width={28} allowDecimals={false} />
-            <Tooltip content={<ChartTooltip />} />
-            <Bar
-              dataKey="sediment"
-              name="Sediment events"
-              stackId="events"
-              fill="#BC7A44"
-              maxBarSize={22}
-            />
-            <Bar
-              dataKey="blockage"
-              name="Blockage events"
-              stackId="events"
-              fill="#8E3A2E"
-              maxBarSize={22}
-            />
-          </BarChart>
-        </ResponsiveContainer>
-      </ChartFrame>
       <div className="chart-legend full-span">
         {Object.entries(colors).map(([arm, color]) => (
           <span key={arm}>
@@ -226,27 +164,108 @@ export default function OverviewCharts({
         ))}
         <span>Infiltration in mm/h · synthetic</span>
       </div>
-      <section className="panel full-span">
-        <h2>Fault types on record</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Type</th>
-              <th>Open or inspected</th>
-              <th>Closed</th>
-            </tr>
-          </thead>
-          <tbody>
-            {['sediment', 'blockage', 'sensor_offline', 'standing_water'].map((type) => (
-              <tr key={type}>
-                <td>{type.replaceAll('_', ' ')}</td>
-                <td>{faults.filter((f) => f.type === type && f.status !== 'closed').length}</td>
-                <td>{faults.filter((f) => f.type === type && f.status === 'closed').length}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
+      <details className="full-span">
+        <summary>More charts</summary>
+        <div className="charts-grid">
+          {' '}
+          <ChartFrame
+            title="S3 remains above the drain-down reference"
+            subtitle="Drain-down by feature"
+            headers={['Feature', 'Hours']}
+            rows={down.map((d) => [d.id, d.hours])}
+            takeaway={
+              '6 h is a placeholder, to confirm. ' +
+              down
+                .filter((d) => d.hours === null)
+                .map((d) => d.id)
+                .join(', ') +
+              ': no reading.'
+            }
+          >
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={down.filter((d) => d.hours !== null)}
+                layout="vertical"
+                margin={{ top: 15, right: 25, left: 0, bottom: 8 }}
+                accessibilityLayer
+              >
+                <CartesianGrid horizontal={false} stroke="#CFC7B4" />
+                <XAxis type="number" unit=" h" domain={[0, 8]} />
+                <YAxis type="category" dataKey="id" width={36} />
+                <Tooltip content={<ChartTooltip />} />
+                <ReferenceLine
+                  x={config.drainDownLimitH}
+                  stroke="#5E564B"
+                  strokeDasharray="4 4"
+                  label={{
+                    value: '6 h · to confirm',
+                    position: 'top',
+                    fill: '#5E564B',
+                    fontSize: 12,
+                  }}
+                />
+                <Bar dataKey="hours" name="Drain-down (h)" fill="#BC7A44" barSize={15} />
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartFrame>
+          <ChartFrame
+            title="Sediment and blockage need follow-up"
+            subtitle="Recorded fault events by week"
+            hasData={incidents.some((t) => t.sediment + t.blockage > 0)}
+            headers={['Week', 'Sediment events', 'Blockage events']}
+            rows={incidents.map((t) => [t.week, t.sediment, t.blockage])}
+            takeaway="Stacked bars show event counts, not sediment depth. Inspect the fault log for the individual records."
+          >
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={incidents}
+                margin={{ top: 15, right: 15, left: 0, bottom: 8 }}
+                accessibilityLayer
+              >
+                <CartesianGrid vertical={false} stroke="#CFC7B4" />
+                <XAxis dataKey="week" minTickGap={22} />
+                <YAxis width={28} allowDecimals={false} />
+                <Tooltip content={<ChartTooltip />} />
+                <Bar
+                  dataKey="sediment"
+                  name="Sediment events"
+                  stackId="events"
+                  fill="#BC7A44"
+                  maxBarSize={22}
+                />
+                <Bar
+                  dataKey="blockage"
+                  name="Blockage events"
+                  stackId="events"
+                  fill="#8E3A2E"
+                  maxBarSize={22}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartFrame>
+          <section className="panel full-span">
+            <h2>Fault types on record</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>Type</th>
+                  <th>Open or inspected</th>
+                  <th>Closed</th>
+                </tr>
+              </thead>
+              <tbody>
+                {['sediment', 'blockage', 'sensor_offline', 'standing_water'].map((type) => (
+                  <tr key={type}>
+                    <td>{type.replaceAll('_', ' ')}</td>
+                    <td>{faults.filter((f) => f.type === type && f.status !== 'closed').length}</td>
+                    <td>{faults.filter((f) => f.type === type && f.status === 'closed').length}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+        </div>
+      </details>
     </div>
   );
 }

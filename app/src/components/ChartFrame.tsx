@@ -7,6 +7,7 @@ export default function ChartFrame({
   rows,
   children,
   takeaway,
+  hasData = rows.some((row) => row.slice(1).some((value) => typeof value === 'number')),
 }: {
   title: string;
   subtitle: string;
@@ -14,6 +15,7 @@ export default function ChartFrame({
   rows: (string | number | null)[][];
   children: ReactNode;
   takeaway: string;
+  hasData?: boolean;
 }) {
   const [table, setTable] = useState(false);
   return (
@@ -40,7 +42,9 @@ export default function ChartFrame({
           </button>
         </div>
       </div>
-      {table ? (
+      {!hasData ? (
+        <p className="empty">No readings in this range</p>
+      ) : table ? (
         <div className="table-wrap">
           <table>
             <thead>

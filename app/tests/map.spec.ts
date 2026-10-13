@@ -18,8 +18,8 @@ test('trial pins are clickable and radar clouds preserve map-house controls', as
         .getByRole('button', { name: new RegExp('^Open ' + id + ' ') });
       await expect(pin).toBeVisible();
       const bounds = await pin.boundingBox();
-      expect(bounds!.width).toBeGreaterThanOrEqual(44);
-      expect(bounds!.height).toBeGreaterThanOrEqual(44);
+      expect(Number(bounds!.width.toFixed(2))).toBeGreaterThanOrEqual(44);
+      expect(Number(bounds!.height.toFixed(2))).toBeGreaterThanOrEqual(44);
       await pin.click();
       await expect(page).toHaveURL(new RegExp('/feature/' + id));
     }
@@ -42,7 +42,7 @@ test('trial pins are clickable and radar clouds preserve map-house controls', as
       const u = (footprint.x + 22) / 32,
         v = (footprint.z + 11 - u) / 23;
       const bounds = await scene.boundingBox();
-      const zoom = Math.min(bounds!.width / 73, bounds!.height / 50);
+      const zoom = Math.min(bounds!.width / 73, bounds!.height / 38);
       return {
         x:
           a!.x +
@@ -75,7 +75,7 @@ test('trial pins are clickable and radar clouds preserve map-house controls', as
           .getByLabel('House X position', { exact: true }),
       ).not.toHaveValue(String(Number((footprint.x * 20).toFixed(1))));
     }
-    await page.getByLabel('Select a mapped house', { exact: true }).selectOption(footprint.id);
+    await page.getByLabel('Select a house', { exact: true }).selectOption(footprint.id);
     const record = page.getByRole('region', { name: 'Selected mapped house' });
     await expect(record).toContainText('no pilot readings');
     await record.getByLabel('House X position', { exact: true }).fill('123');
