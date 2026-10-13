@@ -97,7 +97,7 @@ export default function Overview() {
                   >
                     <Status
                       status={
-                        f.type === 'sensor_offline'
+                        (f.type === 'sensor_offline' || f.type === 'sensor_suspect')
                           ? 'offline'
                           : f.type === 'standing_water'
                             ? 'watch'

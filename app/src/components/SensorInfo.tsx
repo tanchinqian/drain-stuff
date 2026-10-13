@@ -22,6 +22,7 @@ export function SensorValue({ sensor }: { sensor: Sensor }) {
           (sensor.lastValue === null
             ? 'Not measured'
             : `${Math.round(sensor.lastValue * 100) / 100} ${sensor.unit}`))}
+      {sensor.role === 'proxy' && <span className="proxy-note"> What is this? {sensor.proxyFor}.</span>}
     </>
   );
 }

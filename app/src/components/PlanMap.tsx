@@ -172,9 +172,7 @@ export default function PlanMap({
                 <title>
                   {s.sensorId} · {s.status} · {s.metric}
                 </title>
-                {s.status === 'suspect' ? (
-                  <path d="M0 -5L5 4H-5Z" fill="var(--heat-3)" />
-                ) : s.status === 'offline' ? (
+                {s.status === 'suspect' || s.status === 'offline' ? (
                   <path d="M0 -5L5 0L0 5L-5 0Z" fill="var(--ink2)" />
                 ) : (
                   <rect x="-3" y="-3" width="6" height="6" fill="var(--ink)" />

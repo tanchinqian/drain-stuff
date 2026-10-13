@@ -54,9 +54,12 @@ export default function BatchReadingForm({
               min="0"
               max="100"
               step=".1"
+              aria-label="Moisture, %"
+              aria-describedby={`moisture-help-${batch.id}`}
               value={moisture}
               onChange={(e) => setMoisture(e.target.value)}
             />
+            <span className="field-note" id={`moisture-help-${batch.id}`}>What is this? A relative wetness proxy. Calibrate with the human squeeze check; this is not an absolute water-content measurement.</span>
           </label>
         </div>
         <PhotoSlot label="Reading photo, optional" value={photo} onChange={setPhoto} />
@@ -70,7 +73,7 @@ export default function BatchReadingForm({
         )}
       </form>
       <div className="notice">
-        General guidance, confirm for tropical conditions. Temperature: {config.temperature.goodMin}
+        Illustrative thresholds (placeholders, to confirm for tropical conditions). Temperature: {config.temperature.goodMin}
         –{config.temperature.goodMax} °C for {config.temperature.days}+ days; turn below{' '}
         {config.temperature.turnBelow} °C, cool above {config.temperature.coolAbove} °C. Moisture:{' '}
         {config.moisture.min}–{config.moisture.max}%.
@@ -91,6 +94,7 @@ export default function BatchReadingForm({
       )}
       <hr className="divider" />
       <h3>Reading history · synthetic</h3>
+      <p className="small">All moisture values below are relative wetness proxies; compare with the human squeeze check.</p>
       <table>
         <thead>
           <tr>
@@ -104,7 +108,7 @@ export default function BatchReadingForm({
             <tr key={i}>
               <td>{dateTime(r.t)}</td>
               <td>{r.tempC}</td>
-              <td>{r.moisturePct}%</td>
+              <td><span title="Relative wetness proxy; calibrate with the human squeeze check">{r.moisturePct}%</span></td>
             </tr>
           ))}
         </tbody>
