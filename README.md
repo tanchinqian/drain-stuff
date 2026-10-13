@@ -37,6 +37,10 @@ The browser checks cover the operator flow and allocation gates, every sensor ro
 
 ## Limits and project records
 
-All houses, readings, faults, trials and batches are synthetic. Models are schematics; layer dimensions and thresholds require confirmation against MSMA and the local authority. Soil moisture is an indirect infiltration proxy; inexpensive compost moisture is relative and needs a human reference check. Manual infiltration tests, squeeze/smell logs and photo checklists remain human records. No hardware calibration, surveyed geometry, treatment proof or Lighthouse score is claimed.
+The Overview uses an offline public map extract for 589 house footprints and 111 road ways in the Gamelan / Rodat housing window of Bandar Bukit Raja Phase 1. All 24 pilot assignments, readings, faults, trials and batches remain synthetic. Roof shapes, heights and drainage locations are illustrative. The map covers a window of Phase 1, not the full phase boundary or a complete building inventory. See [map sources and model limits](docs/MAP_MODEL.md).
+
+S1/S2/S3 have large clickable pins and direct trial links. Mapped houses can be selected and moved locally; context houses have no invented pilot readings. Rainfall is a static, irregular radar-coloured cloud field with adjustable opacity in 3D and the same raster in desktop Plan. It interpolates synthetic zone values; it is not live radar or a forecast. Reset layout restores mapped placement. Map data is © OpenStreetMap contributors under ODbL 1.0; attribution is visible beside the map.
+
+Models are schematics; layer dimensions and thresholds require confirmation against MSMA and the local authority. Soil moisture is an indirect infiltration proxy; inexpensive compost moisture is relative and needs a human reference check. Manual infiltration tests, squeeze/smell logs and photo checklists remain human records. No hardware calibration, surveyed geometry, treatment proof or Lighthouse score is claimed.
 
 `PRODUCT.md` holds accepted scope. `DESIGN.md` and `.impeccable/design.json` record the incumbent system. `docs/addendum-review.md` records the independent finish review. The separately published Sites visualization is an exact uploaded attachment with its own source and hosting identity.

@@ -5,26 +5,36 @@ import { buildParts } from '../parts';
 import { faultRules } from '../modelCatalog';
 import { inspectionFaults } from './inspectionRules';
 import { mockRequest, resetMock } from './index';
-import type { Sensor } from '../types';
+import type { Feature, House, Sensor } from '../types';
 describe('sensor coverage', () => {
   it('repairs cached sensor units while retaining calibration and trust records', async () => {
     const saved = generateMock();
-    const probe = saved.sensors.find(s => s.sensorId === 'B-01-TEMP-10')!;
+    const mappedHouse = { ...saved.houses[0] },
+      mappedFeature = { ...saved.features[0] };
+    saved.houses[0].x = -4.9;
+    saved.features[0].y = -0.92;
+    const probe = saved.sensors.find((s) => s.sensorId === 'B-01-TEMP-10')!;
     probe.unit = String.fromCharCode(0xc2, 0xb0) + 'C';
     probe.status = 'suspect';
     probe.drift = 'confirmed';
     probe.calibratedAt = '2026-09-20T01:40:00.000Z';
-    vi.stubGlobal('localStorage', {getItem: () => JSON.stringify(saved), setItem: vi.fn()});
+    vi.stubGlobal('localStorage', { getItem: () => JSON.stringify(saved), setItem: vi.fn() });
     try {
       vi.resetModules();
       const restored = await import('./index');
-      const rows = await restored.mockRequest('/sensors?ownerId=B-01') as Sensor[];
-      const result = rows.find(s => s.sensorId === probe.sensorId)!;
+      const rows = (await restored.mockRequest('/sensors?ownerId=B-01')) as Sensor[];
+      const result = rows.find((s) => s.sensorId === probe.sensorId)!;
+      const houses = (await restored.mockRequest('/houses')) as House[];
+      const features = (await restored.mockRequest('/features')) as Feature[];
+      expect(houses[0]).toEqual(mappedHouse);
+      expect(features[0]).toEqual(mappedFeature);
       expect(result.unit).toBe(String.fromCharCode(0xb0) + 'C');
       expect(result.status).toBe('suspect');
       expect(result.drift).toBe('confirmed');
       expect(result.calibratedAt).toBe(probe.calibratedAt);
-    } finally { vi.unstubAllGlobals(); }
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
   it('gives every sensor a marker, register row, installed part and valid rule links', () => {
     const db = generateMock();

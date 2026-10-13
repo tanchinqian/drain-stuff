@@ -47,6 +47,12 @@ export default function About() {
         </ul>
         <h2>Schematic and sensor limits</h2>
         <p>
+          The household map uses OpenStreetMap footprints and roads for a Gamelan / Rodat window in
+          Bandar Bukit Raja Phase 1. It is not the complete phase boundary. Heights, roofs, pilot
+          assignments and drainage placements are illustrative. Rainfall clouds interpolate
+          synthetic readings; they are not live radar or a forecast.
+        </p>
+        <p>
           {config.data?.schematic.label}. Layer-depth defaults are illustrative and informed by
           foreign guidance, including temperate-climate examples. They are not verified Malaysian
           standard dimensions.

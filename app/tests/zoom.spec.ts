@@ -18,10 +18,10 @@ test('wheel zoom stays relative to the fitted scene and resets at both viewport 
       if (path !== '/') await page.getByRole('button', { name: 'Debug', exact: true }).click();
       const first = scene
         .locator('.scene-label')
-        .filter({ hasText: path === '/' ? /^Zone A/ : /^Filter media$|^Compost bay \/ pile$/ });
+        .filter({ hasText: path === '/' ? /^S1$/ : /^Filter media$|^Compost bay \/ pile$/ });
       const second = scene
         .locator('.scene-label')
-        .filter({ hasText: path === '/' ? /^Zone D/ : /^Outlet to drain network$|^Rain gauge$/ });
+        .filter({ hasText: path === '/' ? /^S3$/ : /^Outlet to drain network$|^Rain gauge$/ });
       await expect(first).toBeVisible();
       await expect(second).toBeVisible();
       await page.evaluate(() => document.fonts.ready);

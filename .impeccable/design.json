@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-12T17:00:47.986Z",
+  "generatedAt": "2026-10-13T03:55:25.000Z",
   "title": "Design System: Drain Trial Console",
   "extensions": {
     "colorMeta": {
@@ -67,6 +67,34 @@
       "rain-bar": {
         "role": "primary",
         "displayName": "Rain copper"
+      },
+      "radar-under-10": {
+        "role": "tertiary",
+        "displayName": "Light-rain cyan"
+      },
+      "radar-10-20": {
+        "role": "tertiary",
+        "displayName": "Rain green"
+      },
+      "radar-20-40": {
+        "role": "tertiary",
+        "displayName": "Lime rain"
+      },
+      "radar-40-50": {
+        "role": "tertiary",
+        "displayName": "Yellow rain"
+      },
+      "radar-50-60": {
+        "role": "tertiary",
+        "displayName": "Orange rain"
+      },
+      "radar-60-80": {
+        "role": "tertiary",
+        "displayName": "Red rain"
+      },
+      "radar-over-80": {
+        "role": "tertiary",
+        "displayName": "Purple rain"
       }
     },
     "typographyMeta": {
@@ -172,22 +200,44 @@
       "description": "Geometric markers accompany explicit status text.",
       "html": "<div class=\"ds-status-list\"><span class=\"ds-status\"><span class=\"ds-mark\" aria-hidden=\"true\"></span>OK</span><span class=\"ds-status\"><span class=\"ds-mark ds-watch\" aria-hidden=\"true\"></span>Watch</span><span class=\"ds-status\"><span class=\"ds-mark ds-fault\" aria-hidden=\"true\"></span>Fault</span><span class=\"ds-status\"><span class=\"ds-mark ds-offline\" aria-hidden=\"true\"></span>Sensor offline</span></div>",
       "css": ".ds-status-list { display:grid; gap:12px; } .ds-status { display:inline-flex; align-items:center; gap:8px; color:var(--ink, #2f2b26); font:400 14px/1.45 'Archivo Variable', Archivo, sans-serif; white-space:nowrap; } .ds-mark { display:inline-block; width:11px; height:11px; background:var(--ink2, #5e564b); flex:none; } .ds-mark.ds-fault { background:var(--heat-3, #8e3a2e); clip-path:polygon(50% 0, 100% 100%, 0 100%); width:13px; } .ds-mark.ds-watch { background:var(--arm-decompact, #b07a12); border-radius:50%; } .ds-mark.ds-offline { background:var(--arm-control, #7b4daf); transform:rotate(45deg); width:9px; height:9px; }"
+    },
+    {
+      "name": "Map Feature Pin",
+      "kind": "button",
+      "refersTo": "feature-pin",
+      "description": "Large ink and paper pins open the labelled mapped feature; leader lines identify its illustrative location.",
+      "html": "<button class=\"ds-feature-pin\" aria-label=\"Open S1\">S1</button>",
+      "css": ".ds-feature-pin { min-height:44px; min-width:44px; padding:7px 9px; font:650 15px/1.25 'Archivo Variable', Archivo, sans-serif; color:var(--panel, #f2eee4); background:var(--ink, #2f2b26); border:1px solid var(--ink, #2f2b26); border-radius:2px; white-space:nowrap; cursor:pointer; } .ds-feature-pin:hover { background:var(--ink2, #5e564b); color:var(--panel, #f2eee4); } .ds-feature-pin:focus-visible { outline:2px solid var(--ink, #2f2b26); outline-offset:3px; }"
+    },
+    {
+      "name": "Radar Rainfall Legend",
+      "kind": "custom",
+      "refersTo": "radar-legend",
+      "description": "The seven approved radar swatches accompany written mm/h intervals for the static simulated rainfall field.",
+      "html": "<div class=\"ds-radar-legend\" aria-label=\"Simulated rainfall intensity in mm/h\"><span><i style=\"background:#61cce9\" aria-hidden=\"true\"></i>Under 10</span><span><i style=\"background:#44bf65\" aria-hidden=\"true\"></i>10–20</span><span><i style=\"background:#b9df38\" aria-hidden=\"true\"></i>20–40</span><span><i style=\"background:#f3d431\" aria-hidden=\"true\"></i>40–50</span><span><i style=\"background:#f28b27\" aria-hidden=\"true\"></i>50–60</span><span><i style=\"background:#de452e\" aria-hidden=\"true\"></i>60–80</span><span><i style=\"background:#aa40b6\" aria-hidden=\"true\"></i>Over 80 mm/h</span></div>",
+      "css": ".ds-radar-legend { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:12px; color:var(--ink, #2f2b26); font:400 13px/1.45 'Archivo Variable', Archivo, sans-serif; } .ds-radar-legend i { display:inline-block; width:22px; height:8px; margin-right:5px; }"
     }
   ],
   "narrative": {
     "northStar": "Map desk",
-    "overview": "Map desk is a compact operator console with warm paper surfaces, brown ink and geometric site and assembly schematics. Archivo keeps headings firm and records readable. Thin borders, tonal wells and dark selected controls make the next inspection action easy to find.\n\nThe system serves practical inspection: operators move between a site view, model parts, sensor records and faults. Native controls, tabular numerals, explicit units and shape plus text states carry the information. The accepted world excludes blue and green, gradients, glow and decorative shadows.",
+    "overview": "Map desk is a compact operator console with warm paper surfaces, brown ink, mapped site views and geometric assembly schematics. Archivo keeps headings firm and records readable. Thin borders, tonal wells and dark selected controls make the next inspection action easy to find.\n\nThe system serves practical inspection: operators move between a site view, model parts, sensor records and faults. Native controls, tabular numerals, explicit units and shape plus text states carry the information. The approved radar colours belong to simulated rainfall clouds and their legend; the surrounding console retains its cream and brown palette. Gradients, glow and decorative interface shadows remain excluded.",
     "keyCharacteristics": [
       "Warm cream ground, paper panels and brown ink.",
       "Compact Archivo hierarchy with tabular numerals.",
       "Flat surfaces, thin borders and native controls.",
-      "Geometric schematics with text alternatives and explicit limits.",
-      "Shape plus text states, with color as a supporting cue."
+      "Mapped site views and geometric schematics with text alternatives and explicit limits.",
+      "Shape plus text states, with color as a supporting cue.",
+      "Approved radar colours confined to the simulated rainfall data layer."
     ],
     "rules": [
       {
         "name": "The State Readability Rule",
         "body": "Pair each status color with its geometric marker and a written label; color alone never carries trust or fault state.",
+        "section": "colors"
+      },
+      {
+        "name": "The Radar Layer Rule",
+        "body": "Use the seven radar tokens for simulated rainfall clouds and their legend. Keep controls, records, status and map geometry in the established console and trial-arm palette.",
         "section": "colors"
       },
       {
@@ -198,13 +248,14 @@
     ],
     "dos": [
       "**Do** preserve the warm cream and brown Map desk palette and Archivo hierarchy.",
+      "**Do** confine the approved radar colours to simulated rainfall clouds and their labelled legend.",
       "**Do** pair status and trust colors with geometric shapes and explicit text.",
       "**Do** keep native controls, visible focus outlines and readable metric units.",
       "**Do** preserve mobile stacking, the native part selector and panel-contained table overflow.",
       "**Do** keep stable part and sensor IDs, keyboard record access and schematic/synthetic labels visible."
     ],
     "donts": [
-      "**Don't** introduce blue or green, gradients, glow or decorative interface shadows.",
+      "**Don't** introduce blue or green interface accents, gradients, glow or decorative interface shadows.",
       "**Don't** use color as the only signal for a fault, trust state or selected record.",
       "**Don't** replace practical controls with ornamental interactions or illegible model annotations.",
       "**Don't** present schematic dimensions or synthetic readings as surveyed geometry or validated field evidence."

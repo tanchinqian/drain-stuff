@@ -21,6 +21,21 @@ try {
   ) {
     const saved = raw as Database;
     const defaults = generateMock();
+    // Refresh map geometry without replacing saved inspections, trials or allocations.
+    saved.houses.forEach((h) => {
+      const mapped = defaults.houses.find((p) => p.id === h.id);
+      if (mapped) {
+        h.x = mapped.x;
+        h.y = mapped.y;
+      }
+    });
+    saved.features.forEach((f) => {
+      const mapped = defaults.features.find((p) => p.id === f.id);
+      if (mapped) {
+        f.x = mapped.x;
+        f.y = mapped.y;
+      }
+    });
     saved.version = 2;
     saved.config = {
       ...defaults.config,

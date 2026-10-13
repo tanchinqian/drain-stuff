@@ -14,6 +14,7 @@ import type {
   Sensor,
 } from '../types';
 import { seedSensors, sensorSnapshot } from './sensors';
+import { featurePosition, mappedHouses, pilotBuildings } from '../../site/layout';
 export const DEMO_NOW = '2026-10-12T01:40:00.000Z';
 export const config: Config = {
   synthetic: true,
@@ -90,19 +91,13 @@ export function generateMock(seed = 2026): Database {
     housesHoldingWater6h: [4, 2, 1, 0][i],
     housesTotal: 6,
   }));
-  const centres = [
-    [-4.9, -4.05],
-    [4.9, -4.05],
-    [-4.9, 4.05],
-    [4.9, 4.05],
-  ];
   const houses: House[] = zones.flatMap((zone, i) =>
     Array.from({ length: 6 }, (_, j) => ({
       synthetic: true,
       id: zone.id + String(j + 1).padStart(2, '0'),
       zone: zone.id,
-      x: centres[i][0] + ((j % 3) - 1) * 2.75,
-      y: centres[i][1] + (Math.floor(j / 3) - 0.5) * 2.65,
+      x: mappedHouses.get(pilotBuildings[zone.id + String(j + 1).padStart(2, '0')])!.x,
+      y: mappedHouses.get(pilotBuildings[zone.id + String(j + 1).padStart(2, '0')])!.z,
       drainId: zone.id + String(j + 1).padStart(2, '0') + '-D',
       holdsWater6h: j < zone.housesHoldingWater6h,
       ownerOfRecord: 'Zone ' + zone.id + ' maintenance lead',
@@ -172,7 +167,10 @@ export function generateMock(seed = 2026): Database {
       y: 5.9,
       status: 'watch',
     },
-  ].map((f) => ({ ...f, synthetic: true })) as Feature[];
+  ].map((f) => {
+    const [x, y] = featurePosition(f.id);
+    return { ...f, x, y, synthetic: true };
+  }) as Feature[];
   const faults = [
     { id: 'F-001', featureId: 'S1', partId: 'sock', type: 'blockage', severity: 3, zone: 'A' },
     {

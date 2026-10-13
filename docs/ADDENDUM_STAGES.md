@@ -21,10 +21,18 @@ The accepted `CODEX_ADDENDUM.md` was applied to the local React app in three sta
 
 The browser checks and review validate the implemented synthetic console within their stated scope. They do not test real probes, hardware calibration, field measurements, surveyed geometry or Malaysian treatment outcomes. No Lighthouse score is claimed. Schematic dimensions, layer depths, thresholds and practitioner prompts remain subject to local confirmation; manual squeeze/smell logs, photos and fixed-point infiltration tests are human records.
 
-`PRODUCT.md` preserves the accepted specification. `DESIGN.md` and `.impeccable/design.json` document actual reused tokens and components from the current source, with no change to the app's visual world.
+`PRODUCT.md` preserves the accepted specification. `DESIGN.md` and `.impeccable/design.json` document actual reused tokens and components from the current source. The map extension adds the user-approved seven-colour radar palette for simulated rainfall clouds and their legend; the surrounding cream and brown Archivo console remains established.
 
 ## Wheel zoom correction
 
 The first wheel movement previously clamped the fitted camera to an absolute maximum zoom of 3.5, making the models tiny. The shared camera component now keeps zoom between 0.6 and 3.5 times each viewport's fitted zoom. Scroll speed is reduced, and Reset view restores the fitted scale.
 
 All four browser checks passed after the fix. The new regression covers the household, drainage and compost views at 1440px and 360px, including the first wheel movement, repeated scrolling to both limits and Reset view. Physical trackpad gestures were not tested.
+
+## Household map extension
+
+Overview now uses the bounded Phase 1 Gamelan / Rodat map with direct S1/S2/S3 trial links, separated feature callouts, native pilot and mapped-house selectors, local selected-house movement and adjustable simulated rainfall clouds. Source attribution, geometry limits and synthetic assignment boundaries are recorded in [MAP_MODEL.md](MAP_MODEL.md). The radar palette exception and implemented map controls are recorded in `DESIGN.md` and `.impeccable/design.json`.
+
+The strict production build, lint and all fourteen unit tests passed after the final Plan callout correction. All five browser checks passed. The map-specific check covers direct Canvas selection and dragging of `OSM-1174511531`, numeric position changes and reset, all six Plan pins without overlap, Plan polygon updates and S1/S2/S3 selection at desktop and mobile sizes. The suite also retains the existing operator/allocation, sensor/register/model, axe and zoom-limit checks.
+
+The independent map finish review records `disposition: ship`; its final scope is the Plan secondary callout overlap correction. See [map-review.md](map-review.md).

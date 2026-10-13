@@ -18,6 +18,13 @@ colors:
   arm-decompact: "#b07a12"
   arm-compost: "#b03a78"
   rain-bar: "#b2663a"
+  radar-under-10: "#61cce9"
+  radar-10-20: "#44bf65"
+  radar-20-40: "#b9df38"
+  radar-40-50: "#f3d431"
+  radar-50-60: "#f28b27"
+  radar-60-80: "#de452e"
+  radar-over-80: "#aa40b6"
 typography:
   display:
     fontFamily: "'Archivo Variable', Archivo, sans-serif"
@@ -109,6 +116,20 @@ components:
   status:
     textColor: "{colors.ink}"
     size: "14px"
+  feature-pin:
+    backgroundColor: "{colors.ink}"
+    textColor: "{colors.panel}"
+    rounded: "{rounded.scene-label}"
+    padding: "7px 9px"
+    size: "15px"
+    height: "44px"
+    width: "44px"
+  feature-pin-hover:
+    backgroundColor: "{colors.ink2}"
+    textColor: "{colors.panel}"
+  radar-legend:
+    textColor: "{colors.ink}"
+    typography: "{typography.label}"
 ---
 
 # Design System: Drain Trial Console
@@ -117,19 +138,20 @@ components:
 
 **Creative North Star: "Map desk"**
 
-Map desk is a compact operator console with warm paper surfaces, brown ink and geometric site and assembly schematics. Archivo keeps headings firm and records readable. Thin borders, tonal wells and dark selected controls make the next inspection action easy to find.
+Map desk is a compact operator console with warm paper surfaces, brown ink, mapped site views and geometric assembly schematics. Archivo keeps headings firm and records readable. Thin borders, tonal wells and dark selected controls make the next inspection action easy to find.
 
-The system serves practical inspection: operators move between a site view, model parts, sensor records and faults. Native controls, tabular numerals, explicit units and shape plus text states carry the information. The accepted world excludes blue and green, gradients, glow and decorative shadows.
+The system serves practical inspection: operators move between a site view, model parts, sensor records and faults. Native controls, tabular numerals, explicit units and shape plus text states carry the information. The approved radar colours belong to simulated rainfall clouds and their legend; the surrounding console retains its cream and brown palette. Gradients, glow and decorative interface shadows remain excluded.
 
 **Key Characteristics:**
 
 - Warm cream ground, paper panels and brown ink.
 - Compact Archivo hierarchy with tabular numerals.
 - Flat surfaces, thin borders and native controls.
-- Geometric schematics with text alternatives and explicit limits.
+- Mapped site views and geometric schematics with text alternatives and explicit limits.
 - Shape plus text states, with color as a supporting cue.
+- Approved radar colours confined to the simulated rainfall data layer.
 
-This record is extracted from `app/src/styles.css`, `app/src/three/geometry.ts`, the current components and refreshed `docs/screens/` captures. Frontmatter records reused values; the sidecar carries focus, breakpoints and rendered component samples. Source remains the implementation authority.
+This record is extracted from `app/src/styles.css`, `app/src/three/geometry.ts`, `app/src/site/weather.ts`, the current components and `docs/screens/` captures. Frontmatter records reused values; the sidecar carries focus, breakpoints and rendered component samples. Source remains the implementation authority.
 
 ## Colors
 
@@ -139,13 +161,17 @@ The palette resembles a working map on a cream desk; stronger colors identify me
 
 - **Brown ink** (`ink`): body text, selected actions and active navigation; paper text reverses on selected controls.
 - **Rain copper** (`rain-bar`): rainfall bars.
-- **Warm heat scale** (`heat-0` through `heat-3`): discrete rainfall intensity and schematic material cues, progressing from pale sand to brick. Brick also marks faults and errors.
+- **Warm heat scale** (`heat-0` through `heat-3`): mapped-area, retained-water and schematic material cues, progressing from pale sand to brick. Copper highlights selected houses; brick also marks faults and errors.
 
 ### Secondary
 
 - **Control violet** (`arm-control`): the control trial arm and offline diamond.
 - **Decompaction ochre** (`arm-decompact`): the decompaction trial arm and watch circle.
 - **Compost magenta** (`arm-compost`): the decompaction plus compost trial arm.
+
+### Tertiary
+
+The seven approved **radar rainfall** tokens follow the thresholds in `app/src/site/weather.ts`. They colour the static cloud field and its labelled intensity legend: **Light-rain cyan** (`radar-under-10`), **Rain green** (`radar-10-20`), **Lime rain** (`radar-20-40`), **Yellow rain** (`radar-40-50`), **Orange rain** (`radar-50-60`), **Red rain** (`radar-60-80`) and **Purple rain** (`radar-over-80`). Each legend interval is expressed in mm/h.
 
 ### Neutral
 
@@ -157,6 +183,8 @@ The palette resembles a working map on a cream desk; stronger colors identify me
 - **Muted brown** (`ink3`): schematic edges and secondary material details.
 
 **The State Readability Rule.** Pair each status color with its geometric marker and a written label; color alone never carries trust or fault state.
+
+**The Radar Layer Rule.** Use the seven radar tokens for simulated rainfall clouds and their legend. Keep controls, records, status and map geometry in the established console and trial-arm palette.
 
 ## Typography
 
@@ -172,7 +200,7 @@ The document is centered with a maximum width of 1484px and 24px outer padding. 
 
 At 1100px, the Overview rail narrows to 250px and Detail readings move below the model. At 800px, Overview and trial layouts stack, the right rail becomes two columns, and charts use one column. At 580px, the page and panels use 16px padding; forms, rails, comparisons and models stack. Navigation wraps. A native part selector replaces the desktop part list, coordinate controls become one column and the assembly scene is 300px high. The site scene is 360px high.
 
-Tables preserve complete records through horizontal overflow inside their panel. The sensor table has a 1080px minimum width. Phone reflow must keep the document itself within the viewport. The Plan SVG gives way to the existing house controls on small screens; sensor positions retain a keyboard list.
+Tables preserve complete records through horizontal overflow inside their panel. The sensor table has a 1080px minimum width. Phone reflow must keep the document itself within the viewport. At 580px, the Plan SVG gives way to native house and feature controls; both pilot and mapped-house selectors remain available. Mobile 3D keeps the three swale pins, with native links for the other features. Sensor positions retain a keyboard list. The three direct trial links stack into one column on phones.
 
 ## Elevation & Depth
 
@@ -218,11 +246,20 @@ The same control grammar serves the sixteen drainage parts and eight compost par
 
 Site and assembly markers link stable sensor IDs to the register; a keyboard list offers the same records. Popups use paper and ink with readable metadata. Measurements retain metric, unit, time and trust context rather than becoming decorative chart labels.
 
+### Site map controls
+
+S1/S2/S3 have direct trial links above the scene, with trial-arm swatches, zone and trial labels. Ink and paper feature pins use readable IDs; 3D pins have a minimum 44px target, a 15px semibold label and secondary brown hover. Desktop Plan and 3D place all six feature callouts separately, with leader lines to their illustrative locations. Native feature links provide the same destinations when labels are hidden on phones.
+
+The House and Map house selectors provide keyboard access to every mapped footprint. Selection highlights the house in copper and opens its record. Move houses enables dragging the selected 3D house; numeric position fields provide a precise alternative. Local edits carry across both views, Reset layout restores mapped placement, and Reset view restores the camera. Context-house records link the OSM footprint and show the geometry-only limit alongside the position controls.
+
+Rainfall and Water after 6 h remain separate pressed controls. Cloud opacity is a native range from 0% to 75% in steps of 5%, with a visible percentage and a default of 55%. The static, irregular 3D weather surface and desktop Plan raster use the same radar field. Clouds allow pointer actions through to the map. The wrapping seven-swatch legend keeps intensity labels visible beside the colours; the adjacent evidence label identifies synthetic weather and map attribution.
+
 ## Do's and Don'ts
 
 ### Do:
 
 - **Do** preserve the warm cream and brown Map desk palette and Archivo hierarchy.
+- **Do** confine the approved radar colours to simulated rainfall clouds and their labelled legend.
 - **Do** pair status and trust colors with geometric shapes and explicit text.
 - **Do** keep native controls, visible focus outlines and readable metric units.
 - **Do** preserve mobile stacking, the native part selector and panel-contained table overflow.
@@ -230,7 +267,7 @@ Site and assembly markers link stable sensor IDs to the register; a keyboard lis
 
 ### Don't:
 
-- **Don't** introduce blue or green, gradients, glow or decorative interface shadows.
+- **Don't** introduce blue or green interface accents, gradients, glow or decorative interface shadows.
 - **Don't** use color as the only signal for a fault, trust state or selected record.
 - **Don't** replace practical controls with ornamental interactions or illegible model annotations.
 - **Don't** present schematic dimensions or synthetic readings as surveyed geometry or validated field evidence.

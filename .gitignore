@@ -9,3 +9,4 @@ debug.log
 
 app/*.tsbuildinfo
 sites/
+app/site-source-osm.xml

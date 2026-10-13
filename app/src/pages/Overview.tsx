@@ -14,12 +14,17 @@ import OverviewCharts from '../components/OverviewCharts';
 import SensorPositions from '../components/SensorPositions';
 import { sensorMarkers } from '../api/sensorViews';
 import { partLink } from '../api/modelCatalog';
+import { mappedHouses, pilotByBuilding, site } from '../site/layout';
+import { radarStops } from '../site/weather';
+import MappedHouseRecord from '../components/MappedHouseRecord';
 export default function Overview() {
   const [view, setView] = useState<'3d' | 'plan'>('3d'),
     [layer, setLayer] = useState<'rain' | 'water'>('rain'),
     [range, setRange] = useState('Last storm'),
     [move, setMove] = useState(false),
     [reset, setReset] = useState(0),
+    [cloudOpacity, setCloudOpacity] = useState(55),
+    [mappedHouseId, setMappedHouseId] = useState<string | null>(null),
     [showSensors, setShowSensors] = useState(
       new URLSearchParams(location.search).get('sensors') === '1',
     );
@@ -50,6 +55,7 @@ export default function Overview() {
   });
   const data = result.data;
   const house = data?.houses.find((h) => h.id === houseId);
+  const mappedHouse = mappedHouseId ? mappedHouses.get(mappedHouseId) : undefined;
   return (
     <QueryState loading={result.isPending} error={result.error}>
       <div className="page-heading">
@@ -86,7 +92,7 @@ export default function Overview() {
               <div className="panel-heading">
                 <div>
                   <h2>Every house, and where water remains</h2>
-                  <p className="sub">Bandar Bukit Raja Phase 1 inspired schematic. Not a survey.</p>
+                  <p className="sub">Bandar Bukit Raja Phase 1 · Gamelan / Rodat housing window</p>
                 </div>
                 <div className="segments">
                   <button aria-pressed={view === '3d'} onClick={() => setView('3d')}>
@@ -97,6 +103,30 @@ export default function Overview() {
                   </button>
                 </div>
               </div>
+              <nav className="feature-jumps" aria-label="Open a drainage trial">
+                {data.features
+                  .filter((f) => f.kind === 'swale')
+                  .map((f) => (
+                    <Link key={f.id} className="feature-jump" to={'/feature/' + f.id}>
+                      <strong>
+                        <i
+                          style={{
+                            background: `var(--arm-${f.arm === 'decompaction' ? 'decompact' : f.arm})`,
+                          }}
+                        />
+                        {f.id} · {f.name}
+                      </strong>
+                      <span>
+                        Zone {f.zone} ·{' '}
+                        {f.arm === 'compost'
+                          ? 'Compost trial'
+                          : f.arm === 'decompaction'
+                            ? 'Decompaction trial'
+                            : 'Control trial'}
+                      </span>
+                    </Link>
+                  ))}
+              </nav>
               <div className="scene-toolbar">
                 <button aria-pressed={showSensors} onClick={() => setShowSensors(!showSensors)}>
                   Sensors
@@ -107,6 +137,21 @@ export default function Overview() {
                 <button aria-pressed={layer === 'rain'} onClick={() => setLayer('rain')}>
                   Rainfall
                 </button>
+                {layer === 'rain' && (
+                  <label className="cloud-control">
+                    Cloud opacity
+                    <input
+                      aria-label="Cloud opacity"
+                      type="range"
+                      min="0"
+                      max="75"
+                      step="5"
+                      value={cloudOpacity}
+                      onChange={(e) => setCloudOpacity(Number(e.target.value))}
+                    />
+                    <output>{cloudOpacity}%</output>
+                  </label>
+                )}
                 {view === '3d' && (
                   <>
                     <button aria-pressed={!move} onClick={() => setMove(false)}>
@@ -131,12 +176,33 @@ export default function Overview() {
                   <select
                     aria-label="Select a house"
                     value={houseId || ''}
-                    onChange={(e) => selectHouse(e.target.value || null)}
+                    onChange={(e) => {
+                      setMappedHouseId(null);
+                      selectHouse(e.target.value || null);
+                    }}
                   >
                     <option value="">Select a house</option>
                     {data.houses.map((h) => (
                       <option key={h.id}>{h.id}</option>
                     ))}
+                  </select>
+                </label>
+                <label>
+                  Map house
+                  <select
+                    aria-label="Select a mapped house"
+                    value={mappedHouseId || ''}
+                    onChange={(e) => {
+                      selectHouse(null);
+                      setMappedHouseId(e.target.value || null);
+                    }}
+                  >
+                    <option value="">Select a mapped house</option>
+                    {site.houses
+                      .filter((h) => !pilotByBuilding.has(h.id))
+                      .map((h) => (
+                        <option key={h.id}>{h.id}</option>
+                      ))}
                   </select>
                 </label>
               </div>
@@ -147,27 +213,67 @@ export default function Overview() {
                   features={data.features}
                   rain={data.rain}
                   layer={layer}
+                  cloudOpacity={cloudOpacity}
+                  mappedHouseId={mappedHouseId}
+                  onSelectMapped={setMappedHouseId}
                   move={move}
                   reset={reset}
                   sensors={data.sensors}
                   showSensors={showSensors}
                 />
               ) : (
-                <PlanMap {...data} layer={layer} showSensors={showSensors} />
+                <PlanMap
+                  {...data}
+                  layer={layer}
+                  showSensors={showSensors}
+                  cloudOpacity={cloudOpacity}
+                  mappedHouseId={mappedHouseId}
+                  onSelectMapped={setMappedHouseId}
+                />
               )}
               {showSensors && <SensorPositions sensors={sensorMarkers(data.sensors)} />}
               <p className="scene-caption">
-                Drag to orbit · Scroll to zoom · In Move houses, drag a house across the ground.
+                Drag to orbit · Scroll to zoom · In Move houses, select a house, then drag it.
               </p>
+              {view === '3d' && (
+                <div className="inline secondary-features">
+                  {data.features
+                    .filter((f) => f.kind !== 'swale')
+                    .map((f) => (
+                      <Link key={f.id} className="button" to={'/feature/' + f.id}>
+                        {f.id} · {f.name}
+                      </Link>
+                    ))}
+                </div>
+              )}
               <div className="heat-legend">
-                {['Under 20', '20–40', '40–60', 'Over 60 mm/h'].map((label, i) => (
-                  <span key={label}>
-                    <i style={{ background: `var(--heat-${i})` }} />
-                    {label}
+                {layer === 'rain' ? (
+                  radarStops.map((stop) => (
+                    <span key={stop.value}>
+                      <i style={{ background: stop.color }} />
+                      {stop.label}
+                    </span>
+                  ))
+                ) : (
+                  <span>
+                    <i style={{ background: 'var(--heat-1)' }} />
+                    Pilot house holding water after 6 h
                   </span>
-                ))}
-                <span>Synthetic rainfall scale</span>
+                )}
               </div>
+              <p className="small map-evidence">
+                {site.houses.length} mapped footprints · 24 synthetic pilot assignments. Heights,
+                drainage locations and weather are illustrative; not a survey or live radar.
+                <br />
+                <a href={site.googleMapsUrl} target="_blank" rel="noreferrer">
+                  Compare on Google Maps
+                </a>{' '}
+                ·{' '}
+                <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">
+                  © OpenStreetMap contributors · ODbL
+                </a>{' '}
+                · Map extract {site.fetchedAt}
+              </p>
               {zoneId && (
                 <div className="notice" role="status">
                   Zone {zoneId}: {data.zones.find((z) => z.id === zoneId)?.housesHoldingWater6h} of
@@ -176,6 +282,9 @@ export default function Overview() {
                 </div>
               )}
               {house && <HouseRecord house={house} faults={data.faults} inline={move} />}
+              {mappedHouse && (
+                <MappedHouseRecord house={mappedHouse} onClose={() => setMappedHouseId(null)} />
+              )}
             </section>
             <aside className="right-rail">
               <section className="panel">
