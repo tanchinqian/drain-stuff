@@ -1,3 +1,4 @@
+import { repairSteps } from './repairSteps';
 import { bayParts, drainParts } from './modelCatalog';
 import type { Fault, Part, Sensor, Status } from './types';
 
@@ -42,13 +43,7 @@ export function buildParts(
         : fault
           ? `${fault.type.replaceAll('_', ' ')}. Diagnosing input: ${fault.diagnosingInput}.`
           : 'No open fault recorded for this part.',
-      steps: fault
-        ? [
-            'Inspect the diagnosing input and its trust state before relying on the alert.',
-            definition.typicalFailure + ': confirm by a trained visual inspection.',
-            'Record the inspection and arrange a post-rain re-test.',
-          ]
-        : undefined,
+      steps: fault ? repairSteps[fault.type] : undefined,
     };
   });
 }

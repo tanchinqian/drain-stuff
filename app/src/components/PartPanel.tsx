@@ -83,6 +83,7 @@ export default function PartPanel({
         </p>
       )}
       <h3 style={{ marginTop: 20 }}>What looks wrong</h3>
+      <p className="small">Drain-down: hours for water to clear after rain.</p>
       <p style={{ marginTop: 8 }}>{part.issue?.split('Diagnosing input:')[0]}</p>
       {part.steps?.length && (
         <>
