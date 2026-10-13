@@ -115,7 +115,13 @@ function Model(props: Props) {
   ]);
   return (
     <>
-      <FitCamera width={13.5} height={9.6} />
+      <FitCamera
+        width={13.5}
+        height={9.6}
+        controlsRef={controls}
+        enabled={!props.move}
+        target={[1.2, 1.2, 0]}
+      />
       <color attach="background" args={['#E2DCCB']} />
       <ambientLight intensity={1.35} />
       <directionalLight position={[-6, 13, 8]} intensity={1.65} />
@@ -192,18 +198,6 @@ function Model(props: Props) {
           </group>
         );
       })}
-      <OrbitControls
-        ref={controls}
-        key={props.reset}
-        makeDefault
-        enabled={!props.move}
-        enablePan={false}
-        minPolarAngle={0.15}
-        maxPolarAngle={1.42}
-        minZoom={0.6}
-        maxZoom={3.5}
-        target={[1.2, 1.2, 0]}
-      />
     </>
   );
 }

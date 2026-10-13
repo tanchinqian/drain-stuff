@@ -22,3 +22,9 @@ The accepted `CODEX_ADDENDUM.md` was applied to the local React app in three sta
 The browser checks and review validate the implemented synthetic console within their stated scope. They do not test real probes, hardware calibration, field measurements, surveyed geometry or Malaysian treatment outcomes. No Lighthouse score is claimed. Schematic dimensions, layer depths, thresholds and practitioner prompts remain subject to local confirmation; manual squeeze/smell logs, photos and fixed-point infiltration tests are human records.
 
 `PRODUCT.md` preserves the accepted specification. `DESIGN.md` and `.impeccable/design.json` document actual reused tokens and components from the current source, with no change to the app's visual world.
+
+## Wheel zoom correction
+
+The first wheel movement previously clamped the fitted camera to an absolute maximum zoom of 3.5, making the models tiny. The shared camera component now keeps zoom between 0.6 and 3.5 times each viewport's fitted zoom. Scroll speed is reduced, and Reset view restores the fitted scale.
+
+All four browser checks passed after the fix. The new regression covers the household, drainage and compost views at 1440px and 360px, including the first wheel movement, repeated scrolling to both limits and Reset view. Physical trackpad gestures were not tested.

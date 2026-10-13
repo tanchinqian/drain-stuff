@@ -33,7 +33,7 @@ npm.cmd run test:e2e
 
 The browser checks need a Playwright Chromium installation. If a compatible Chromium is already installed, set `$env:PLAYWRIGHT_CHROMIUM_EXECUTABLE` to its executable path; otherwise install Playwright's browser with `npx.cmd playwright install chromium`. Playwright starts or reuses the local development server and writes refreshed captures to `docs/screens/`.
 
-The three browser checks cover the operator flow and allocation gates, every sensor row/site marker, register filters, sixteen/eight model parts and compost fault inputs. They also run axe WCAG A/AA checks on Overview, Detail, Compost, Sensors and Faults and check document overflow at 360px. These automated checks do not establish complete accessibility or field validity. The stage record in `docs/ADDENDUM_STAGES.md` records the executed results and review scope.
+The browser checks cover the operator flow and allocation gates, every sensor row/site marker, register filters, sixteen/eight model parts and compost fault inputs. They also run axe WCAG A/AA checks on Overview, Detail, Compost, Sensors and Faults and check document overflow at 360px. The wheel-zoom regression checks the household, drainage and compost models at 1440px and 360px, including repeated scrolling to both zoom limits and Reset view. These automated checks do not establish complete accessibility or field validity. The stage record in `docs/ADDENDUM_STAGES.md` records the executed results and review scope.
 
 ## Limits and project records
 

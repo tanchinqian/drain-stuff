@@ -35,7 +35,6 @@ function SceneContent({
   rain,
   layer,
   move,
-  reset,
   sensors,
   showSensors,
 }: Props) {
@@ -55,7 +54,13 @@ function SceneContent({
   ];
   return (
     <>
-      <FitCamera width={29.3} height={18.5} />
+      <FitCamera
+        width={29.3}
+        height={18.5}
+        controlsRef={controls}
+        enabled={!move}
+        target={[0, 0.2, 0]}
+      />
       <color attach="background" args={['#E2DCCB']} />
       <ambientLight intensity={1.35} />
       <directionalLight position={[-6, 13, 8]} intensity={1.65} />
@@ -240,18 +245,6 @@ function SceneContent({
           })}
         />
       )}
-      <OrbitControls
-        key={reset}
-        ref={controls}
-        makeDefault
-        enabled={!move}
-        enablePan={false}
-        minPolarAngle={0.15}
-        maxPolarAngle={1.42}
-        minZoom={0.55}
-        maxZoom={3.5}
-        target={[0, 0.2, 0]}
-      />
     </>
   );
 }
