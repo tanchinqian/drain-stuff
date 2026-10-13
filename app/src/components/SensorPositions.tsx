@@ -6,7 +6,7 @@ export default function SensorPositions({ sensors, showPositions = true }: { sen
     <details className="sensor-positions">
       <summary>Sensor markers · {sensors.length} inputs · Keyboard list</summary>
       <p className="small">
-        Square: OK · Triangle: suspect · Diamond: offline. Manual inputs mark where a human check is
+        Square: OK · Diamond: suspect or offline. Manual inputs mark where a human check is
         made.
       </p>
       <ul>

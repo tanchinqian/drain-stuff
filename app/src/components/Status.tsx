@@ -9,7 +9,7 @@ export const statusText = {
   ok: 'OK',
   watch: 'Watch',
   fault: 'Fault',
-  offline: 'Sensor offline',
+  offline: 'Sensor suspect / offline',
 } as const;
 export default function Status({ status }: { status: StatusType }) {
   return (

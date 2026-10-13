@@ -6,6 +6,7 @@ import type { Config, Part, PartId, Sensor } from '../api/types';
 import { createDrainParts, palette } from './geometry';
 import { useSelection } from '../state';
 import FitCamera from './FitCamera';
+import PartHighlight from './PartHighlight';
 import SensorMarkers from './SensorMarkers';
 import { createCompostParts } from './compostGeometry';
 import { sensorMarkers } from '../api/sensorViews';
@@ -90,7 +91,7 @@ function Model(props: Props) {
           material.clippingPlanes = props.assembly === 'section' ? [plane] : [];
           const dim = !part.installed || (props.mode === 'Troubleshoot' && part.status === 'ok');
           const baseOpacity = Number(material.userData.baseOpacity ?? 1);
-          material.opacity = dim ? baseOpacity * 0.25 : baseOpacity;
+          material.opacity = dim ? baseOpacity * (!part.installed ? 0.25 : 0.4) : baseOpacity;
           material.transparent = dim || baseOpacity < 1 || object instanceof Line;
           material.depthWrite = !dim && baseOpacity === 1;
           if (material instanceof MeshStandardMaterial)
@@ -156,12 +157,14 @@ function Model(props: Props) {
                 sensors={sensorMarkers(props.sensors).filter((s) => s.partId === id)}
               />
             )}
-            {selected === id && <SelectedBounds group={geometry} />}
+            {part.installed && part.sensorIds.length > 0 && part.status !== 'ok' && <PartHighlight group={geometry} status={part.status} number={props.parts.filter(p => p.installed && p.status !== 'ok').findIndex(p => p.partId === id) + 1} name={part.name} />}
+            {selected === id && part.status === 'ok' && <SelectedBounds group={geometry} />}
             {props.labels && (props.mode !== 'Operator' || selected === id) && (
               <Html position={[label.x, label.y, label.z]} center>
                 <div className="scene-label">
                   {part.name}
-                  {!part.installed && '  -  Not installed'}
+                  {!part.installed && '  -  Not installed; check by eye'}
+                  {part.installed && !part.sensorIds.length && ' - Not monitored; check by eye'}
                   {props.mode === 'Troubleshoot' && part.status !== 'ok' && (
                     <small>
                       {' '}

@@ -1,5 +1,5 @@
 import SearchableSelect from './SearchableSelect';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import type { Config, Fault, Part, PartId, Sensor } from '../api/types';
 import { legacyParts } from '../api/modelCatalog';
@@ -11,7 +11,7 @@ import SensorPositions from './SensorPositions';
 import { AssemblyControls, PartControls } from './ModelControls';
 export default function ModelWorkspace({
   ownerId,
-  parts,
+  parts: sourceParts,
   sensors,
   config,
   faults,
@@ -24,6 +24,7 @@ export default function ModelWorkspace({
   faults: Fault[];
   kind?: 'drainage' | 'compost';
 }) {
+  const parts = useMemo(() => sourceParts.map(p => p.installed && sensors.some(s => p.sensorIds.includes(s.sensorId) && s.status !== 'ok') ? { ...p, status: 'offline' as const } : p), [sourceParts, sensors]);
   const [params] = useSearchParams();
   const [showSensors, setShowSensors] = useState(false);
   const [partSearch, setPartSearch] = useState('');
@@ -132,6 +133,8 @@ export default function ModelWorkspace({
             .map((p) => (
               <button
                 key={p.partId}
+                className={p.installed && p.sensorIds.length ? 'part-status-' + p.status : undefined}
+                title={!p.installed || !p.sensorIds.length ? 'Check by eye: not installed or not monitored' : undefined}
                 aria-pressed={selected === p.partId}
                 onClick={() => select(p.partId)}
               >
@@ -175,6 +178,7 @@ export default function ModelWorkspace({
         </section>
         <PartPanel
           part={part}
+          config={config}
           fault={faults.find(
             (f) => f.featureId === ownerId && f.partId === selected && f.status !== 'closed',
           )}

@@ -1,4 +1,4 @@
-import type { Fault, Part, Sensor } from '../api/types';
+import type { Config, Fault, Part, Sensor } from '../api/types';
 import { api, isMock } from '../api/client';
 import { useWrite } from '../hooks';
 import type { FaultAction } from '../api/types';
@@ -6,14 +6,17 @@ import type { ViewMode } from '../three/DrainScene';
 import Status from './Status';
 import SensorInfo from './SensorInfo';
 import { dateTime } from '../utils';
+import { faultRules } from '../api/modelCatalog';
 import { DEMO_NOW } from '../api/mock/seed';
 export default function PartPanel({
   part,
+  config,
   fault,
   mode,
   sensors = [],
 }: {
   part: Part;
+  config: Config;
   fault?: Fault;
   mode: ViewMode;
   sensors?: Sensor[];
@@ -43,6 +46,11 @@ export default function PartPanel({
       )}
       {fault && (
         <div className="notice">
+          <h3>Why is this highlighted?</h3>
+          <p>Input: {fault.sensorIds.join(', ') || 'Human inspection'}</p>
+          <p>Rule: {faultRules.find(r => r.id === fault.ruleId)?.label ?? fault.ruleId}</p>
+          <p>{fault.type === 'standing_water' ? `Threshold: more than ${config.inspection.standingWaterH} h standing water (placeholder, to confirm)` : fault.type === 'not_heating' ? `Threshold: below ${config.inspection.compostNotHeatingC} degrees C (placeholder, to confirm)` : fault.type === 'too_wet' ? `Threshold: moisture above ${config.moisture.max}% or a wet squeeze check / puddles (placeholder, to confirm)` : fault.type === 'leachate' ? `Threshold: sump above ${config.inspection.sumpWatchCm} cm, or unchecked cover and sump with rain expected (placeholder, to confirm)` : fault.type.startsWith('sensor_') ? 'Trigger: suspect, offline or drifting input; no numeric threshold.' : 'Trigger: recorded visual or human finding; no numeric threshold configured.'}</p>
+          <p>Recorded {dateTime(fault.openedAt)} / synthetic</p>
           <strong>Diagnosing input</strong>
           <p>{fault.diagnosingInput}</p>
           {Object.values(fault.sensorStatusesAtAlert).includes('suspect') && (
