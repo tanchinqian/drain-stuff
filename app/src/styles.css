@@ -1,4 +1,7 @@
 @import 'tailwindcss';
+.compost-tabs { margin-bottom: 18px; }
+.compost-tabs [aria-selected='true'] { background: var(--ink); color: var(--panel); }
+[role='tabpanel'][hidden] { display: none; }
 .highlight-label { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--ink); background: var(--panel); padding: 3px 5px; white-space: nowrap; }
 .highlight-symbol { display: inline-grid; place-items: center; min-width: 24px; height: 24px; border: 2px solid var(--ink3); font-weight: 700; }
 .highlight-symbol.fault { border-color: var(--heat-3); }

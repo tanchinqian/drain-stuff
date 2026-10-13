@@ -192,6 +192,7 @@ test('every registered sensor has a row and a site marker; filters and model par
     'B-01-MANUAL',
   );
 
+  await page.getByRole('tab', { name: 'Checks', exact: true }).click();
   await page.getByRole('combobox', { name: 'Smell log', exact: true }).selectOption('putrid');
 
   await page.getByRole('button', { name: 'Save batch checks', exact: true }).click();

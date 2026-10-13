@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 export default function PhotoSlot({
   label,
   value,
@@ -9,11 +9,18 @@ export default function PhotoSlot({
   onChange: (value: string) => void;
 }) {
   const [error, setError] = useState('');
+  const [filename, setFilename] = useState('');
+  const input = useRef<HTMLInputElement>(null);
   return (
     <div className="photo-slot">
-      <label className="field">
-        {label}
+      <div className="field">
+        <span>{label}</span>
+        <button type="button" onClick={() => input.current?.click()}>Choose {label.toLowerCase()}</button>
+        <span className="small">{filename || (value ? 'Saved image attached' : 'No image chosen')}</span>
         <input
+          ref={input}
+          hidden
+          aria-label={label}
           type="file"
           accept="image/png,image/jpeg,image/webp"
           onChange={(event) => {
@@ -32,13 +39,15 @@ export default function PhotoSlot({
               if (typeof reader.result === 'string') {
                 onChange(reader.result);
                 setError('');
+                setFilename(file.name);
               }
             };
+            reader.onerror = () => setError('The image could not be read. Choose it again.');
             reader.readAsDataURL(file);
           }}
         />
         <span className="field-note">Demo attachment. Stored locally with synthetic records.</span>
-      </label>
+      </div>
       {value && <img src={value} alt={label + ' attached to the synthetic record'} />}
       <p role={error ? 'alert' : undefined} className="error">
         {error}

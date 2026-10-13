@@ -33,3 +33,15 @@ test('fault highlight has matching list treatment and provenance', async ({ page
  await page.goto('/feature/S3?part=media');
  await expect(page.locator('[data-part-highlight="offline"]').first()).toBeVisible();
 });
+
+test('compost tabs preserve unsaved form entries and support keyboard switching', async ({ page }) => {
+ await page.goto('/batches/B-01');
+ await page.getByRole('tab', {name: 'Readings', exact: true}).click();
+ await page.getByLabel('Moisture, %', {exact: true}).fill('51');
+ await page.getByRole('tab', {name: 'Checks', exact: true}).click();
+ await expect(page.getByRole('button', {name: 'Save batch checks', exact: true})).toBeVisible();
+ await page.getByRole('tab', {name: 'Checks', exact: true}).press('ArrowLeft');
+ await expect(page.getByLabel('Moisture, %', {exact: true})).toHaveValue('51');
+ await page.getByRole('tab', {name: 'Readings', exact: true}).press('Home');
+ await expect(page.locator('.cad-scene')).toBeVisible();
+});
