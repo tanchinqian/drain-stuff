@@ -1,3 +1,4 @@
+import SearchableSelect from './SearchableSelect';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import type { Config, Fault, Part, PartId, Sensor } from '../api/types';
@@ -25,6 +26,7 @@ export default function ModelWorkspace({
 }) {
   const [params] = useSearchParams();
   const [showSensors, setShowSensors] = useState(true);
+  const [partSearch, setPartSearch] = useState('');
   const select = useSelection((s) => s.selectPart),
     selected = useSelection((s) => s.partId);
   const [mode, setMode] = useState<ViewMode>('Operator'),
@@ -96,30 +98,48 @@ export default function ModelWorkspace({
         </div>
         <span className="small">Illustrative CAD-style assembly · synthetic readings</span>
       </div>
-      <label className="field mobile-part-picker">
-        Model part
-        <select value={selected} onChange={(e) => select(e.target.value as PartId)}>
+      <div className="field mobile-part-picker">
+        <span>Model part</span>
+        <SearchableSelect
+          label="Model part"
+          value={selected}
+          onChange={(e) => select(e.target.value as PartId)}
+        >
           {parts.map((p) => (
             <option key={p.partId} value={p.partId}>
               {p.name}
               {p.installed ? ' - ' + p.status : ' - Not installed'}
             </option>
           ))}
-        </select>
-      </label>
+        </SearchableSelect>
+      </div>
       <div className="detail-grid">
         <aside className="part-list" aria-label="Model parts">
-          {parts.map((p) => (
-            <button
-              key={p.partId}
-              aria-pressed={selected === p.partId}
-              onClick={() => select(p.partId)}
-            >
-              <span className={'status-mark ' + p.status} />
-              {p.name}
-              {!p.installed && <small>Not installed</small>}
-            </button>
-          ))}
+          <input
+            type="search"
+            aria-label="Search model parts"
+            placeholder="Search parts…"
+            value={partSearch}
+            onChange={(e) => setPartSearch(e.target.value)}
+          />
+          {!parts.some((p) => p.name.toLowerCase().includes(partSearch.trim().toLowerCase())) && (
+            <p className="small" role="status">
+              No matching parts.
+            </p>
+          )}
+          {parts
+            .filter((p) => p.name.toLowerCase().includes(partSearch.trim().toLowerCase()))
+            .map((p) => (
+              <button
+                key={p.partId}
+                aria-pressed={selected === p.partId}
+                onClick={() => select(p.partId)}
+              >
+                <span className={'status-mark ' + p.status} />
+                {p.name}
+                {!p.installed && <small>Not installed</small>}
+              </button>
+            ))}
         </aside>
         <section className="panel">
           <DrainScene

@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '../api/client';
 import ModelWorkspace from '../components/ModelWorkspace';
 import Status from '../components/Status';
+import StormPreview from '../components/StormPreview';
 import { QueryState } from '../components/QueryState';
 import { armName, dateOnly, testMean } from '../utils';
 export default function FeatureDetail() {
@@ -59,6 +60,8 @@ export default function FeatureDetail() {
               {data.trial?.owner?.name || data.feature.ownerOfRecord}
             </div>
           </div>
+          {id === 'S1' && <StormPreview />}
+          <div id="drain-assembly" />
           <ModelWorkspace
             ownerId={id}
             parts={data.feature.parts}

@@ -1,4 +1,88 @@
 @import 'tailwindcss';
+.register-search {
+  margin: 16px 0;
+}
+.register-search input {
+  min-height: 44px;
+}
+.register-search input::placeholder {
+  color: var(--ink3);
+  opacity: 1;
+}
+.select-search input::placeholder,
+.part-list input::placeholder {
+  color: var(--ink3);
+  opacity: 1;
+}
+.part-list > input {
+  min-width: 0;
+  width: 100%;
+  min-height: 44px;
+  margin-bottom: 8px;
+}
+.searchable-select {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  width: 100%;
+}
+.select-search {
+  display: flex;
+  gap: 6px;
+  min-width: 0;
+}
+.select-search input {
+  min-width: 0;
+  width: 100%;
+  min-height: 44px;
+}
+.searchable-select select {
+  min-width: 0;
+  width: 100%;
+}
+.storm-preview {
+  margin-bottom: 24px;
+}
+.storm-controls {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin: 18px 0;
+}
+.storm-controls input,
+.storm-preview > .field input {
+  width: 100%;
+  min-height: 44px;
+}
+.storm-scene {
+  height: 340px;
+}
+.storm-playback {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0;
+}
+.storm-readings {
+  margin: 16px 0;
+}
+.storm-preview details {
+  margin-top: 16px;
+}
+.storm-preview summary {
+  cursor: pointer;
+  min-height: 44px;
+}
+@media (max-width: 600px) {
+  .storm-controls {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .storm-scene {
+    height: 260px;
+  }
+}
 :root {
   color-scheme: light;
   --ground: #e9e4d8;

@@ -1,3 +1,4 @@
+import SearchableSelect from './SearchableSelect';
 import type { Dispatch, SetStateAction } from 'react';
 import type { PartId } from '../api/types';
 import type { Assembly, Offsets, ViewMode } from '../three/DrainScene';
@@ -91,7 +92,8 @@ export function AssemblyControls({
       </div>
       <div className="field">
         <label htmlFor="cut-axis">Section axis</label>
-        <select
+        <SearchableSelect
+          label="Section axis"
           id="cut-axis"
           value={cutAxis}
           onChange={(e) => {
@@ -101,7 +103,7 @@ export function AssemblyControls({
         >
           <option>X</option>
           <option>Z</option>
-        </select>
+        </SearchableSelect>
       </div>
       <div className="field">
         <label htmlFor="cut-position">Cut position</label>

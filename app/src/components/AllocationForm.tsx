@@ -1,3 +1,4 @@
+import SearchableSelect from './SearchableSelect';
 import { useState, type FormEvent } from 'react';
 import type { BatchDetail, Config, TrialDetail } from '../api/types';
 import { api } from '../api/client';
@@ -53,24 +54,32 @@ export default function AllocationForm({
       <p className="sub">Labelled pilot doses; no fixed target</p>
       <form onSubmit={submit}>
         <div className="form-grid" style={{ marginTop: 16 }}>
-          <label className="field">
-            Batch
-            <select value={batchId} onChange={(e) => setBatchId(e.target.value)}>
+          <div className="field">
+            <span>Batch</span>
+            <SearchableSelect
+              label="Batch"
+              value={batchId}
+              onChange={(e) => setBatchId(e.target.value)}
+            >
               {batches.map((b) => (
                 <option key={b.id} value={b.id}>
                   {b.id} · {b.maturityGate === 'passed' ? 'Mature' : b.gateReason}
                 </option>
               ))}
-            </select>
-          </label>
-          <label className="field">
-            Pilot dose
-            <select value={doseLabel} onChange={(e) => setDoseLabel(e.target.value)}>
+            </SearchableSelect>
+          </div>
+          <div className="field">
+            <span>Pilot dose</span>
+            <SearchableSelect
+              label="Pilot dose"
+              value={doseLabel}
+              onChange={(e) => setDoseLabel(e.target.value)}
+            >
               {config.pilotDoses.map((d) => (
                 <option key={d.label}>{d.label}</option>
               ))}
-            </select>
-          </label>
+            </SearchableSelect>
+          </div>
           <label className="field">
             Labelled dose, L/m²
             <input readOnly type="number" value={dose.lPerM2} max={config.doseCapLPerM2} />

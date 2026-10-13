@@ -1,3 +1,4 @@
+import SearchableSelect from '../components/SearchableSelect';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
@@ -171,9 +172,10 @@ export default function Overview() {
                     <button onClick={() => setReset((r) => r + 1)}>Reset view</button>
                   </>
                 )}
-                <label>
-                  House
-                  <select
+                <div>
+                  <span>House</span>
+                  <SearchableSelect
+                    label="House"
                     aria-label="Select a house"
                     value={houseId || ''}
                     onChange={(e) => {
@@ -185,11 +187,12 @@ export default function Overview() {
                     {data.houses.map((h) => (
                       <option key={h.id}>{h.id}</option>
                     ))}
-                  </select>
-                </label>
-                <label>
-                  Map house
-                  <select
+                  </SearchableSelect>
+                </div>
+                <div>
+                  <span>Map house</span>
+                  <SearchableSelect
+                    label="Map house"
                     aria-label="Select a mapped house"
                     value={mappedHouseId || ''}
                     onChange={(e) => {
@@ -203,8 +206,8 @@ export default function Overview() {
                       .map((h) => (
                         <option key={h.id}>{h.id}</option>
                       ))}
-                  </select>
-                </label>
+                  </SearchableSelect>
+                </div>
               </div>
               {view === '3d' ? (
                 <NeighbourhoodScene

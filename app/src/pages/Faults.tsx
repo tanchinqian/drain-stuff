@@ -1,3 +1,4 @@
+import SearchableSelect from '../components/SearchableSelect';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -51,35 +52,43 @@ export default function Faults() {
       </div>
       <section className="panel">
         <div className="form-grid" style={{ marginBottom: 18 }}>
-          <label className="field">
-            Zone
-            <select value={zone} onChange={(e) => setZone(e.target.value)}>
+          <div className="field">
+            <span>Zone</span>
+            <SearchableSelect label="Zone" value={zone} onChange={(e) => setZone(e.target.value)}>
               <option value="all">All zones</option>
               {['A', 'B', 'C', 'D'].map((v) => (
                 <option key={v}>{v}</option>
               ))}
-            </select>
-          </label>
-          <label className="field">
-            Fault type
-            <select value={type} onChange={(e) => setType(e.target.value)}>
+            </SearchableSelect>
+          </div>
+          <div className="field">
+            <span>Fault type</span>
+            <SearchableSelect
+              label="Fault type"
+              value={type}
+              onChange={(e) => setType(e.target.value)}
+            >
               <option value="all">All types</option>
               {[...new Set(query.data?.map((f) => f.type) ?? [])].map((v) => (
                 <option key={v} value={v}>
                   {v.replaceAll('_', ' ')}
                 </option>
               ))}
-            </select>
-          </label>
-          <label className="field">
-            Recorded status
-            <select value={status} onChange={(e) => setStatus(e.target.value)}>
+            </SearchableSelect>
+          </div>
+          <div className="field">
+            <span>Recorded status</span>
+            <SearchableSelect
+              label="Recorded status"
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+            >
               <option value="all">All statuses</option>
               {['open', 'inspected', 'closed'].map((v) => (
                 <option key={v}>{v}</option>
               ))}
-            </select>
-          </label>
+            </SearchableSelect>
+          </div>
         </div>
         <div className="table-wrap">
           <table>

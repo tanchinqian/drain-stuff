@@ -1,3 +1,4 @@
+import SearchableSelect from './SearchableSelect';
 import { useState, type FormEvent } from 'react';
 import type { BatchChecks, BatchDetail } from '../api/types';
 import { api } from '../api/client';
@@ -55,9 +56,10 @@ export default function BatchChecksForm({ batch }: { batch: BatchDetail }) {
         </p>
         <hr className="divider" />
         <h3>Human reference checks</h3>
-        <label className="field">
-          Squeeze test
-          <select
+        <div className="field">
+          <span>Squeeze test</span>
+          <SearchableSelect
+            label="Squeeze test"
             value={checks.squeeze}
             onChange={(e) =>
               setChecks({ ...checks, squeeze: e.target.value as BatchChecks['squeeze'] })
@@ -66,11 +68,12 @@ export default function BatchChecksForm({ batch }: { batch: BatchDetail }) {
             {['wet', 'ok', 'dry'].map((v) => (
               <option key={v}>{v}</option>
             ))}
-          </select>
-        </label>
-        <label className="field">
-          Smell log
-          <select
+          </SearchableSelect>
+        </div>
+        <div className="field">
+          <span>Smell log</span>
+          <SearchableSelect
+            label="Smell log"
             value={checks.smell}
             onChange={(e) =>
               setChecks({ ...checks, smell: e.target.value as BatchChecks['smell'] })
@@ -79,8 +82,8 @@ export default function BatchChecksForm({ batch }: { batch: BatchDetail }) {
             <option value="normal">Normal</option>
             <option value="putrid">Putrid / rotten egg</option>
             <option value="ammonia">Ammonia smell</option>
-          </select>
-        </label>
+          </SearchableSelect>
+        </div>
         {checkbox('puddles', 'Puddles observed on the base')}
         {checkbox('pests', 'Pests observed  -  visual only')}
         <label className="field">

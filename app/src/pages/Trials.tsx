@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { api } from '../api/client';
 import { armName, dateOnly, exportCsv, overdue } from '../utils';
@@ -9,6 +10,7 @@ import GuardrailForm from '../components/GuardrailForm';
 import AllocationForm from '../components/AllocationForm';
 export default function Trials() {
   const [params, setParams] = useSearchParams();
+  const [search, setSearch] = useState('');
   const query = useQuery({
     queryKey: ['trial-register'],
     queryFn: async () => {
@@ -23,6 +25,13 @@ export default function Trials() {
   const data = query.data,
     selected =
       data?.trials.find((t) => t.featureId === (params.get('feature') || 'S1')) || data?.trials[0];
+  const rows =
+    data?.trials.filter((t) =>
+      [t.featureId, armName[t.arm], t.soilTexture, t.owner?.name, t.batchId, t.doseLabel]
+        .join(' ')
+        .toLowerCase()
+        .includes(search.trim().toLowerCase()),
+    ) ?? [];
   return (
     <QueryState loading={query.isPending} error={query.error}>
       <div className="page-heading">
@@ -57,6 +66,16 @@ export default function Trials() {
           <TrialComparison trials={data.trials} config={data.config} />
           <section className="panel">
             <h2>Trial register</h2>
+            <label className="field register-search">
+              Search trials
+              <input
+                type="search"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Feature, arm, soil, owner or batch"
+              />
+            </label>
+            {!rows.length && <p role="status">No matching trials. Clear search to see all.</p>}
             <div className="table-wrap">
               <table>
                 <thead>
@@ -69,7 +88,7 @@ export default function Trials() {
                   </tr>
                 </thead>
                 <tbody>
-                  {data.trials.map((t) => (
+                  {rows.map((t) => (
                     <tr key={t.featureId}>
                       <td>
                         <button

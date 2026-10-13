@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { api } from '../api/client';
 import { dateOnly, exportCsv } from '../utils';
@@ -7,6 +8,7 @@ import BatchChecksForm from '../components/BatchChecksForm';
 import BatchReadingForm from '../components/BatchReadingForm';
 export default function Batches() {
   const [params, setParams] = useSearchParams();
+  const [search, setSearch] = useState('');
   const query = useQuery({
     queryKey: ['batch-ledger'],
     queryFn: async () => {
@@ -20,6 +22,13 @@ export default function Batches() {
   });
   const data = query.data,
     selected = data?.batches.find((b) => b.id === params.get('batch')) || data?.batches[0];
+  const rows =
+    data?.batches.filter((b) =>
+      [b.id, b.bay, b.status, b.maturityGate, b.gateReason]
+        .join(' ')
+        .toLowerCase()
+        .includes(search.trim().toLowerCase()),
+    ) ?? [];
   return (
     <QueryState loading={query.isPending} error={query.error}>
       <div className="page-heading">
@@ -44,6 +53,16 @@ export default function Batches() {
         <>
           <section className="panel">
             <h2>Batch ledger</h2>
+            <label className="field register-search">
+              Search batches
+              <input
+                type="search"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Batch, bay, status or maturity"
+              />
+            </label>
+            {!rows.length && <p role="status">No matching batches. Clear search to see all.</p>}
             <div className="table-wrap">
               <table>
                 <thead>
@@ -57,7 +76,7 @@ export default function Batches() {
                   </tr>
                 </thead>
                 <tbody>
-                  {data.batches.map((batch) => (
+                  {rows.map((batch) => (
                     <tr key={batch.id}>
                       <td>
                         <button

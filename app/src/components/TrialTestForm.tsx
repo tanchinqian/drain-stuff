@@ -1,3 +1,4 @@
+import SearchableSelect from './SearchableSelect';
 import { useState, type FormEvent } from 'react';
 import type { Metric, TrialDetail } from '../api/types';
 import { api } from '../api/client';
@@ -37,9 +38,10 @@ export default function TrialTestForm({ trial }: { trial: TrialDetail }) {
       </p>
       <form onSubmit={submit}>
         <div className="form-grid" style={{ marginTop: 16 }}>
-          <label className="field">
-            Soil texture
-            <select
+          <div className="field">
+            <span>Soil texture</span>
+            <SearchableSelect
+              label="Soil texture"
               value={texture}
               disabled={trial.baselineDone}
               onChange={(e) => setTexture(e.target.value)}
@@ -48,26 +50,34 @@ export default function TrialTestForm({ trial }: { trial: TrialDetail }) {
               {['Clay loam · synthetic', 'Sandy loam · synthetic', 'Sand · synthetic'].map((v) => (
                 <option key={v}>{v}</option>
               ))}
-            </select>
-          </label>
+            </SearchableSelect>
+          </div>
           <label className="field">
             Test phase
             <input readOnly value={trial.baselineDone ? 'Re-test' : 'Baseline before treatment'} />
           </label>
-          <label className="field">
-            Marked point
-            <select value={point} onChange={(e) => setPoint(e.target.value)}>
+          <div className="field">
+            <span>Marked point</span>
+            <SearchableSelect
+              label="Marked point"
+              value={point}
+              onChange={(e) => setPoint(e.target.value)}
+            >
               {Array.from(
                 { length: trial.markedPoints },
                 (_, i) => trial.featureId + '-P' + (i + 1),
               ).map((id) => (
                 <option key={id}>{id}</option>
               ))}
-            </select>
-          </label>
-          <label className="field">
-            Measurement
-            <select value={metric} onChange={(e) => setMetric(e.target.value as Metric)}>
+            </SearchableSelect>
+          </div>
+          <div className="field">
+            <span>Measurement</span>
+            <SearchableSelect
+              label="Measurement"
+              value={metric}
+              onChange={(e) => setMetric(e.target.value as Metric)}
+            >
               <option value="infiltration_mm_hr">Infiltration, mm/h</option>
               {trial.baselineDone && (
                 <>
@@ -75,8 +85,8 @@ export default function TrialTestForm({ trial }: { trial: TrialDetail }) {
                   <option value="sediment_mm">Sediment, mm</option>
                 </>
               )}
-            </select>
-          </label>
+            </SearchableSelect>
+          </div>
           <label className="field">
             Measured value
             <input

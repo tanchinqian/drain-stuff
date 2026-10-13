@@ -1,3 +1,4 @@
+import SearchableSelect from '../components/SearchableSelect';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -103,37 +104,45 @@ export default function Sensors() {
       )}
       <section className="panel">
         <div className="form-grid">
-          <label className="field">
-            Zone
-            <select value={zone} onChange={(e) => setZone(e.target.value)}>
+          <div className="field">
+            <span>Zone</span>
+            <SearchableSelect label="Zone" value={zone} onChange={(e) => setZone(e.target.value)}>
               <option value="">All zones</option>
               {['A', 'B', 'C', 'D'].map((z) => (
                 <option key={z}>{z}</option>
               ))}
-            </select>
-          </label>
-          <label className="field">
-            Part
-            <select value={partId} onChange={(e) => setPartId(e.target.value)}>
+            </SearchableSelect>
+          </div>
+          <div className="field">
+            <span>Part</span>
+            <SearchableSelect
+              label="Part"
+              value={partId}
+              onChange={(e) => setPartId(e.target.value)}
+            >
               <option value="">All parts</option>
               {[...drainParts, ...bayParts].map((p) => (
                 <option key={p.partId} value={p.partId}>
                   {p.name}
                 </option>
               ))}
-            </select>
-          </label>
-          <label className="field">
-            Trust status
-            <select value={status} onChange={(e) => setStatus(e.target.value)}>
+            </SearchableSelect>
+          </div>
+          <div className="field">
+            <span>Trust status</span>
+            <SearchableSelect
+              label="Trust status"
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+            >
               <option value="">All statuses</option>
               {['ok', 'suspect', 'offline'].map((s) => (
                 <option key={s} value={s}>
                   {s}
                 </option>
               ))}
-            </select>
-          </label>
+            </SearchableSelect>
+          </div>
         </div>
         <p className="small">
           {rows.length} inputs shown. Manual logs use a method-check date; photo inputs are human

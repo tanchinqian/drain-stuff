@@ -14,6 +14,12 @@ npm.cmd run dev
 
 `npm.cmd ci` is the fresh setup step. Open [Overview](http://127.0.0.1:5173/), [Sensors](http://127.0.0.1:5173/sensors), [S1 drainage model](http://127.0.0.1:5173/feature/S1) or [B-01 compost model](http://127.0.0.1:5173/batches/B-01). The default server binds to this computer only.
 
+## Try a storm at S1
+
+Open [S1](http://127.0.0.1:5173/feature/S1) and use **Try a storm at S1** above the detailed drainage assembly. Set rain intensity (0–120 mm/h), duration (5–120 minutes) and outlet blockage (0–100%), then select **Play storm** or scrub the timeline. Playback includes 180 minutes after rain; pause, reset and replay are available. Changing a setting resets the scenario. **Inspect drainage parts** jumps to the existing assembly below.
+
+The scene follows runoff from houses through the inlet, soil layers and outlet. Numerical flows, surface ponding and cumulative overflow accompany the cyan water. This is an illustrative storage model with exaggerated visible depth, independent of sensor readings and trial records. See [storm assumptions, controls and evidence](docs/STORM_SIMULATION.md).
+
 ## Data and API
 
 Without `VITE_API_BASE`, the app uses deterministic synthetic data. Its fixed clock is **12 October 2026, 09:40 Asia/Singapore** (`2026-10-12T01:40:00.000Z`), so age, due dates and new mock records do not advance with wall time. Records persist in this browser's local storage under `drain-trial-console-v1`; the current stored data version is 2. A browser with unavailable storage can still use the in-memory mock.

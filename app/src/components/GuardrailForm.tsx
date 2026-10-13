@@ -1,3 +1,4 @@
+import SearchableSelect from './SearchableSelect';
 import { useState, type FormEvent } from 'react';
 import type { Config, Guardrails, TrialDetail } from '../api/types';
 import { api } from '../api/client';
@@ -28,9 +29,10 @@ export default function GuardrailForm({ trial, config }: { trial: TrialDetail; c
       <h2>Guardrail checks</h2>
       <p className="sub">Human recorded checks · synthetic</p>
       <form onSubmit={submit}>
-        <label className="field" style={{ marginTop: 16 }}>
-          Nutrient-export check
-          <select
+        <div className="field" style={{ marginTop: 16 }}>
+          <span>Nutrient-export check</span>
+          <SearchableSelect
+            label="Nutrient-export check"
             value={checks.nutrientExport}
             onChange={(e) =>
               setChecks({
@@ -42,8 +44,8 @@ export default function GuardrailForm({ trial, config }: { trial: TrialDetail; c
             <option value="not_tested">Not tested</option>
             <option value="pass">Human recorded pass</option>
             <option value="fail">Human recorded fail</option>
-          </select>
-        </label>
+          </SearchableSelect>
+        </div>
         {checks.nutrientExport !== 'not_tested' && (
           <label className="field" style={{ marginTop: 12 }}>
             Outlet sample result, mg/L
@@ -94,9 +96,10 @@ export default function GuardrailForm({ trial, config }: { trial: TrialDetail; c
           value={checks.postStormPhoto}
           onChange={(photo) => setChecks({ ...checks, postStormPhoto: photo })}
         />
-        <label className="field">
-          Post-storm result
-          <select
+        <div className="field">
+          <span>Post-storm result</span>
+          <SearchableSelect
+            label="Post-storm result"
             value={checks.postStormCheck}
             onChange={(e) =>
               setChecks({
@@ -108,8 +111,8 @@ export default function GuardrailForm({ trial, config }: { trial: TrialDetail; c
             <option value="pending">Pending</option>
             <option value="ok">Checked, no issue recorded</option>
             <option value="issue">Issue recorded</option>
-          </select>
-        </label>
+          </SearchableSelect>
+        </div>
         <hr className="divider" />
         <Status status={checks.drainDownFlag ? 'watch' : 'ok'} />
         <p className="small">
