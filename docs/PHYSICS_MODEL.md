@@ -4,7 +4,7 @@ Reduced-order model, placeholder parameters, not calibrated, not a design tool, 
 
 ## Implementation boundary
 
-Stage A introduces isolated, deterministic TypeScript modules in `app/src/simulation/physics/`. The existing UI still uses `simulation/storm.ts` until the shared-clock integration. Do not interpret seeded readings as outputs of the new engine. The mock API contract remains 2.0.0. Radar colours and cyan water are retained under the user's explicit exception to the brief.
+Stage A supplies deterministic TypeScript modules in `app/src/simulation/physics/`. Stage B/B2 now runs S1/S2/S3/I1/T1/T2 in a shared Web Worker and exposes one feature-page timeline. Config-derived swale, inlet and tree-pit geometry, cyan water, live 2D sections, charts, CSV, eligible sensor overlays and temporary capacity alerts use these runs. The feature route uses the new controls even if unused legacy storm preview code remains in the source. Neighbourhood/Plan and compost UI still use their earlier implementation. Do not interpret all seeded records as outputs of the engine. The mock API contract remains 2.0.0. Radar colours and cyan water are retained under the user's explicit exception to the brief.
 
 All engine flows are m3/s, storage m3, distance m, and time s. Temperature uses degrees Celsius; thermal differences are kelvins. Rain display conversion is m/s multiplied by 3.6e6 for mm/h. Flow display conversion is m3/s multiplied by 60000 for L/min. The IDF shape calculation alone takes minutes and years explicitly.
 
@@ -28,7 +28,7 @@ Outfall tailwater reduces underdrain discharge by `clamp((h-tailwater)/h,0,1)` a
 
 ### Swale and tree-pit layers
 
-Surface storage is `V=L(b h+z h²)`. Side slope defaults to 3 horizontal:1 vertical. Inlet chambers use vertical sides and no soil transport. Tree pits have smaller dimensions and catchments. S1/S2/S3 start with the same entered conductivity; comparisons copy all settings and change only Ks and its provenance/sample count. No treatment benefit is assumed.
+Surface storage is `V=L(b h+z h²)`. Side slope defaults to 3 horizontal:1 vertical. Inlet chambers use vertical sides and no soil transport. Tree pits have smaller dimensions and catchments. S1/S2/S3 start with the same entered conductivity and weather. The engine's controlled comparison helper copies settings and changes only Ks and its provenance/sample count; the UI shows each feature's current configuration, so other parameter edits or scenario overrides can confound it. The clogged-sock scenario specifically affects S1. Loading a trial re-test is explicit and uses a seeded synthetic value with sample count, not measured site calibration. No treatment benefit is assumed.
 
 Media infiltration uses `Ks_eff (1+(h+psi)/Lmedia) A`, limited by surface donor water and media pore space. `Ks_eff=Ks(1-clog)`. Percolation is `Ks_eff exp(-HCO(phi-theta)) A`, allowed only above field capacity. Water passes through a finite transition reservoir to finite gravel void storage. The initial media is at residual/wilting moisture; only water above that residual is in the event ledger. This head-dependent approximation is not the full Green-Ampt wetting-front solution or a SWMM-equivalent solver.
 
@@ -54,7 +54,7 @@ The thermal explicit step also obeys `dt <= 0.45/[alpha(1/dx²+1/dz²)]` and a c
 
 The [216-input inventory](PHYSICS_SENSORS.md) classifies every existing ID as hydraulic, thermal, or human/seeded. `virtualInput` returns an immutable overlay and provenance, leaving original records intact. Rain feeds use ten-minute tipping-bucket totals. Soil moisture probes share a lumped media theta (no false depth resolution). Level noise is deterministic by sensor ID and time; bias/drift is explicit. Ultrasonic range is mount height minus level. Offline inputs retain their previous value/time, including null if no previous reading exists.
 
-The current adapter is a building block, not yet a live mock-API connection. House sensors need their own routed node. Compost sensors need their matching bay run. The consistency scanner compares the same owner, quantity, time, units and provenance; it does not pretend historical observations and current simulations are interchangeable. `frameRecords` supplies canonical live quantities. `drainDown` reports a censored result if water remains at the simulation window end, rather than inventing a drain-down duration.
+The current `useLiveSensors` adapter overlays eligible feature inputs on feature pages and the Sensors register without writing into mock history. Rain references use the shared rain run. Display provenance identifies live model minute versus seeded record/human input. Geometry-linked mounts use model dimensions where mapped; the inventory retains original schematic coordinates. House sensors still need their own routed node and remain seeded. Compost thermal sensors need their matching bay run and remain seeded; soil temperature has no thermal model. The consistency scanner compares the same owner, quantity, time, units and provenance; it does not pretend historical observations and current simulations are interchangeable. `frameRecords` supplies canonical live quantities. `drainDown` reports a censored result if water remains at the simulation window end, rather than inventing a drain-down duration.
 
 ## Scenario and fault coverage
 
@@ -66,7 +66,7 @@ The current adapter is a building block, not yet a live mock-API connection. Hou
 | High tailwater | 0.8 m downstream head | One-way throttling only |
 | Sensor drift | 0.05 m bias + 1e-6 m/s | Measurement overlay; physical run unchanged |
 | Sediment | Entered depth and clog coefficient | No sediment transport |
-| Standing water | Node/feature storage trace | Rule wiring still pending |
+| Standing water | Node/feature storage trace | Temporary overflow capacity alert; not a duration diagnosis |
 | Sensor offline | Existing trust flag and last known value | No change to physical engine |
 | Too wet / leachate | Grid moisture, oxygen and sump | Human smell/puddle confirmation stays human |
 | Not heating | Thermal trace, initial moisture and geometry | Rule wiring still pending |
@@ -74,7 +74,9 @@ The current adapter is a building block, not yet a live mock-API connection. Hou
 
 ## Worker and export
 
-`worker.ts` accepts a version-local typed request with request ID, config and hydraulic/thermal options; it returns a result or an error. It has no DOM or mock DB dependency. The browser test exercises the actual worker. Cancellation is by terminating the worker; callers must ignore stale request IDs. `runCsv` exports inputs, parameter provenance, rain series, every hydraulic state/flux, balance, and network nodes/links. UI download and shared playback are integration work.
+`worker.ts` accepts a version-local typed request with request ID, config and hydraulic/thermal options; it returns a result or an error. It has no DOM or mock DB dependency. The browser test exercises the actual worker. `SimulationDriver` calculates all six hydraulic runs, terminates superseded workers, reports errors and offers retry. The shared store resets playback when inputs change. `runCsv` exports inputs, parameter provenance, rain series, every hydraulic state/flux, balance, and network nodes/links through **Export run CSV**. Playback respects reduced motion by using manual timeline/minute controls; flow arrows are static and their width represents flow.
+
+Feature-page alerts are ephemeral scenario outputs for inlet/sock capacity, overflow, silted-drain conditions and sensor trust. They do not overwrite seeded fault history or solve sediment transport, scour, joint leaks, odour or other visual/human categories. The current section is illustrative: dimensions come from uncalibrated parameters and RL is a local datum. Optional 3D depth exaggeration is visual only. I1 chamber depth uses the crest parameter, and its 2D section shows live water without invented soil layers.
 
 ## Primary references
 

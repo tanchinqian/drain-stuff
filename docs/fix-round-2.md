@@ -1,25 +1,28 @@
 # Physics round 2 — staged implementation
 
-User approved the physics brief with existing radar/cyan colours retained and no push. Work is local.
+User approved the physics brief with radar/cyan colours retained and no push. Work is local. This record covers Stage A and feature integration B/B2, not the entire physics brief.
 
-## Stage A: engine foundation
+## Implemented scope
 
-Added typed parameter provenance; design/uniform/drawn hyetographs; routed roof/paved/lawn runoff; a donor-limited node/link graph; partial circular Manning, gully and outfall hydraulics; head-dependent media, transition and gravel states; clogging, ET, seepage, overflow, and tailwater; configurations for all six features; conductivity-only comparisons; deterministic sensor overlays; a 12 × 8 thermal/moisture compost engine; Web Worker entry; CSV serialization; and quantity consistency checks.
+Stage A provides parameter provenance; design/uniform/drawn rain; roof/paved/lawn runoff; a donor-limited network; partial circular Manning, gully and outfall hydraulics; media, transition and gravel storage; clogging, ET, seepage, overflow and tailwater; six configurations; controlled conductivity comparisons; sensor adapters; a 12 × 8 compost thermal/moisture engine; worker execution; CSV; and quantity checks.
 
-The complete equations, scope, parameter register and 216-input inventory are linked from [PHYSICS_MODEL.md](PHYSICS_MODEL.md). Existing UI and seeded records remain on their previous implementation until integration. No Stage B–D visuals are claimed complete by this engine checkpoint.
+Stage B/B2 connects S1/S2/S3/I1/T1/T2 to one worker-driven clock. Config-derived swale, inlet and tree-pit geometry includes hatching, dimensions and live cyan water. Feature pages and Sensors overlay eligible live hydraulic readings. Temporary capacity alerts remain distinct from seeded fault history. Charts, tables, balance, searchable parameter/equation/source fields, seeded trial-Ks loading, CSV, live 2D sections and reduced-motion manual controls are available.
 
-## Conflicts resolved explicitly
+Open `/feature/S1` (or S2/S3/I1/T1/T2), then **Play storm** below the model. Expand **Storm settings, charts and model parameters** for inputs, outputs and export. Parameter edits recalculate on leaving the field; changed inputs restart playback. The optional 3D water-depth x5 display changes no numerical reading.
 
-- Retain radar/cyan under the direct user instruction.
-- An inlet blockage raises upstream storage but can reduce downstream swale ponding. Test the relevant location, not a physically invalid everywhere-increases condition.
-- Keep manual observations and maturity checks. A numerical low-oxygen signal does not establish rotten-egg smell, pests or gas concentration.
-- Conductivity defaults are identical placeholders for S1/S2/S3. Only entered or explicitly loaded trial values may distinguish a controlled arm comparison.
-- Missing historical values remain missing; offline sensors do not receive fabricated last-known readings.
+## Limits and remaining stages
 
-## Still required after the engine checkpoint
+- Equations and coefficients are uncalibrated reduced-order placeholders: no survey, design-tool, forecast or treatment-validation claim. See [model](PHYSICS_MODEL.md), [parameters](PHYSICS_PARAMETERS.md) and [216-input inventory](PHYSICS_SENSORS.md).
+- S1/S2/S3 start with equal conductivity and weather. Other parameter edits or scenario overrides can confound comparison. Loaded trial re-tests remain seeded synthetic values. Compost allocation does not alter conductivity.
+- Neighbourhood/Plan retain earlier implementation. Network/Plan parity, actual context connections and moved-house routing remain Stage C work; house sensors remain seeded.
+- Compost UI, matching thermal bay runs and allocation-depth integration remain later work. The thermal engine foundation does not make compost UI readings live.
+- Human checks, offline last-known records and seeded history remain intact. Ephemeral capacity/trust alerts do not solve every visual fault. Blockage can raise upstream kerb storage while lowering downstream ponding; overflow is not a duration diagnosis.
+- Sediment transport, scour, mulch movement, leaks, pests, gas chemistry and smell are not solved. Low oxygen is not measured odour or gas concentration.
 
-Shared clock and live record overlay; default-run reconciliation across screens; physics-driven fault-rule connection; geometry factories and real-scale sensor mounts; detailed swale/inlet/tree-pit sections; network and Plan parity; moved-house routing; compost interface and allocation-depth connection; user-facing parameter/equation tables and CSV; reduced-motion integration; final accessibility checks and refreshed visual evidence. Human visual fault categories do not yet have explicit physical transport models.
+## Verification and review, 14 October 2026
 
-## Verification
+The implementation owner reports a final 46-unit-test rerun passing and a full 14-test browser run passing before four visual-review fixes. After those fixes, production build/lint and five affected browser checks passed: three console and two physics checks. The inlet 2D water assertion uses High tailwater at minute 25; an initially dry normal-minute-1 setup was corrected. This does not claim a complete browser-suite rerun after the fixes.
 
-Production build and lint pass. All 42 unit tests pass, including 24 new physics checks and six deterministic scenario snapshots. The initial complete browser run passed all 13 tests, including the real Web Worker. After tightening thermal parameter validation and sensor-owner isolation, the final run passed 12 checks but encountered a transient OneDrive file-access error saving `sensors-desktop.png`; that screenshot/accessibility check passed on its isolated retry (all five desktop/mobile routes). No app assertion was relaxed. Browser coverage includes the existing map, parts, search, palette, compost forms, accessibility, storm and wheel-zoom checks. Captures still show the previous UI, not new physics-driven geometry. No GitHub push.
+The independent reviewer returned **ship at the four-item fix-list scope** after opening seven captures. Resolved: I1 chamber depth/live 2D fallback; readable mobile chart/section labels outside scaled SVG; compact reading provenance; short speed options. This bounded fix review is not a new whole-surface review or completion verdict for later stages.
+
+Default feature captures: `docs/screens/detail-desktop.png` and `detail-mobile.png`. Scenario captures: `.impeccable/review/physics-desktop.png`, `physics-mobile.png`, `physics-inlet-desktop.png`, `physics-inlet-2d-desktop.png` and `physics-inlet-2d-mobile.png`. Checks do not establish complete accessibility or physical validity. No detector ran because of `cache_directory_failed`; no detector result is claimed. No GitHub push.

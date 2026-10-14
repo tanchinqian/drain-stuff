@@ -14,11 +14,13 @@ npm.cmd run dev
 
 `npm.cmd ci` is the fresh setup step. Open [Overview](http://127.0.0.1:5173/), [Sensors](http://127.0.0.1:5173/sensors), [S1 drainage model](http://127.0.0.1:5173/feature/S1) or [B-01 compost model](http://127.0.0.1:5173/batches/B-01). The default server binds to this computer only.
 
-## Try a storm at S1
+## Play a feature storm
 
-Open [S1](http://127.0.0.1:5173/feature/S1) and use **Try a storm at S1** inside the collapsed storm section below the detailed drainage assembly. Set rain intensity (0–120 mm/h), duration (5–120 minutes) and outlet blockage (0–100%), then select **Play storm** or scrub the timeline. Playback includes 180 minutes after rain; pause, reset and replay are available. Changing a setting resets the scenario. **Inspect drainage parts** jumps to the assembly above.
+Open [S1](http://127.0.0.1:5173/feature/S1), or replace S1 in `/feature/S1` with S2, S3, I1, T1 or T2. Select **Play storm** directly beneath the model. Pause, scrub the timeline, step by minute or reset; all six feature pages share the same clock. Changing model inputs recalculates the runs and resets playback. With reduced motion enabled, use the timeline and minute buttons.
 
-The scene follows runoff from houses through the inlet, soil layers and outlet. Numerical flows, surface ponding and cumulative overflow accompany the cyan water. This is an illustrative storage model with exaggerated visible depth, independent of sensor readings and trial records. See [storm assumptions, controls and evidence](docs/STORM_SIMULATION.md).
+Expand **Storm settings, charts and model parameters** for peak rain, duration, rain pattern, scenarios, tailwater and conductivity. The section includes response charts with tables, water balance, **Export run CSV**, and a searchable **How this is calculated · parameters and sources** table. Parameter edits apply when leaving the field. **2D section** provides a live flat alternative; **3D water depth x5** changes only the display and is off by default.
+
+The feature geometry, water and eligible sensor readings now follow the same reduced-order run. S1/S2/S3 start with equal conductivity and weather; other parameter edits or scenario overrides can make the comparison unequal. Loading a trial re-test explicitly loads a **seeded synthetic** value, not a field calibration or treatment finding. Neighbourhood/Plan and compost views retain their earlier implementation. See [current equations and limits](docs/PHYSICS_MODEL.md); [STORM_SIMULATION.md](docs/STORM_SIMULATION.md) describes the earlier preview.
 
 ## Data and API
 
@@ -54,6 +56,6 @@ Models are schematics; layer dimensions and thresholds require confirmation agai
 ## Review round 1
 
 Overview leads with faults; Detail opens on the part model; compost bays have Model, Readings and Checks tabs. Advanced model controls are in Debug. Repair prompts remain drafts. Current radar and cyan water colours are intentionally preserved at the user's request. See [the local fix-round record](docs/fix-round-1.md).
-## Physics engine checkpoint
+## Physics integration checkpoint
 
-The reduced-order engine foundation is in `app/src/simulation/physics/`. It includes separate catchment/network/layer states, six feature configurations, thermal compost states, virtual-input adapters, a Web Worker entry and CSV serialization. [Equations and limits](docs/PHYSICS_MODEL.md), [parameter sources](docs/PHYSICS_PARAMETERS.md), [216-input inventory](docs/PHYSICS_SENSORS.md), and [implementation status](docs/fix-round-2.md) document it. The existing screens still use their previous simulation until the shared-clock integration stage; this checkpoint does not claim the new physics is live in the UI. Colours are preserved and changes remain local.
+Stage B/B2 connects six feature models to a shared worker and timeline, config-derived geometry, live sensor overlays, temporary capacity alerts, charts and CSV. The thermal engine exists but compost UI integration and neighbourhood routing remain later work. [Equations and limits](docs/PHYSICS_MODEL.md), [parameter sources](docs/PHYSICS_PARAMETERS.md), [216-input inventory](docs/PHYSICS_SENSORS.md), and [implementation status and verification](docs/fix-round-2.md) document the boundary. Defaults are uncalibrated placeholders. Radar and cyan water colours are preserved; changes remain local with no push. Independent review cleared the four requested visual fixes; this is not completion of later physics stages.

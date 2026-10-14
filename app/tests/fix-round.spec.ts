@@ -30,6 +30,15 @@ test('attention order and operator controls', async ({ page }) => {
 
 test('fault highlight has matching list treatment and provenance', async ({ page }) => {
   await page.goto('/feature/S1');
+  await page.locator('.storm-disclosure > summary').click();
+  await page
+    .getByRole('combobox', { name: 'Simulation scenario', exact: true })
+    .selectOption('Clogged sock');
+  await expect(page.getByRole('slider', { name: 'Storm timeline', exact: true })).toBeEnabled({
+    timeout: 45000,
+  });
+  await page.getByRole('slider', { name: 'Storm timeline', exact: true }).fill('25');
+  await page.locator('.part-list').getByRole('button', { name: 'Compost filter sock' }).click();
   await expect(page.locator('[data-part-highlight="fault"]').first()).toBeVisible();
   await expect(page.locator('.part-list .part-status-fault')).toContainText('Compost filter sock');
   await expect(page.getByRole('heading', { name: 'Why is this highlighted?' })).toBeVisible();
@@ -86,23 +95,19 @@ test('approved rainfall palette and compost form accessibility are retained', as
       });
     }
   }
-  await page
-    .getByLabel('Drop-off photo', { exact: true })
-    .setInputFiles({
-      name: 'inspection.png',
-      mimeType: 'image/png',
-      buffer: Buffer.from(
-        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jYzYAAAAASUVORK5CYII=',
-        'base64',
-      ),
-    });
+  await page.getByLabel('Drop-off photo', { exact: true }).setInputFiles({
+    name: 'inspection.png',
+    mimeType: 'image/png',
+    buffer: Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jYzYAAAAASUVORK5CYII=',
+      'base64',
+    ),
+  });
   await expect(page.getByText('inspection.png', { exact: true })).toBeVisible();
-  await page
-    .getByLabel('Drop-off photo', { exact: true })
-    .setInputFiles({
-      name: 'wrong.txt',
-      mimeType: 'text/plain',
-      buffer: Buffer.from('Not an image'),
-    });
+  await page.getByLabel('Drop-off photo', { exact: true }).setInputFiles({
+    name: 'wrong.txt',
+    mimeType: 'text/plain',
+    buffer: Buffer.from('Not an image'),
+  });
   await expect(page.getByRole('alert')).toContainText('Choose a PNG, JPEG or WebP image');
 });

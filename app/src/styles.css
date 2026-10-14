@@ -1,8 +1,23 @@
 @import 'tailwindcss';
-.scene.neighbourhood-scene { height: clamp(240px, 40vw, 500px); }
-.compact-sensor { padding: 8px 0; }
-.detail-readings ol { list-style: decimal; padding-left: 20px; }
-@media (max-width: 600px) { nav.map-zones { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); } nav.map-zones button { font-size: 13px; } }
+.scene.neighbourhood-scene {
+  height: clamp(240px, 40vw, 500px);
+}
+.compact-sensor {
+  padding: 8px 0;
+}
+.detail-readings ol {
+  list-style: decimal;
+  padding-left: 20px;
+}
+@media (max-width: 600px) {
+  nav.map-zones {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  nav.map-zones button {
+    font-size: 13px;
+  }
+}
 .proxy-note {
   display: inline;
   font-size: 13px;
@@ -1208,4 +1223,129 @@ th {
   .coordinate-grid {
     grid-template-columns: 1fr;
   }
+}
+
+.physics-analysis {
+  display: grid;
+  gap: 18px;
+  margin-top: 16px;
+}
+.physics-fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+.physics-fields .field {
+  min-width: 0;
+}
+.physics-playback {
+  border-top: 1px solid var(--line, #c9c0ad);
+  margin-top: 16px;
+  padding-top: 16px;
+}
+.physics-view-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin: 12px 0;
+}
+.physics-view-controls label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+.physics-comparison {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+.physics-comparison > div {
+  min-width: 0;
+}
+.physics-comparison svg {
+  width: 100%;
+}
+.physics-speed {
+  max-width: 190px;
+}
+.physics-analysis svg {
+  width: 100%;
+  height: auto;
+  color: #2f2b26;
+}
+.physics-analysis svg text {
+  fill: #2f2b26;
+}
+.physics-analysis input[type='number'] {
+  max-width: 150px;
+}
+.balance-bars {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+}
+.balance-bars span {
+  display: block;
+  font-size: 13px;
+}
+.balance-bars meter {
+  width: 100%;
+  accent-color: #b07a12;
+}
+.dimension-label {
+  font:
+    12px Archivo,
+    sans-serif;
+  color: #2f2b26;
+  background: #f2eee4;
+  padding: 2px 4px;
+  white-space: nowrap;
+}
+@media (max-width: 760px) {
+  .physics-fields,
+  .physics-comparison {
+    grid-template-columns: 1fr;
+  }
+  .balance-bars {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.physics-analysis .chart-area {
+  height: auto;
+  min-height: 0;
+}
+.physics-analysis .chart-area svg {
+  display: block;
+}
+
+.plot-axis-labels {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 13px;
+  margin: 8px 0;
+}
+.plot-legend,
+.physics-section figcaption {
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 8px 0;
+}
+.physics-analysis svg.physics-hydrograph {
+  height: 220px;
+}
+.physics-section {
+  margin: 0;
+  min-width: 0;
+}
+.physics-section svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.reading-source {
+  margin-top: 4px;
 }

@@ -62,7 +62,7 @@ export default function Overview() {
       <div className="page-heading">
         <div>
           <h1>Overview</h1>
-          <p className="sub">Last reading: {dateTime(DEMO_NOW)} · Synthetic</p>
+          <p className="sub">Seeded history: {dateTime(DEMO_NOW)} · Synthetic</p>
         </div>
         <div className="segments">
           {['Last storm', '7 days', '8 weeks'].map((r) => (
@@ -108,7 +108,11 @@ export default function Overview() {
                       {f.type.replaceAll('_', ' ')}
                       <p className="small">
                         {f.featureId} · {f.partId} · Zone {f.zone} ·{' '}
-                        {Math.max(0, Math.floor((Date.parse(DEMO_NOW) - Date.parse(f.openedAt)) / 3600000))} h ago
+                        {Math.max(
+                          0,
+                          Math.floor((Date.parse(DEMO_NOW) - Date.parse(f.openedAt)) / 3600000),
+                        )}{' '}
+                        h ago
                       </p>
                     </span>
                   </Link>

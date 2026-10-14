@@ -1,3 +1,6 @@
+import type { ModelPhysics } from '../three/PhysicsOverlay';
+import PhysicsControls from './PhysicsControls';
+import PhysicsSection from './PhysicsSection';
 import SearchableSelect from './SearchableSelect';
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
@@ -16,7 +19,9 @@ export default function ModelWorkspace({
   config,
   faults,
   kind = 'drainage',
+  physics,
 }: {
+  physics?: ModelPhysics;
   ownerId: string;
   parts: Part[];
   sensors: Sensor[];
@@ -33,15 +38,18 @@ export default function ModelWorkspace({
       ),
     [sourceParts, sensors],
   );
+  const [flat, setFlat] = useState(false),
+    [dimensionsVisible, setDimensionsVisible] = useState(true),
+    [exaggerate, setExaggerate] = useState(false);
   const [params] = useSearchParams();
   const [showSensors, setShowSensors] = useState(false);
   const [partSearch, setPartSearch] = useState('');
   const select = useSelection((s) => s.selectPart),
     selected = useSelection((s) => s.partId);
   const [mode, setMode] = useState<ViewMode>('Operator'),
-    [assembly, setAssembly] = useState<Assembly>('exploded'),
+    [assembly, setAssembly] = useState<Assembly>(physics ? 'section' : 'exploded'),
     [explode, setExplode] = useState(65),
-    [cutAxis, setCutAxis] = useState<'X' | 'Y' | 'Z'>('X'),
+    [cutAxis, setCutAxis] = useState<'X' | 'Y' | 'Z'>(physics ? 'Z' : 'X'),
     [cutPosition, setCutPosition] = useState(0),
     [offsets, setOffsets] = useState<Offsets>({}),
     [move, setMove] = useState(false),
@@ -113,7 +121,11 @@ export default function ModelWorkspace({
             </button>
           ))}
         </div>
-        <span className="small">Illustrative CAD-style assembly · synthetic readings</span>
+        <span className="small">
+          {physics
+            ? 'Dimensions from model parameters / simulated readings'
+            : 'Illustrative CAD-style assembly / synthetic readings'}
+        </span>
       </div>
       <div className="field mobile-part-picker">
         <span>Model part</span>
@@ -167,31 +179,77 @@ export default function ModelWorkspace({
             ))}
         </aside>
         <section className="panel">
-          <DrainScene
-            featureId={ownerId}
-            kind={kind}
-            dimensions={config.schematic}
-            sensors={sensors}
-            showSensors={showSensors}
-            parts={parts}
-            mode={mode}
-            assembly={assembly}
-            explode={explode}
-            cutAxis={cutAxis}
-            cutPosition={cutPosition}
-            offsets={offsets}
-            onMove={(partId, position) =>
-              setOffsets((previous) => ({ ...previous, [partId]: position }))
-            }
-            move={mode === 'Debug' && move}
-            isolate={isolate}
-            hidden={hidden}
-            labels={labels}
-            wireframe={wireframe}
-            edges={edges}
-            reset={reset}
-          />
-          <p className="small">{config.schematic.label}</p>
+          {physics && flat ? (
+            <PhysicsSection {...physics} />
+          ) : (
+            <DrainScene
+              physics={physics ? { ...physics, exaggerate } : undefined}
+              dimensionsVisible={dimensionsVisible}
+              featureId={ownerId}
+              kind={kind}
+              dimensions={config.schematic}
+              sensors={sensors}
+              showSensors={showSensors}
+              parts={parts}
+              mode={mode}
+              assembly={assembly}
+              explode={explode}
+              cutAxis={cutAxis}
+              cutPosition={cutPosition}
+              offsets={offsets}
+              onMove={(partId, position) =>
+                setOffsets((previous) => ({ ...previous, [partId]: position }))
+              }
+              move={mode === 'Debug' && move}
+              isolate={isolate}
+              hidden={hidden}
+              labels={labels}
+              wireframe={wireframe}
+              edges={edges}
+              reset={reset}
+            />
+          )}
+          <p className="small">
+            {physics
+              ? 'Illustrative section; dimensions and hydraulic properties are placeholders pending site measurements. Water is cyan. RL is a local datum.'
+              : config.schematic.label}
+          </p>
+          {physics && (
+            <>
+              <div className="physics-view-controls">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={flat}
+                    onChange={(e) => setFlat(e.target.checked)}
+                  />{' '}
+                  2D section
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={dimensionsVisible}
+                    onChange={(e) => setDimensionsVisible(e.target.checked)}
+                  />{' '}
+                  Dimensions
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={exaggerate}
+                    onChange={(e) => setExaggerate(e.target.checked)}
+                  />{' '}
+                  3D water depth x5 (visual only)
+                </label>
+              </div>
+              {exaggerate && !flat && (
+                <p className="notice">
+                  Water depth exaggerated x5; readings remain actual model depths.
+                </p>
+              )}
+              <PhysicsControls ownerId={ownerId} />
+            </>
+          )}
           {showSensors && (
             <SensorPositions
               showPositions={mode === 'Debug'}

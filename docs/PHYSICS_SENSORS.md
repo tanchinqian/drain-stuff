@@ -1,7 +1,8 @@
 # Input driver inventory
 
-216 existing inputs, classified for the forthcoming live overlay. Stage A does not overwrite or relabel existing UI records. Coordinates below are existing schematic coordinates, not surveyed mounts; geometry integration will provide real-scale mounts. Hydraulic house inputs need a per-house network frame; a feature frame must not be substituted. Soil temperature remains seeded because no soil thermal engine is implemented. Human smell, inspection and maturity checks remain human. Offline inputs retain their last known value and time (null means no last-known value exists).
+216 existing inputs, classified by potential driver. Stage B/B2 overlays eligible hydraulic inputs for S1/S2/S3/I1/T1/T2 in feature views and the Sensors register. The shared timeline drives values and live-minute provenance; the adapter does not write stored history. Rain reference feeds use the shared rainfall run. This inventory is not a claim that every row is live.
 
+Coordinates below are original schematic coordinates, not surveyed mounts. The live adapter positions mapped feature mounts from model dimensions; other mounts retain schematic coordinates. House hydraulic inputs need per-house network frames and remain seeded. Compost thermal inputs remain seeded until matching bay runs are connected to the UI. Soil temperature has no thermal model. Human smell, inspection and maturity checks remain human. Offline inputs retain their last known value/time, including null. Soil probes share lumped media moisture, not depth-resolved measurements. Deterministic noise and explicit drift affect the measurement overlay, not hydraulic storage.
 | ID | Type | Driver | Existing x/y/z (schematic) | Unit |
 |---|---|---|---|---|
 | S1-INLET | Ultrasonic inlet level | hydraulic | -3 / 0.8 / 0 | cm |

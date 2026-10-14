@@ -3,7 +3,11 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '../api/client';
 import ModelWorkspace from '../components/ModelWorkspace';
 import Status from '../components/Status';
-import StormPreview from '../components/StormPreview';
+import PhysicsPanel from '../components/PhysicsPanel';
+import { usePhysics, useLiveSensors, modelFaults } from '../simulation/physics/view';
+import { buildParts } from '../api/parts';
+import type { Sensor } from '../api/types';
+const emptySensors: Sensor[] = [];
 import { QueryState } from '../components/QueryState';
 import { armName, dateOnly, testMean } from '../utils';
 export default function FeatureDetail() {
@@ -22,6 +26,13 @@ export default function FeatureDetail() {
     },
   });
   const data = result.data;
+  const physics = usePhysics(id);
+  const liveSensors = useLiveSensors(data?.sensors ?? emptySensors);
+  const liveFaults =
+    data && physics.config
+      ? modelFaults(physics.config, physics.frame, liveSensors, data.feature.zone)
+      : [];
+  const liveParts = buildParts(id, liveSensors, liveFaults);
   const baseline = data?.trial && testMean(data.trial.tests, 'baseline'),
     after = data?.trial && testMean(data.trial.tests, 'retest');
   return (
@@ -63,20 +74,27 @@ export default function FeatureDetail() {
           <div id="drain-assembly" />
           <ModelWorkspace
             ownerId={id}
-            parts={data.feature.parts}
-            sensors={data.sensors}
+            key={id}
+            physics={physics.config ? { config: physics.config, frame: physics.frame } : undefined}
+            parts={liveParts}
+            sensors={liveSensors}
             config={data.config}
-            faults={data.faults}
+            faults={liveFaults}
           />
-          {id === 'S1' && (
-            <details className="storm-disclosure">
-              <summary>Try a storm at S1 (illustrative, not driven by sensors)</summary>
-              <StormPreview />
-            </details>
-          )}
+          <details className="storm-disclosure">
+            <summary>Storm settings, charts and model parameters</summary>
+            <PhysicsPanel ownerId={id} trial={data.trial} />
+          </details>
+          <p className="small">
+            Live model alerts above are temporary scenario outputs.{' '}
+            <Link style={{ textDecoration: 'underline' }} to="/faults">
+              Open seeded fault history
+            </Link>
+            .
+          </p>
           {data.trial && (
             <section className="panel" style={{ marginTop: 18 }}>
-              <h2>Keep the comparison traceable</h2>
+              <h2>Seeded trial record</h2>
               <p className="sub">
                 {baseline?.value ?? 'No baseline'} → {after?.value ?? 'No re-test'} mm/h · Same
                 marked points · n = {after?.n ?? baseline?.n ?? 0} · synthetic

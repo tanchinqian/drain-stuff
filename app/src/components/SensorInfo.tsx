@@ -1,3 +1,4 @@
+import type { ModelSensor } from '../simulation/physics/view';
 import { Link } from 'react-router-dom';
 import type { Sensor } from '../api/types';
 import { dateTime } from '../utils';
@@ -50,6 +51,9 @@ export default function SensorInfo({
           </strong>{' '}
           / {sensor.role} / {sensor.status}
         </p>
+        <p className="small reading-source">
+          {(sensor as ModelSensor).modelSource ?? 'Seeded record / human input'}
+        </p>
         <details>
           <summary>Details</summary>
           <SensorInfo sensor={sensor} showPosition={showPosition} />
@@ -69,6 +73,7 @@ export default function SensorInfo({
       </p>
       <SensorTrust sensor={sensor} />
       <p className="small">
+        {(sensor as ModelSensor).modelSource ?? 'Seeded record / human input'} /{' '}
         {dateTime(sensor.lastAt)} · Synthetic · {sensor.unit}
       </p>
       <p>

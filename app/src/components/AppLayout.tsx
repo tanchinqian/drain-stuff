@@ -3,11 +3,13 @@ import { Link, NavLink, Outlet } from 'react-router-dom';
 import { Waves } from 'lucide-react';
 import DemoWalkthrough from './DemoWalkthrough';
 import Toast from './Toast';
+import SimulationDriver from '../simulation/physics/SimulationDriver';
 export default function AppLayout() {
   const [demo] = useState(new URLSearchParams(location.search).get('demo') === '1');
   const suffix = demo ? '?demo=1' : '';
   return (
     <>
+      <SimulationDriver />
       <a className="skip-link" href="#main">
         Skip to content
       </a>

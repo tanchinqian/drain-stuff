@@ -1,3 +1,6 @@
+import { useLiveSensors } from '../simulation/physics/view';
+import type { Sensor } from '../api/types';
+const emptySensors: Sensor[] = [];
 import SearchableSelect from '../components/SearchableSelect';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -14,8 +17,9 @@ export default function Sensors() {
     [partId, setPartId] = useState(''),
     [status, setStatus] = useState('');
   const result = useQuery({ queryKey: ['sensors'], queryFn: () => api.sensors() });
-  const rows = sensorRows(result.data ?? [], { zone, partId, status });
-  const selected = result.data?.find((s) => s.sensorId === params.get('sensor'));
+  const liveSensors = useLiveSensors(result.data ?? emptySensors);
+  const rows = sensorRows(liveSensors, { zone, partId, status });
+  const selected = liveSensors.find((s) => s.sensorId === params.get('sensor'));
   return (
     <QueryState loading={result.isPending} error={result.error}>
       <div className="page-heading">
@@ -48,6 +52,7 @@ export default function Sensors() {
                 'Local Y',
                 'Local Z',
                 'Rules',
+                'Reading source',
               ],
               rows.map((s) => [
                 s.sensorId,
@@ -68,6 +73,8 @@ export default function Sensors() {
                 s.location.y,
                 s.location.z,
                 s.usedByRules.join(';'),
+                liveSensors.find((input) => input.sensorId === s.sensorId)?.modelSource ??
+                  'Seeded record',
               ]),
             )
           }

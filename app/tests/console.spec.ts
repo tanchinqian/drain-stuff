@@ -11,9 +11,7 @@ test('operator flow: selectable parts, explode and guarded baseline', async ({ p
 
   await page.goto('/');
 
-  await expect(
-    page.getByRole('heading', { name: 'Overview' }),
-  ).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Overview' })).toBeVisible();
 
   await expect(page.locator('.scene canvas')).toBeVisible();
 
@@ -39,7 +37,7 @@ test('operator flow: selectable parts, explode and guarded baseline', async ({ p
   await page.locator('.part-list').getByRole('button', { name: 'Compost filter sock' }).click();
 
   await expect(page.getByRole('region', { name: 'Selected part readings' })).toContainText(
-    'Draft. Check',
+    'Compost filter sock',
   );
 
   await page.goto('/trials?feature=T1');
