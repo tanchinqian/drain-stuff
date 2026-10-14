@@ -3,7 +3,7 @@ import SearchableSelect from './SearchableSelect';
 import { usePhysics } from '../simulation/physics/view';
 import { useSimulation } from '../simulation/physics/store';
 export default function PhysicsControls({ ownerId }: { ownerId: string }) {
-  const { frame } = usePhysics(ownerId),
+  const { frame, run } = usePhysics(ownerId),
     second = useSimulation((s) => s.second),
     playing = useSimulation((s) => s.playing),
     busy = useSimulation((s) => s.busy),
@@ -46,6 +46,20 @@ export default function PhysicsControls({ ownerId }: { ownerId: string }) {
           Next minute
         </button>
         <button onClick={() => state.seek(0)}>Reset storm</button>
+        <button
+          disabled={!run || busy}
+          onClick={() => {
+            if (run) {
+              const peak = run.frames.reduce(
+                (best, f) => (f.ponding > best.ponding ? f : best),
+                run.frames[0],
+              );
+              state.seek(peak.second);
+            }
+          }}
+        >
+          Jump to peak water
+        </button>
         <span>Shared clock · minute {Math.floor(second / 60)}</span>
       </div>
       <label className="field">
@@ -78,10 +92,42 @@ export default function PhysicsControls({ ownerId }: { ownerId: string }) {
         </label>
       )}
       <p className="small">
-        {reduced ? 'Reduced motion: use the timeline or minute buttons. ' : ''}Arrows are static;
-        width shows flow. Playback is shared across the six feature pages. Speed is simulated
-        seconds per real second.
+        {reduced
+          ? 'Reduced motion: use the timeline or minute buttons. Water particles stay still. '
+          : 'Cyan drops show rain; moving dots show water entering and soaking into the soil. '}
+        Arrows are static; width shows flow. Playback is shared across the six feature pages. Speed
+        is simulated seconds per real second.
       </p>
+      {frame && (
+        <div className="water-story" aria-live={playing ? 'off' : 'polite'}>
+          <strong>
+            {frame.second === 0
+              ? 'Ready to start the storm.'
+              : frame.ponding > 0.005
+                ? 'Water is pooling above the soil.'
+                : frame.flux.infiltration > 1e-9
+                  ? 'Water is soaking into the soil.'
+                  : frame.flux.drain > 1e-9
+                    ? 'Stored water is leaving through the drain.'
+                    : frame.rain > 0
+                      ? 'Rain is falling; runoff is travelling toward the inlet.'
+                      : 'The rain has stopped.'}
+          </strong>
+          <p>
+            {frame.ponding > 0.005
+              ? `${(frame.ponding * 100).toFixed(1)} cm of surface water. `
+              : 'No visible pool yet. '}
+            {frame.flux.infiltration > 1e-9
+              ? `${(frame.flux.infiltration * 60000).toFixed(1)} litres per minute are soaking in. `
+              : ''}
+            {frame.flux.overflow > 1e-9 ? 'Water is spilling over the overflow.' : ''}
+          </p>
+          <small>
+            Cyan surface tint shows wetting above the mulch; droplets illustrate flow. The depth
+            reading is the calculated water level.
+          </small>
+        </div>
+      )}
       {frame && (
         <p className="model-current" aria-live={playing ? 'off' : 'polite'}>
           Minute {Math.floor(second / 60)}: ponding{' '}

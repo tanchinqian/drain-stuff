@@ -1,6 +1,15 @@
-import { useMemo, useEffect } from 'react';
+import { useMemo, useEffect, useRef } from 'react';
+import { useFrame, useThree } from '@react-three/fiber';
+import { useSimulation } from '../simulation/physics/store';
 import { Edges, Html, Line } from '@react-three/drei';
-import { ExtrudeGeometry, Shape, type Plane } from 'three';
+import {
+  ExtrudeGeometry,
+  Shape,
+  DoubleSide,
+  Object3D,
+  type InstancedMesh,
+  type Plane,
+} from 'three';
 import type { PartId } from '../api/types';
 import type { PhysicsConfig } from '../simulation/physics/config';
 import type { PhysicsFrame } from '../simulation/physics/engine';
@@ -60,32 +69,68 @@ export function PhysicsWater({
     pipeY =
       physics.config.kind === 'inlet' ? v.pipeDiameter.value / 2 : bottom + v.gravelDepth.value / 2;
   if (!f) return null;
-  if (id === 'ponding' && h > 0.0001)
+  if (id === 'ponding') {
+    const wet = h > 0.0001 || f.flux.infiltration > 1e-9;
+    // The thin wetting cue sits above decorative mulch; it is not additional water storage.
+    const surface = Math.max(physics.config.kind === 'inlet' ? 0 : 0.052, h) + 0.003;
     return (
       <group>
-        <mesh geometry={geometry}>
-          <meshStandardMaterial
-            color="#61cce9"
-            transparent
-            opacity={0.55}
-            depthWrite={false}
-            clippingPlanes={plane ? [plane] : []}
-          />
-          <Edges color="#2f2b26" />
-        </mesh>
-        {Array.from({ length: 6 }, (_, i) => (
-          <Line
-            key={i}
-            points={[
-              [-l / 2, h, -w / 2 + (i * w) / 5],
-              [l / 2, h, -w / 2 + (i * w) / 5],
-            ]}
-            color="#2f2b26"
-            lineWidth={0.7}
-          />
-        ))}
+        {f.rain > 0 && <WaterParticles mode="rain" physics={physics} />}
+        {h > 0.0001 && (
+          <mesh geometry={geometry}>
+            <meshBasicMaterial
+              color="#61cce9"
+              transparent
+              opacity={0.65}
+              depthWrite={false}
+              side={DoubleSide}
+              clippingPlanes={plane ? [plane] : []}
+            />
+            <Edges color="#2f2b26" />
+          </mesh>
+        )}
+        {wet && (
+          <mesh position={[0, surface, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+            <planeGeometry args={[l, w]} />
+            <meshBasicMaterial
+              color="#61cce9"
+              transparent
+              opacity={h > 0.05 ? 0.65 : 0.35}
+              depthWrite={false}
+              side={DoubleSide}
+              clippingPlanes={plane ? [plane] : []}
+            />
+          </mesh>
+        )}
+        {h > 0.0001 && plane?.normal.z !== undefined && Math.abs(plane.normal.z) > 0 && (
+          <mesh position={[0, h / 2, plane.constant / -plane.normal.z + 0.003]}>
+            <planeGeometry args={[l, h]} />
+            <meshBasicMaterial
+              color="#61cce9"
+              transparent
+              opacity={0.55}
+              depthWrite={false}
+              side={DoubleSide}
+            />
+          </mesh>
+        )}
+        {wet &&
+          Array.from({ length: 5 }, (_, i) => (
+            <Line
+              key={i}
+              points={[
+                [-l / 2, surface, -w / 2 + (i * w) / 4],
+                [l / 2, surface, -w / 2 + (i * w) / 4],
+              ]}
+              color="#2f2b26"
+              lineWidth={0.8}
+            />
+          ))}
       </group>
     );
+  }
+  if (id === 'media' && f.flux.infiltration > 1e-9)
+    return <WaterParticles mode="infiltration" physics={physics} />;
   if (id === 'underdrain' && fill > 0.001)
     return (
       <mesh geometry={pipeGeometry} position={[0, pipeY, 0]}>
@@ -113,6 +158,10 @@ export function PhysicsWater({
     y = id === 'outfall' ? pipeY : id === 'overflow' ? v.crest.value : 0.2;
   return (
     <group>
+      <WaterParticles
+        mode={id === 'inlet' ? 'inlet' : id === 'overflow' ? 'overflow' : 'outlet'}
+        physics={physics}
+      />
       <Line
         points={[
           [x, y, 0.55],
@@ -125,6 +174,65 @@ export function PhysicsWater({
         lineWidth={Math.min(7, 1 + Math.sqrt(discharge * 60000) / 3)}
       />
     </group>
+  );
+}
+// Particle count and speed illustrate the current flux; particles are not parcels in the solver.
+function WaterParticles({
+  mode,
+  physics,
+}: {
+  mode: 'rain' | 'infiltration' | 'inlet' | 'outlet' | 'overflow';
+  physics: ModelPhysics;
+}) {
+  const mesh = useRef<InstancedMesh>(null),
+    phase = useRef(0),
+    dummy = useMemo(() => new Object3D(), []);
+  const playing = useSimulation((s) => s.playing),
+    invalidate = useThree((s) => s.invalidate);
+  const f = physics.frame!,
+    v = physics.config.values,
+    l = v.length.value,
+    w = v.width.value;
+  const count = mode === 'rain' ? Math.max(12, Math.min(100, Math.round(f.rain * 3.6e6))) : 28;
+  useEffect(() => {
+    phase.current = f.second * 0.03;
+    invalidate();
+  }, [f.second, playing, invalidate]);
+  useFrame((_, delta) => {
+    if (!mesh.current) return;
+    if (playing && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      phase.current += delta * 0.8;
+      invalidate();
+    }
+    for (let i = 0; i < count; i++) {
+      const t = (phase.current + i * 0.61803398875) % 1;
+      const x = (((i * 37) % 101) / 101 - 0.5) * l,
+        z = (((i * 61) % 97) / 97 - 0.5) * w;
+      const pipeY =
+        physics.config.kind === 'inlet'
+          ? v.pipeDiameter.value / 2
+          : -v.mediaDepth.value - v.transitionDepth.value - v.gravelDepth.value / 2;
+      if (mode === 'rain') dummy.position.set(x, 0.15 + (1 - t) * 1.5, z);
+      else if (mode === 'infiltration') dummy.position.set(x, -t * v.mediaDepth.value, 0.015);
+      else if (mode === 'inlet')
+        dummy.position.set(-l / 2 - 0.65 + t * 1.25, 0.09, 0.07 * Math.sin(i));
+      else dummy.position.set(l / 2 + t * 1.5, mode === 'overflow' ? v.crest.value : pipeY, 0.02);
+      dummy.scale.set(1, mode === 'rain' ? 4 : 1, 1);
+      dummy.updateMatrix();
+      mesh.current.setMatrixAt(i, dummy.matrix);
+    }
+    mesh.current.instanceMatrix.needsUpdate = true;
+  });
+  return (
+    <instancedMesh
+      ref={mesh}
+      args={[undefined, undefined, count]}
+      frustumCulled={false}
+      raycast={() => null}
+    >
+      <sphereGeometry args={[mode === 'rain' ? 0.018 : 0.035, 6, 4]} />
+      <meshBasicMaterial color="#61cce9" />
+    </instancedMesh>
   );
 }
 export function DimensionLines({ config }: { config: PhysicsConfig }) {

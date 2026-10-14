@@ -1349,3 +1349,16 @@ th {
 .reading-source {
   margin-top: 4px;
 }
+
+.water-story {
+  margin: 12px 0;
+  padding: 12px 0;
+  border-block: 1px solid #c9c0ad;
+}
+.water-story p {
+  margin: 5px 0;
+}
+.water-story small {
+  display: block;
+  line-height: 1.5;
+}
