@@ -1,0 +1,55 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`reduced-order hydraulic engine (SI units) > Blocked inlet is deterministic and has a stable checkpoint 1`] = `
+[
+  0.2719985,
+  0,
+  30.2794439,
+  10.9530077,
+]
+`;
+
+exports[`reduced-order hydraulic engine (SI units) > Clogged sock is deterministic and has a stable checkpoint 1`] = `
+[
+  0.2719985,
+  0,
+  30.2794439,
+  10.9530077,
+]
+`;
+
+exports[`reduced-order hydraulic engine (SI units) > High tailwater is deterministic and has a stable checkpoint 1`] = `
+[
+  0.8218294,
+  0,
+  9.1068823,
+  32.1181509,
+]
+`;
+
+exports[`reduced-order hydraulic engine (SI units) > Normal is deterministic and has a stable checkpoint 1`] = `
+[
+  0.2719985,
+  0,
+  30.434404,
+  10.797686,
+]
+`;
+
+exports[`reduced-order hydraulic engine (SI units) > Sensor drift is deterministic and has a stable checkpoint 1`] = `
+[
+  0.2719985,
+  0,
+  30.434404,
+  10.797686,
+]
+`;
+
+exports[`reduced-order hydraulic engine (SI units) > Silted underdrain is deterministic and has a stable checkpoint 1`] = `
+[
+  0.2719985,
+  0,
+  30.434404,
+  10.797686,
+]
+`;

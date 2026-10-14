@@ -54,3 +54,6 @@ Models are schematics; layer dimensions and thresholds require confirmation agai
 ## Review round 1
 
 Overview leads with faults; Detail opens on the part model; compost bays have Model, Readings and Checks tabs. Advanced model controls are in Debug. Repair prompts remain drafts. Current radar and cyan water colours are intentionally preserved at the user's request. See [the local fix-round record](docs/fix-round-1.md).
+## Physics engine checkpoint
+
+The reduced-order engine foundation is in `app/src/simulation/physics/`. It includes separate catchment/network/layer states, six feature configurations, thermal compost states, virtual-input adapters, a Web Worker entry and CSV serialization. [Equations and limits](docs/PHYSICS_MODEL.md), [parameter sources](docs/PHYSICS_PARAMETERS.md), [216-input inventory](docs/PHYSICS_SENSORS.md), and [implementation status](docs/fix-round-2.md) document it. The existing screens still use their previous simulation until the shared-clock integration stage; this checkpoint does not claim the new physics is live in the UI. Colours are preserved and changes remain local.

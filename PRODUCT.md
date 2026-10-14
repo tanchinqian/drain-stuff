@@ -27,3 +27,5 @@ The console supports local ponding and drain upkeep claims only. Trial allocatio
 ## Current work authorization
 
 Apply `CODEX_ADDENDUM.md` to the local React app in stages. The separately published visualization is an exact copy of the supplied attachment and has separate source and hosting identity.
+
+Physics round 2 is authorized in stages under `CODEX_PHYSICS_PROMPT.md`, with radar colours and cyan water retained and no GitHub push. The first checkpoint adds an isolated reduced-order engine; UI/shared-clock integration remains outstanding. All coefficients are placeholders unless explicitly sourced. Engine outputs must remain distinguishable from seeded history and human observations; compost allocation must not alter conductivity. See `docs/PHYSICS_MODEL.md` and `docs/fix-round-2.md` for current coverage and limits.
