@@ -42,7 +42,7 @@ export default function AllocationForm({
         lPerM2: dose.lPerM2,
         appliedBy,
       }),
-    'Mature batch allocated with traceable pilot dose.',
+    'Saved compost allocation to trial record ' + trial.featureId,
   );
   function submit(e: FormEvent) {
     e.preventDefault();
@@ -90,8 +90,7 @@ export default function AllocationForm({
           </label>
         </div>
         <div className="notice">
-          Dose cap: {config.doseCapLPerM2} L/m². {config.placeholderLabel}. This is a guardrail, not
-          a treatment target.
+          Dose cap: {config.doseCapLPerM2} L/m². This is a guardrail, not a treatment target.
         </div>
         {reason && (
           <p className="error" id="allocation-reason">

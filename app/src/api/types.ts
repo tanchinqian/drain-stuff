@@ -221,6 +221,7 @@ export interface Batch extends Synthetic {
   gateReason?: string;
 }
 export interface BatchReading extends Synthetic {
+  prompts?: RuleOutput[];
   t: string;
   tempC: number;
   moisturePct: number;

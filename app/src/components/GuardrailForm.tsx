@@ -18,7 +18,7 @@ export default function GuardrailForm({ trial, config }: { trial: TrialDetail; c
             ? undefined
             : { t: DEMO_NOW, value: Number(sample), unit: 'mg/L' },
       }),
-    'Guardrail checks recorded.',
+    'Saved safety checks to trial record ' + trial.featureId,
   );
   function submit(event: FormEvent) {
     event.preventDefault();
@@ -26,8 +26,12 @@ export default function GuardrailForm({ trial, config }: { trial: TrialDetail; c
   }
   return (
     <section className="panel">
-      <h2>Guardrail checks</h2>
-      <p className="sub">Human recorded checks · synthetic</p>
+      <h2>Safety checks</h2>
+      <p className="sub">Record dated checks before allocating compost.</p>
+      <p>
+        Nutrient check: did water leaving the soil carry extra nutrients? Keep compost away from
+        open drains. After the first heavy rain, record washout, clogging, a photo and the result.
+      </p>
       <form onSubmit={submit}>
         <div className="field" style={{ marginTop: 16 }}>
           <span>Nutrient-export check</span>
@@ -128,7 +132,7 @@ export default function GuardrailForm({ trial, config }: { trial: TrialDetail; c
           }
           style={{ marginTop: 15 }}
         >
-          Save guardrail checks
+          Save safety checks
         </button>
         {write.error && (
           <p className="error" role="alert">

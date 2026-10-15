@@ -1,3 +1,6 @@
+import DataTable from './DataTable';
+import Term from './Term';
+import { displayName, formatValue } from '../utils';
 import SearchableSelect from './SearchableSelect';
 import { useState, type FormEvent } from 'react';
 import type { Metric, TrialDetail } from '../api/types';
@@ -8,7 +11,8 @@ export default function TrialTestForm({ trial }: { trial: TrialDetail }) {
   const [metric, setMetric] = useState<Metric>('infiltration_mm_hr'),
     [point, setPoint] = useState(trial.featureId + '-P1'),
     [value, setValue] = useState('13'),
-    [texture, setTexture] = useState(trial.soilTexture);
+    [texture, setTexture] = useState(trial.soilTexture.replace(/ · synthetic/gi, '')),
+    [repeats, setRepeats] = useState(trial.repeatsPerPoint);
   const write = useWrite(
     () =>
       api.test(trial.featureId, {
@@ -16,10 +20,10 @@ export default function TrialTestForm({ trial }: { trial: TrialDetail }) {
         metric,
         value: Number(value),
         pointId: point,
-        n: trial.repeatsPerPoint,
+        n: repeats,
         soilTexture: texture,
       }),
-    'Test recorded at the marked point.',
+    'Saved to trial record ' + trial.featureId,
   );
   function submit(event: FormEvent) {
     event.preventDefault();
@@ -36,6 +40,7 @@ export default function TrialTestForm({ trial }: { trial: TrialDetail }) {
         {trial.markedPoints} marked points · {trial.repeatsPerPoint} repeats per point · n ={' '}
         {trial.n}
       </p>
+      <p className="small">Saves to trial record {trial.featureId}.</p>
       <form onSubmit={submit}>
         <div className="form-grid" style={{ marginTop: 16 }}>
           <div className="field">
@@ -47,7 +52,7 @@ export default function TrialTestForm({ trial }: { trial: TrialDetail }) {
               onChange={(e) => setTexture(e.target.value)}
             >
               <option value="Not recorded">Choose texture</option>
-              {['Clay loam · synthetic', 'Sandy loam · synthetic', 'Sand · synthetic'].map((v) => (
+              {['Clay loam', 'Sandy loam', 'Sand'].map((v) => (
                 <option key={v}>{v}</option>
               ))}
             </SearchableSelect>
@@ -57,7 +62,9 @@ export default function TrialTestForm({ trial }: { trial: TrialDetail }) {
             <input readOnly value={trial.baselineDone ? 'Re-test' : 'Baseline before treatment'} />
           </label>
           <div className="field">
-            <span>Marked point</span>
+            <span>
+              <Term text="Marked points" />
+            </span>
             <SearchableSelect
               label="Marked point"
               value={point}
@@ -101,7 +108,13 @@ export default function TrialTestForm({ trial }: { trial: TrialDetail }) {
           </label>
           <label className="field">
             Repeats at this point
-            <input readOnly value={trial.repeatsPerPoint} />
+            <input
+              type="number"
+              min="1"
+              max="20"
+              value={repeats}
+              onChange={(e) => setRepeats(Number(e.target.value))}
+            />
           </label>
         </div>
         <button
@@ -124,33 +137,19 @@ export default function TrialTestForm({ trial }: { trial: TrialDetail }) {
         </p>
       )}
       <hr className="divider" />
-      <h3>Test history · synthetic</h3>
-      <div className="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Time</th>
-              <th>Point</th>
-              <th>Phase</th>
-              <th>Measurement</th>
-              <th>n</th>
-            </tr>
-          </thead>
-          <tbody>
-            {trial.tests.slice(-9).map((t, i) => (
-              <tr key={i}>
-                <td>{dateTime(t.t)}</td>
-                <td>{t.pointId}</td>
-                <td>{t.phase}</td>
-                <td>
-                  {t.value} {t.unit}
-                </td>
-                <td>{t.n}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <h3>Test history</h3>
+      <DataTable
+        id={'test-history-' + trial.featureId}
+        rows={trial.tests.map((t, i) => ({ ...t, id: String(i) }))}
+        rowId={(r) => r.id}
+        columns={[
+          { key: 'time', label: 'Time', value: (t) => dateTime(t.t) },
+          { key: 'point', label: 'Marked points', value: (t) => t.pointId },
+          { key: 'phase', label: 'Phase', value: (t) => displayName(t.phase) },
+          { key: 'value', label: 'Measurement', value: (t) => formatValue(t.value, t.unit) },
+          { key: 'n', label: 'Repeats', value: (t) => t.n },
+        ]}
+      />
     </section>
   );
 }

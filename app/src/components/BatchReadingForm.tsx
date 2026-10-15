@@ -3,6 +3,9 @@ import type { BatchDetail, Config } from '../api/types';
 import { api } from '../api/client';
 import { useWrite } from '../hooks';
 import { dateTime } from '../utils';
+import DataTable from './DataTable';
+import { formatValue } from '../utils';
+import { evaluateRules } from '../api/mock/rules';
 import PhotoSlot from './PhotoSlot';
 export default function BatchReadingForm({
   batch,
@@ -22,7 +25,7 @@ export default function BatchReadingForm({
         moisturePct: Number(moisture),
         photoUrl: photo,
       }),
-    'Synthetic batch reading recorded.',
+    'Saved reading to batch ' + batch.id,
   );
   function submit(event: FormEvent) {
     event.preventDefault();
@@ -76,9 +79,8 @@ export default function BatchReadingForm({
         )}
       </form>
       <div className="notice">
-        Illustrative thresholds (placeholders, to confirm for tropical conditions). Temperature:{' '}
-        {config.temperature.goodMin}–{config.temperature.goodMax} °C for {config.temperature.days}+
-        days; turn below {config.temperature.turnBelow} °C, cool above{' '}
+        Target temperature: {config.temperature.goodMin}–{config.temperature.goodMax} °C for{' '}
+        {config.temperature.days}+ days; turn below {config.temperature.turnBelow} °C, cool above{' '}
         {config.temperature.coolAbove} °C. Moisture: {config.moisture.min}–{config.moisture.max}%.
       </div>
       {batch.rules.map((rule) => (
@@ -90,39 +92,29 @@ export default function BatchReadingForm({
           <p className="small">{rule.why}</p>
         </article>
       ))}
-      {!batch.rules.length && (
-        <p className="small">
-          No prompt triggered by the recorded readings. A human still checks the batch.
-        </p>
-      )}
+      {!batch.rules.length && <p className="small">No action needed. Continue routine checks.</p>}
       <hr className="divider" />
-      <h3>Reading history · synthetic</h3>
-      <p className="small">
-        All moisture values below are relative wetness proxies; compare with the human squeeze
-        check.
-      </p>
-      <table>
-        <thead>
-          <tr>
-            <th>Time</th>
-            <th>°C</th>
-            <th>Moisture</th>
-          </tr>
-        </thead>
-        <tbody>
-          {batch.readings.slice(-8).map((r, i) => (
-            <tr key={i}>
-              <td>{dateTime(r.t)}</td>
-              <td>{r.tempC}</td>
-              <td>
-                <span title="Relative wetness proxy; calibrate with the human squeeze check">
-                  {r.moisturePct}%
-                </span>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <h3>Reading history</h3>
+      <DataTable
+        id={'batch-readings-' + batch.id}
+        rows={batch.readings.map((r, i) => ({
+          ...r,
+          id: String(i),
+          prompts: r.prompts ?? evaluateRules(batch.readings.slice(0, i + 1), batch.checks, config),
+        }))}
+        rowId={(r) => r.id}
+        columns={[
+          { key: 'time', label: 'Time', value: (r) => dateTime(r.t) },
+          { key: 'temperature', label: 'Temperature', value: (r) => formatValue(r.tempC, '°C') },
+          { key: 'moisture', label: 'Moisture', value: (r) => formatValue(r.moisturePct, '%') },
+          {
+            key: 'prompt',
+            label: 'Prompt at reading',
+            value: (r) =>
+              r.prompts.map((p) => p.action + ' — ' + p.why).join('; ') || 'No action needed',
+          },
+        ]}
+      />
     </section>
   );
 }

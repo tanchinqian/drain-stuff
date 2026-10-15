@@ -29,7 +29,8 @@ export function recordTrialTest(db: Database, trial: TrialDetail, input: TestInp
     ).includes(input.pointId)
   )
     throw new Error('Use the trial’s existing marked points.');
-  if (input.n !== trial.repeatsPerPoint) throw new Error('Use the locked repeat count.');
+  if (!Number.isInteger(input.n) || input.n < 1 || input.n > 20)
+    throw new Error('Enter 1 to 20 repeats.');
   if (input.phase === 'retest' && !trial.baselineDone)
     throw new Error('Complete the baseline first.');
   if (input.phase === 'baseline' && trial.baselineDone)
@@ -70,7 +71,9 @@ export function recordTrialTest(db: Database, trial: TrialDetail, input: TestInp
         t.pointId === trial.featureId + '-P' + (i + 1),
     ),
   ).every(Boolean);
-  trial.n = trial.baselineDone ? trial.markedPoints * trial.repeatsPerPoint : 0;
+  trial.n = trial.baselineDone
+    ? trial.tests.filter((t) => t.phase === 'baseline').reduce((n, t) => n + t.n, 0)
+    : 0;
   trial.nextRetestDue = '2026-10-19';
   const current = trial.tests.filter(
     (t) => t.t === DEMO_NOW && t.phase === input.phase && t.metric === input.metric,

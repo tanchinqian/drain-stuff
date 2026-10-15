@@ -59,7 +59,7 @@ describe('allocation and measurement guardrails', () => {
       mockRequest('/trials/T1/tests', 'POST', { ...test, pointId: 'T1-NEW' }),
     ).rejects.toThrow(/marked points/);
     await expect(
-      mockRequest('/trials/T1/tests', 'POST', { ...test, pointId: 'T1-P1', n: 1 }),
+      mockRequest('/trials/T1/tests', 'POST', { ...test, pointId: 'T1-P1', n: 0 }),
     ).rejects.toThrow(/repeat/);
     await mockRequest('/trials/T1/tests', 'POST', { ...test, pointId: 'T1-P1' });
     expect(((await mockRequest('/trials/T1')) as TrialDetail).baselineDone).toBe(false);
@@ -103,9 +103,9 @@ describe('human prompt rules', () => {
     const batch = generateMock().batches[0];
     const rules = evaluateRules(batch.readings, batch.checks, config);
     expect(rules.map((r) => r.action)).toEqual([
-      'Turn pile',
       'Add dry carbon',
       'Cover bay, hold turning, check sump',
+      'Check and empty the sump',
     ]);
     expect(
       evaluateRules(batch.readings, batch.checks, {

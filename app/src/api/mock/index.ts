@@ -171,6 +171,11 @@ const registry = faultRules.map((r) => ({
 function normalizeFaults() {
   db.config.contractVersion = '3.0.0';
   db.config.dataThrough = DEMO_NOW;
+  db.batches.forEach((b) =>
+    b.readings.forEach((r, i) => {
+      r.prompts ??= evaluateRules(b.readings.slice(0, i + 1), b.checks, db.config);
+    }),
+  );
   db.config.minTests ??= db.config.minimumN;
   db.faults.forEach((f, i) => {
     f.ruleKey ??= f.id;
@@ -396,11 +401,12 @@ export async function mockRequest(path: string, method = 'GET', body?: unknown):
     const batch = find(db.batches, (b) => b.id === id);
     batch.readings.push({
       synthetic: true,
-      t: DEMO_NOW,
+      t: new Date().toISOString(),
       tempC: finite(input.tempC, 0, 100),
       moisturePct: finite(input.moisturePct, 0, 100),
       photoUrl: typeof input.photoUrl === 'string' ? input.photoUrl : undefined,
     });
+    batch.readings.at(-1)!.prompts = evaluateRules(batch.readings, batch.checks, db.config);
   } else if (resource === 'batches' && action === 'checks') {
     const batch = find(db.batches, (b) => b.id === id);
     batch.checks = parseBatchChecks(batch.checks, input);

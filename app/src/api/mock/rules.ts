@@ -25,13 +25,25 @@ export function evaluateRules(
   const add = (rule: string, action: string, why: string, severity: 1 | 2 | 3) =>
     outputs.push({ rule, action, why, severity, synthetic: true });
   if (latest) {
-    if (latest.tempC < config.temperature.turnBelow && !checks.ambientReached)
-      add('Low temperature', 'Turn pile', 'Reading is below the configured temperature band.', 2);
+    if (latest.tempC < config.temperature.turnBelow && !checks.ambientReached) {
+      const lastGood = readings
+        .map((r) => r.tempC >= config.temperature.turnBelow)
+        .lastIndexOf(true);
+      const start = readings[lastGood + 1]?.t ?? latest.t;
+      const days = Math.max(0, (Date.parse(latest.t) - Date.parse(start)) / 86400000);
+      if (days >= config.temperature.days)
+        add(
+          'Low temperature',
+          'Turn pile',
+          `Temperature ${latest.tempC} °C, below ${config.temperature.turnBelow} °C for ${days.toFixed(1)} days (target ${config.temperature.days} days).`,
+          2,
+        );
+    }
     if (latest.tempC > config.temperature.coolAbove)
       add(
         'High temperature',
         'Turn or spread to cool',
-        'Reading exceeds the configured cooling threshold.',
+        `Temperature ${latest.tempC} °C exceeds ${config.temperature.coolAbove} °C.`,
         3,
       );
     const goodDays = new Set(
@@ -45,19 +57,36 @@ export function evaluateRules(
       add(
         'Temperature history',
         'Temperature band recorded',
-        'Configured band was recorded on at least three separate days; this does not establish maturity.',
+        `${config.temperature.goodMin}–${config.temperature.goodMax} °C recorded on ${goodDays} days (target ${config.temperature.days}); maturity checks are still needed.`,
         1,
       );
     if (latest.moisturePct < config.moisture.min)
-      add('Dry pile', 'Add water while turning', 'Moisture is below the configured band.', 2);
+      add(
+        'Dry pile',
+        'Add water while turning',
+        `Moisture ${latest.moisturePct}% is below ${config.moisture.min}%.`,
+        2,
+      );
     if (latest.moisturePct > config.moisture.max)
-      add('Wet pile', 'Add dry carbon', 'Moisture is above the configured band.', 2);
+      add(
+        'Wet pile',
+        'Add dry carbon',
+        `Moisture ${latest.moisturePct}% is above ${config.moisture.max}%.`,
+        2,
+      );
   }
   if (checks.rainExpected && (!checks.bayCovered || !checks.sumpChecked))
     add(
       'Leachate guard',
       'Cover bay, hold turning, check sump',
-      'Rain is expected and cover or sump checks are incomplete.',
+      `Rain expected; cover ${checks.bayCovered ? 'checked' : 'not checked'}, sump ${checks.sumpChecked ? 'checked' : 'not checked'} (level ${checks.sumpLevelCm} cm; watch threshold ${config.inspection.sumpWatchCm} cm).`,
+      3,
+    );
+  if (checks.sumpLevelCm > config.inspection.sumpWatchCm)
+    add(
+      'Sump level',
+      'Check and empty the sump',
+      `Sump ${checks.sumpLevelCm} cm exceeds ${config.inspection.sumpWatchCm} cm.`,
       3,
     );
   return outputs;

@@ -52,3 +52,43 @@ test('fixed pilot map, non-modal selection, range and zone scoping', async ({ pa
   await expect(page.locator('.feature-jumps')).not.toContainText('S1');
   await expect(page.locator('.map-zones')).toContainText('Zone B');
 });
+test('trial test drawer saves repeats and updates its record', async ({ page }) => {
+  await page.goto('/trials?feature=T1');
+  await page
+    .locator('.master-content .actions')
+    .getByRole('button', { name: 'Record baseline', exact: true })
+    .click();
+  const drawer = page.getByRole('dialog');
+  await drawer
+    .getByRole('combobox', { name: 'Soil texture', exact: true })
+    .selectOption('Clay loam');
+  await drawer.getByLabel('Measured value', { exact: true }).fill('15');
+  await drawer.getByLabel('Repeats at this point', { exact: true }).fill('3');
+  await drawer.getByRole('button', { name: 'Record baseline point', exact: true }).click();
+  await expect(
+    page.getByRole('status').filter({ hasText: 'Saved to trial record T1' }),
+  ).toBeVisible();
+  await expect(drawer.getByRole('table')).toContainText('15');
+});
+test('compost prompts follow readings and human checks have buttons and history', async ({
+  page,
+}) => {
+  await page.goto('/batches/B-01');
+  await page.getByRole('tab', { name: 'Readings', exact: true }).click();
+  await page.getByLabel('Temperature, °C', { exact: true }).fill('80');
+  await page.getByLabel('Moisture, %', { exact: true }).fill('20');
+  await page.getByRole('button', { name: 'Record reading', exact: true }).click();
+  await expect(
+    page.getByRole('heading', { name: 'Turn or spread to cool', exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'Add water while turning', exact: true }),
+  ).toBeVisible();
+  await page.getByRole('tab', { name: 'Checks', exact: true }).click();
+  await page.getByRole('button', { name: 'Sour', exact: true }).click();
+  await page.getByRole('button', { name: 'Save batch checks', exact: true }).click();
+  await expect(
+    page.getByRole('status').filter({ hasText: 'Saved to batch B-01 check log' }),
+  ).toBeVisible();
+  await expect(page.getByRole('table', { name: 'batch checks B 01' })).toContainText('sour');
+});
