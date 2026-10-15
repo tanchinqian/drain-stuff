@@ -1,49 +1,33 @@
 # Phase 1 household map
 
-The local Overview now displays a bounded Gamelan / Rodat housing window in Bandar
-Bukit Raja Phase 1, using an offline OpenStreetMap extract retrieved on 13 October
-2026. Google Maps was inspected to compare the surrounding Gamelan, Makyong,
-Rodat and Persiaran Sungai Keramat street pattern.
+Overview displays a bounded Gamelan / Rodat housing window in Bandar Bukit Raja Phase 1, using an offline OpenStreetMap extract retrieved on 13 October 2026. Google Maps was inspected to compare the surrounding streets. This describes current Round 3 behavior; moving houses and static weather are superseded.
 
 ## Geometry and records
 
-- 589 mapped house footprints and 111 road ways, with original OSM IDs.
-- Plan polygons retain the source footprints. The 3D view approximates each footprint
-  with an oriented building and gable roof; building heights are illustrative.
-- Twenty-four existing synthetic pilot household IDs are assigned to mapped footprints.
-  Zones A–D and S1/S2/S3/I1/T1/T2 remain synthetic monitoring assignments. They do not
-  identify surveyed installations or real participating households.
-- Other mapped houses have source geometry and local position editing only. No pilot
-  readings, ownership claims or sensor records are generated for them.
-- Both views use the same placement and local edits. Reset layout restores the map.
-- Existing browser-local checks, faults, trial tests, allocations, calibration and sensor
-  trust records survive the geometry refresh.
-- One model unit represents 20 metres relative to 3.08495° N, 101.43130° E. Coordinates
-  use a local approximation, not a survey projection. The window is 1.32 km by 560 m;
-  it does not represent the complete Phase 1 boundary or every building in the area.
+- 589 mapped footprints and 111 road ways retain OSM IDs. Plan preserves polygons; 3D approximates them with oriented buildings/gable roofs and illustrative heights.
+- Twenty-four generated pilot IDs occupy fixed footprints. Zones A–D and S1/S2/S3/I1/T1/T2 are monitoring assignments, not surveyed installations or identified participants.
+- Only the **24 pilot houses** have hover, selection and records. Context houses have no selection, editing, pilot readings or invented sensors. Six feature pins/links remain destinations; optional sensor markers have their own interaction layer.
+- Both views use fixed placement. Move houses, position fields and Reset layout are removed. Reset view restores the camera. Migration refreshes positions while preserving checks, faults, tests, allocations, calibration and trust.
+- One model unit is 20 metres relative to 3.08495° N, 101.43130° E, using a local approximation rather than survey projection. The 1.32 km × 560 m window is not the full Phase 1 boundary/inventory.
 
-## Rainfall and interaction
+## Selection and filtering
 
-S1, S2 and S3 have direct trial links and large scene pins. All houses can be selected
-through the map or native selectors. In Move houses, select a house and drag the
-highlighted building, or edit its position fields. Changes affect the local display.
+Pilot houses have hover highlight, selected outline/copper treatment and legend. A long-list combobox provides keyboard selection. The non-modal drawer shows drain, up to five relevant readings, faults and nearest feature, with More access. Close, Esc, map background or another selection dismisses/changes it. Native feature links and Plan controls preserve phone/keyboard access.
 
-The rainfall view uses an irregular raised weather surface in 3D and the same raster
-field in Plan. Radar colours are explicitly authorized by the user for this data layer.
-Cloud opacity can be set from 0% to 75%. The field is a deterministic illustrative
-interpolation of synthetic zone peak values with spatial variation. It is not live
-radar, a forecast, a storm time sequence or a hydrological simulation. Clouds do not
-intercept clicks. Water after 6 h highlights only the relevant pilot households.
+All / A / B / C / D scopes house choices, faults and charts and outlines the zone. Water after 6 h remains independent; zone filtering does not activate it. Fixed map geometry does not establish hydraulic connectivity; feature workers retain illustrative catchments/network graphs.
 
-## Data provenance and rebuild
+## Dated rainfall layer
 
-[Map location](https://www.openstreetmap.org/#map=17/3.08495/101.43130) ·
-[Google Maps comparison](https://www.google.com/maps/@3.08495,101.43130,16z) ·
-[OSM extract](https://api.openstreetmap.org/api/0.6/map?bbox=101.426,3.082,101.440,3.091)
+Overview requests `/rainfall/zones?from&to`, `/rainfall?from&to&step=10m`, field readings and faults for Last storm, 7 days or 8 weeks. Unresolved faults carry across windows; closed faults are date-filtered. Zone labels show mm/h. Playback maps the selected history window onto the shared clock duration and chooses each zone's latest sample at/before that time. Historical rainfall and the entered scenario hyetograph are separate inputs, not asserted identical.
 
-The exported map database is available under ODbL 1.0; see `app/src/site/LICENSE.md`.
-The app reads the committed JSON offline and makes no map or weather network request.
-To rebuild the extract, download the bounded OSM XML to `app/site-source-osm.xml`
-and run `app/scripts/import-site.py` with Python. The raw input is a local ignored cache.
-The conversion retains house outlines, road segments, mapped water/park areas and
-source IDs, clips roads to the window and records the synthetic pilot assignments.
+Both views render inverse-distance interpolation between dated zone samples with bounded edge coverage. Procedural sine noise and the static peak field are removed. This display is not a forecast, real radar, full gridded product or neighbourhood solver. Optional `/rainfall/grid` is not implemented/requested.
+
+All seven radar colours remain approved. Rainfall layer opacity is 0–75% in 5% steps, default 55%; the wrapping legend labels mm/h bins. Clouds permit pointer access through to the map. Mock samples are generated ten-minute rainfall scaled by zone peaks, ending at fixed `dataThrough` 12 October 2026, 09:40 Singapore. A configured API can supply the same contract; source notice belongs on About.
+
+## Provenance and rebuild
+
+[Map location](https://www.openstreetmap.org/#map=17/3.08495/101.43130) · [Google Maps comparison](https://www.google.com/maps/@3.08495,101.43130,16z) · [OSM extract](https://api.openstreetmap.org/api/0.6/map?bbox=101.426,3.082,101.440,3.091)
+
+The database is available under ODbL 1.0; see `app/src/site/LICENSE.md`. Geometry reads committed JSON offline with no map-network request. Rainfall uses the shared API client/fallback described in BACKEND_HANDOFF.md; no external radar service is integrated.
+
+To rebuild, download bounded XML to ignored `app/site-source-osm.xml` and run `app/scripts/import-site.py` with Python. Conversion retains outlines, roads, mapped water/park areas and IDs, clips roads and records generated pilot assignments. Attribution remains beside the map.

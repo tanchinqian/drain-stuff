@@ -131,7 +131,6 @@ components:
     textColor: "{colors.ink}"
     typography: "{typography.label}"
 ---
-
 # Design System: Drain Trial Console
 
 ## Overview
@@ -140,134 +139,119 @@ components:
 
 Map desk is a compact operator console with warm paper surfaces, brown ink, mapped site views and geometric assembly schematics. Archivo keeps headings firm and records readable. Thin borders, tonal wells and dark selected controls make the next inspection action easy to find.
 
-The system serves practical inspection: operators move between a site view, model parts, sensor records and faults. Native controls, tabular numerals, explicit units and shape plus text states carry the information. The approved radar colours belong to simulated rainfall clouds and their legend; the surrounding console retains its cream and brown palette. Gradients, glow and decorative interface shadows remain excluded.
+Native controls, tabular numerals, explicit units and shape plus text states support practical inspection. The user-approved radar colours serve rainfall data and cyan serves physical water; the surrounding console retains cream and brown. Round 3 expands the work surface and unifies records within this confirmed identity. Decorative gradients and glow remain excluded.
 
 **Key Characteristics:**
 
 - Warm cream ground, paper panels and brown ink.
 - Compact Archivo hierarchy with tabular numerals.
-- Flat surfaces, thin borders and native controls.
-- Mapped site views and geometric schematics with text alternatives and explicit limits.
-- Shape plus text states, with color as a supporting cue.
-- Approved radar colours confined to the simulated rainfall data layer.
+- Flat record surfaces, thin borders and native controls.
+- Wide responsive workspaces, shared tables and non-modal detail drawers.
+- Shape plus text states, readable units and glossary help.
+- Preserved seven-colour rainfall data and cyan model water.
 
-This record is extracted from `app/src/styles.css`, `app/src/three/geometry.ts`, `app/src/site/weather.ts`, the current components and `docs/screens/` captures. Frontmatter records reused values; the sidecar carries focus, breakpoints and rendered component samples. Source remains the implementation authority.
+This merge documents durable patterns in `app/src/styles.css`, current shared components, model geometry and `site/weather.ts`, with Round 3 captures in `.impeccable/review/round3/`. Existing frontmatter primitives remain confirmed. The sidecar holds extensions and representative samples. Source remains the implementation authority.
 
 ## Colors
 
-The palette resembles a working map on a cream desk; stronger colors identify measurements, trial arms and conditions.
+The palette resembles a working map on a cream desk; stronger colours identify measurements, trial arms and conditions. Round 3 excludes every proposed recolouring under the user's explicit exception.
 
 ### Primary
 
 - **Brown ink** (`ink`): body text, selected actions and active navigation; paper text reverses on selected controls.
 - **Rain copper** (`rain-bar`): rainfall bars.
-- **Warm heat scale** (`heat-0` through `heat-3`): mapped-area, retained-water and schematic material cues, progressing from pale sand to brick. Copper highlights selected houses; brick also marks faults and errors.
+- **Warm heat scale** (`heat-0` through `heat-3`): map, material and condition cues. Copper highlights selected pilot houses; brick marks faults/errors and overflow arrows.
 
 ### Secondary
 
-- **Control violet** (`arm-control`): the control trial arm and offline diamond.
-- **Decompaction ochre** (`arm-decompact`): the decompaction trial arm and watch circle.
-- **Compost magenta** (`arm-compost`): the decompaction plus compost trial arm.
+- **Control violet** (`arm-control`): control trial arm and offline diamond.
+- **Decompaction ochre** (`arm-decompact`): loosened-soil arm and watch circle.
+- **Compost magenta** (`arm-compost`): compost arm and recorded amendment layer.
 
 ### Tertiary
 
-The seven approved **radar rainfall** tokens follow the thresholds in `app/src/site/weather.ts`. They colour the static cloud field and its labelled intensity legend: **Light-rain cyan** (`radar-under-10`), **Rain green** (`radar-10-20`), **Lime rain** (`radar-20-40`), **Yellow rain** (`radar-40-50`), **Orange rain** (`radar-50-60`), **Red rain** (`radar-60-80`) and **Purple rain** (`radar-over-80`). Each legend interval is expressed in mm/h.
+The seven approved radar tokens match `site/weather.ts`: light-rain cyan, rain green, lime, yellow, orange, red and purple. Written intervals express mm/h. The layer now draws dated zone samples rather than static procedural noise. Existing cyan (`radar-under-10`) is also used by the hydraulic water treatment; its preservation is explicit, not permission to recolour the console.
 
 ### Neutral
 
-- **Desk cream** (`ground`): document background and 3D ground.
-- **Paper cream** (`panel`): panels, controls, labels and reversed selected text.
-- **Recessed sand** (`well`, `well2`): summary strips, notices and model fields.
-- **Map border** (`border`): panel edges, controls, rows and separators.
-- **Secondary brown** (`ink2`): supporting text, chart labels and normal status squares.
-- **Muted brown** (`ink3`): schematic edges and secondary material details.
+Desk cream (`ground`) grounds the interface; paper cream (`panel`) fills panels/controls. Recessed sand (`well`, `well2`) separates summaries and fields. Map border (`border`) divides records. Secondary and muted browns (`ink2`, `ink3`) support metadata, geometry and status markers.
 
-**The State Readability Rule.** Pair each status color with its geometric marker and a written label; color alone never carries trust or fault state.
+**The State Readability Rule.** Pair each status colour with its geometric marker and a written label; colour alone never carries trust or fault state.
 
-**The Radar Layer Rule.** Use the seven radar tokens for simulated rainfall clouds and their legend. Keep controls, records, status and map geometry in the established console and trial-arm palette.
+**The Data Colour Rule.** Retain the approved radar colours for rainfall and cyan for physical water. Keep controls and records in the established console palette, with trial colours identifying treatment and amendment.
 
 ## Typography
 
-**Display and body font:** Archivo Variable, with Archivo and sans-serif fallbacks. The local package supplies the font. Numeric records use tabular figures.
+**Display and body font:** Archivo Variable, with Archivo and sans-serif fallbacks. The local package supplies the font; numeric records use tabular figures. Frontmatter follows h1, h2, h3, body and metadata. H1 uses 82% stretch; h2/brand use 88%. Tables, field labels and status use compact supporting text; mobile fields retain 16px type. Scene labels annotate geometry and have readable record alternatives.
 
-The display, headline, title, body and label entries in frontmatter follow the implemented h1, h2, h3, body and supporting metadata. Headings compress the variable font: h1 uses 82% stretch; h2 and the brand use 88%. Body remains regular, while tables, field labels, segments and status text use a compact 14px supporting size. Scene labels use 12px with a 1.25 line height; they annotate geometry rather than replace the readable record panels.
-
-About copy is limited to 72ch. Mobile fields use 16px type. Keep metric values adjacent to their units and retain the established plain case labels.
+About copy is limited to 72ch. Use sentence-case human names instead of raw enums; stable record IDs remain visible where meaningful. Format values by unit, keep values beside units and display relative plus Singapore absolute timestamps. Operator view omits model position controls; sensor positions belong in details.
 
 ## Layout
 
-The document is centered with a maximum width of 1484px and 24px outer padding. Desktop panels use 22px padding and an 18px grid gap. The Overview combines a flexible map with a 300px rail; the Detail combines a 155px part list, flexible model and 280px reading panel. Action groups wrap at their 7px gaps.
+The main work surface uses a maximum width of **1760px**, width `calc(100% - 48px)`, a 12-column grid and 20px column gap. Main children span the grid; composed workspaces define their own columns. Panels retain 22px padding. Shared master-detail layouts use a **220px** sticky list plus flexible content, with a 20px gap. Lists have bounded vertical scrolling.
 
-At 1100px, the Overview rail narrows to 250px and Detail readings move below the model. At 800px, Overview and trial layouts stack, the right rail becomes two columns, and charts use one column. At 580px, the page and panels use 16px padding; forms, rails, comparisons and models stack. Navigation wraps. A native part selector replaces the desktop part list, coordinate controls become one column and the assembly scene is 300px high. The site scene is 360px high.
+At desktop widths from 1100px, Overview uses a flexible map and 340px fault rail. Feature detail uses 200px / flexible / 300px columns; from 1500px these become 220px / flexible / 340px. Existing 1100/800/580px rules still adapt model and chart layouts. At 760px the main width becomes `calc(100% - 24px)`, master-detail stacks and its list becomes static with a 220px maximum height. At 580px panels use 16px padding, navigation wraps, native part selection replaces the desktop list and Plan retains native pilot/feature access.
 
-Tables preserve complete records through horizontal overflow inside their panel. The sensor table has a 1080px minimum width. Phone reflow must keep the document itself within the viewport. At 580px, the Plan SVG gives way to native house and feature controls; both pilot and mapped-house selectors remain available. Mobile 3D keeps the three swale pins, with native links for the other features. Sensor positions retain a keyboard list. The three direct trial links stack into one column on phones.
+Tables scroll within their panel, with sticky headers and a 600px maximum scroll area. The flow strip scrolls horizontally within its own width. The document itself stays within the phone viewport. Drawers occupy at most 650px or 95vw, scroll independently and use 24px padding, reduced to 16px at 760px. Glossary popovers fit within the viewport and close through native popover behavior.
 
 ## Elevation & Depth
 
-Interface surfaces have no shadows. Thin borders and tonal differences separate the desk, panel and well. Modal backdrops use translucent brown ink. The schematics convey depth through geometry, rough materials and edge lines; translucent ponding and liner parts reveal layers. Explode, section, orbit, isolate and movement express spatial relationships.
+Record surfaces stay flat, separated by borders and paper tones. Non-modal drawers add a restrained structural edge shadow (`-12px 0 32px #2f2b261a`) to distinguish the overlay. This is an implemented exception to the older blanket no-shadow description. Drawers have no blocking backdrop. Schematics use geometry, edge lines, translucent cyan water and material layers; rain strokes, soil shading and static flow-width arrows encode state.
 
-**The Flat Surface Rule.** Separate interface layers with the existing paper tones and borders, without gradients, glow or decorative shadows.
+**The Flat Surface Rule.** Keep record surfaces flat with the existing paper tones and borders; reserve the implemented edge shadow for the detail drawer.
 
-UI state changes are immediate; the stylesheet defines no reusable transition durations. Reduced motion disables animation, transitions and smooth scrolling. Do not invent a motion scale for an ordinary extension.
+UI changes are immediate; no reusable transition scale is defined. Reduced motion disables animation, transitions and smooth scrolling, while timeline/minute controls retain model access.
 
 ## Shapes
 
-Corners are small and practical: scene labels use the `scene-label` radius; inputs and badges use `field`; actions, navigation and notices use `button`; panels and toasts use `panel`. Borders are one pixel. The status vocabulary is a square for OK, circle for Watch, triangle for Fault and diamond for Sensor offline. These CSS geometric markers always sit beside text.
+Small practical corners remain: scene labels use `scene-label`; fields/badges use `field`; actions/navigation use `button`; panels/toasts use `panel`. Borders are one pixel. Status markers are square for OK, circle for Watch, triangle for Fault and diamond for Sensor offline, always with text. Severity chips add an icon, word and border treatment.
 
-The models use separate boxes, cylinders, rings, grates and low polygon material details. Stable part groups are selectable and movable. Default dimensions remain schematic, with the displayed local confirmation label.
+Separate boxes, cylinders, rings, grates and low polygon details form selectable model parts. Fixed house geometry has no movement controls. Debug part movement remains available within assembly controls and does not edit the site map.
 
 ## Components
 
-### Buttons
+### Buttons and navigation
 
-Paper secondary actions have a thin map border and dark ink. Hover moves to the lighter well tone. Primary and pressed actions reverse paper text onto brown ink; the pressed treatment takes precedence over hover. Controls use the frontmatter padding and a minimum height of 44px. Disabled buttons reduce opacity to 0.65 and use the native unavailable cursor.
+Paper secondary actions have a thin border and brown ink; hover uses `well2`. Primary, active navigation and pressed controls reverse paper onto ink; pressed styling takes precedence over hover. Standard actions have a 44px minimum height. Disabled actions use opacity 0.65 and a native unavailable cursor. Focus is a 2px ink outline with 3px offset. Navigation wraps; a skip link appears on focus. Small glossary triggers and table sort controls have their own compact dimensions.
 
-Keyboard focus uses a 2px ink outline with 3px offset on buttons, links and fields. Icons are SVG assets, accompanied by meaningful text or accessible names.
+### Shared record table
 
-### Badges and status labels
+`DataTable` supplies text search, checkbox multi-select filters, sortable sentence-case headers, saved column visibility, row selection, 25-row pagination, sticky header, loading/empty states, row actions and comfortable/compact density. Selected rows use `well`; compact cells use 6px vertical padding. CSV exports filtered/sorted visible columns, narrowed to selected records when selection exists. Preferences are client-local, not server pagination.
 
-Badges are small bordered paper labels, including the persistent synthetic data badge. Status labels combine an 8px gap, 14px text and a geometric marker. Sensor trust reuses this shape plus text vocabulary while displaying its own explicit trust, drift, calibration and proxy/reference information.
+### Chips, panels and feedback
 
-### Panels and records
+Chips combine icon, word and border. Watch uses a dashed border; fault uses brick. Paper panels retain existing radius/padding, with wrapping headings/actions. Charts keep their own legend/direct labels, table alternative and export. “No reading” stays explicit rather than becoming zero. Saves show a dated toast and page history with a destination; record audit remains a separate data responsibility. The persistent synthetic-data badge is removed; source notice belongs on About only.
 
-Panels use the documented paper, border, radius and padding. Headings and action groups wrap instead of crowding. Rows use thin separators, with numeric values aligned right where appropriate. Notices use the deeper well tone; errors use brick text. Chart explanations and table alternatives remain close to the chart.
+### Fields and help
 
-### Inputs and fields
+Inputs, selects and textareas retain native behavior, paper backgrounds, thin borders and visible labels/units. Standard fields have a 44px minimum height. Fewer than eight options use a plain select or segmented controls; long lists use one keyboard combobox with listbox, arrow navigation, Enter and Esc. Squeeze/smell use segmented choices. Glossary triggers open shared native popovers with plain definitions and close controls.
 
-Inputs, selects and textareas retain native behavior. Paper backgrounds, thin map borders and the field radius match the buttons. Standard fields fill their available width and have a minimum height of 44px. Checkboxes are 18px squares; ranges retain native interaction. Labels, units, field notes and validation remain visible.
+### Non-modal drawers
 
-### Navigation
+The shared detail drawer is an `aside` with dialog semantics and `aria-modal=false`. It focuses Close when opened, closes with Esc/Close and restores the previous focus; it does not trap focus or block the page. Pilot-house selection also closes on map background or changes with another selection. Sensor, fault/rule, trial logging and Model details use the same pattern.
 
-Text links wrap into additional rows as needed. The active route uses the same dark ink and paper reversal as pressed buttons. Link hover underlines; keyboard focus remains explicit. A skip link appears on focus.
+### Model workspace
 
-### Model workspace and sensor records
+Part selection drives readings and fault context. Operator controls lead with model inspection; advanced settings stay in Debug. Shared storm playback sits beneath the model. Short rain strokes, an engine-depth cyan surface/waterline, soil moisture shading, partial pipe fill and discharge-width arrows replace particle droplets and visual depth exaggeration. The flow strip labels inlet through outfall/overflow. The pink amendment layer reflects recorded depth/dose. Model details groups Rainfall, Catchment, Surface, Soil, Drain and Overflow in collapsed sections, with equations and a source footer.
 
-The same control grammar serves the sixteen drainage parts and eight compost parts. A selected part drives the reading panel, sensor list and relevant fault information. Optional parts display “Not installed” explicitly. Assembly mode, section axis and position, explode, sensor layer, labels, move, isolate, hide, reset and numeric position controls remain native controls beside the scene.
+### Site map
 
-Site and assembly markers link stable sensor IDs to the register; a keyboard list offers the same records. Popups use paper and ink with readable metadata. Measurements retain metric, unit, time and trust context rather than becoming decorative chart labels.
-
-### Site map controls
-
-S1/S2/S3 have direct trial links above the scene, with trial-arm swatches, zone and trial labels. Ink and paper feature pins use readable IDs; 3D pins have a minimum 44px target, a 15px semibold label and secondary brown hover. Desktop Plan and 3D place all six feature callouts separately, with leader lines to their illustrative locations. Native feature links provide the same destinations when labels are hidden on phones.
-
-The House and Map house selectors provide keyboard access to every mapped footprint. Selection highlights the house in copper and opens its record. Move houses enables dragging the selected 3D house; numeric position fields provide a precise alternative. Local edits carry across both views, Reset layout restores mapped placement, and Reset view restores the camera. Context-house records link the OSM footprint and show the geometry-only limit alongside the position controls.
-
-Rainfall and Water after 6 h remain separate pressed controls. Cloud opacity is a native range from 0% to 75% in steps of 5%, with a visible percentage and a default of 55%. The static, irregular 3D weather surface and desktop Plan raster use the same radar field. Clouds allow pointer actions through to the map. The wrapping seven-swatch legend keeps intensity labels visible beside the colours; the adjacent evidence label identifies synthetic weather and map attribution.
+All six feature links and labelled pins provide destinations. Only pilot houses have hover/selection and a record drawer; context footprints are plain geometry. Houses are fixed. Zone controls outline/scoped selections; “Water after 6 h” remains an independent display control. Rainfall opacity ranges from 0% to 75% in 5% steps, default 55%. Both map views draw the same dated zone interpolation and labelled radar bins, with numeric zone mm/h. Clouds permit pointer access through to geometry; attribution remains beside the map.
 
 ## Do's and Don'ts
 
 ### Do:
 
-- **Do** preserve the warm cream and brown Map desk palette and Archivo hierarchy.
-- **Do** confine the approved radar colours to simulated rainfall clouds and their labelled legend.
-- **Do** pair status and trust colors with geometric shapes and explicit text.
-- **Do** keep native controls, visible focus outlines and readable metric units.
-- **Do** preserve mobile stacking, the native part selector and panel-contained table overflow.
-- **Do** keep stable part and sensor IDs, keyboard record access and schematic/synthetic labels visible.
+- **Do** preserve the cream/brown Map desk palette, Archivo and approved radar/cyan data colours.
+- **Do** reuse the shared table, native short-list controls, long-list combobox and non-modal drawer.
+- **Do** pair state/trust colours with shapes and explicit words.
+- **Do** retain visible focus, sentence-case labels, readable units, dated saves and glossary help.
+- **Do** preserve mobile stacking and panel-contained table/flow overflow.
+- **Do** distinguish saved records, human checks and current model scenarios; keep data-source notice on About.
 
 ### Don't:
 
-- **Don't** introduce blue or green interface accents, gradients, glow or decorative interface shadows.
-- **Don't** use color as the only signal for a fault, trust state or selected record.
-- **Don't** replace practical controls with ornamental interactions or illegible model annotations.
-- **Don't** present schematic dimensions or synthetic readings as surveyed geometry or validated field evidence.
+- **Don't** recolour approved data layers or add blue/green console accents, glow or decorative gradients.
+- **Don't** make colour the sole indicator of status or selection.
+- **Don't** restore movable map houses, particle droplets or the persistent data badge.
+- **Don't** present schematic geometry, generated records or model scenarios as surveyed/calibrated evidence.

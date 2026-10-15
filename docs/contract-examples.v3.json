@@ -1,0 +1,1482 @@
+{
+  "GET /config": {
+    "synthetic": true,
+    "contractVersion": "3.0.0",
+    "placeholderLabel": "Placeholder, to confirm with a practitioner",
+    "doseCapLPerM2": 25,
+    "pilotDoses": [
+      {
+        "label": "Pilot dose A",
+        "lPerM2": 10
+      },
+      {
+        "label": "Pilot dose B",
+        "lPerM2": 15
+      },
+      {
+        "label": "Pilot dose C",
+        "lPerM2": 20
+      }
+    ],
+    "drainDownLimitH": 6,
+    "minimumN": 12,
+    "heavyRainMmHr": 50,
+    "temperature": {
+      "goodMin": 55,
+      "goodMax": 65,
+      "days": 3,
+      "turnBelow": 50,
+      "coolAbove": 77,
+      "ambientToleranceC": 2
+    },
+    "moisture": {
+      "min": 40,
+      "max": 60
+    },
+    "schematic": {
+      "label": "Typical schematic defaults, confirm against MSMA and the local authority; not a design drawing",
+      "lengthM": 4.9,
+      "widthM": 3.55,
+      "mediaDepthM": 0.55,
+      "transitionDepthM": 0.15,
+      "drainageDepthM": 0.3,
+      "mulchDepthM": 0.1,
+      "pondingDepthM": 0.25,
+      "pipeDiameterM": 0.15
+    },
+    "inspection": {
+      "standingWaterH": 48,
+      "compostNotHeatingC": 40,
+      "sumpWatchCm": 20
+    },
+    "dataThrough": "2026-10-12T01:40:00.000Z",
+    "minTests": 12
+  },
+  "GET /zones": [
+    {
+      "synthetic": true,
+      "id": "A",
+      "name": "Zone A",
+      "peakMmPerHr": 52,
+      "housesHoldingWater6h": 4,
+      "housesTotal": 6
+    }
+  ],
+  "GET /houses": [
+    {
+      "synthetic": true,
+      "id": "A01",
+      "zone": "A",
+      "x": -15.633,
+      "y": 0.324,
+      "drainId": "A01-D",
+      "holdsWater6h": true,
+      "ownerOfRecord": "Zone A maintenance lead",
+      "lastReadingAt": "2026-10-12T01:40:00.000Z",
+      "nearestFeature": "S1"
+    }
+  ],
+  "GET /features": [
+    {
+      "id": "S1",
+      "name": "Pilot swale",
+      "kind": "swale",
+      "arm": "compost",
+      "doseLabel": "Pilot dose B",
+      "zone": "A",
+      "x": -15.073499999999997,
+      "y": -1.1266666666666667,
+      "status": "fault",
+      "synthetic": true
+    }
+  ],
+  "GET /features/S1": {
+    "id": "S1",
+    "name": "Pilot swale",
+    "kind": "swale",
+    "arm": "compost",
+    "doseLabel": "Pilot dose B",
+    "zone": "A",
+    "x": -15.073499999999997,
+    "y": -1.1266666666666667,
+    "status": "fault",
+    "synthetic": true,
+    "parts": [
+      {
+        "synthetic": true,
+        "partId": "inlet",
+        "name": "Kerb / pipe inlet",
+        "purpose": "Brings runoff in and spreads flow",
+        "typicalFailure": "Sediment, debris or scour",
+        "installed": true,
+        "status": "ok",
+        "sensorIds": [
+          "S1-INLET",
+          "S1-VIS-inlet"
+        ],
+        "readings": [],
+        "issue": "No open fault recorded for this part."
+      },
+      {
+        "synthetic": true,
+        "partId": "energy",
+        "name": "Rock energy dissipator",
+        "purpose": "Limits erosion at the inlet",
+        "typicalFailure": "Scour or displaced rock",
+        "optional": true,
+        "installed": true,
+        "status": "ok",
+        "sensorIds": [
+          "S1-VIS-energy"
+        ],
+        "readings": [],
+        "issue": "No open fault recorded for this part."
+      },
+      {
+        "synthetic": true,
+        "partId": "pretreat",
+        "name": "Pretreatment forebay",
+        "purpose": "Catches coarse sediment before the media",
+        "typicalFailure": "Sediment accumulation or bypass",
+        "installed": true,
+        "status": "ok",
+        "sensorIds": [
+          "S1-INLET",
+          "S1-SEDIMENT",
+          "S1-VIS-pretreat"
+        ],
+        "readings": [],
+        "issue": "No open fault recorded for this part."
+      },
+      {
+        "synthetic": true,
+        "partId": "sock",
+        "name": "Compost filter sock",
+        "purpose": "Trial option for trapping fine sediment",
+        "typicalFailure": "Clogging or washout",
+        "optional": true,
+        "installed": true,
+        "status": "fault",
+        "sensorIds": [
+          "S1-INLET",
+          "S1-VIS-sock"
+        ],
+        "readings": [],
+        "issue": "blockage. Diagnosing input: Level history + visual inspection.",
+        "steps": [
+          "Check from the surface in safe weather. Do not enter a chamber or lift a cover alone. Keep away from flowing water.",
+          "Photograph the inlet and filter sock (the fabric bag that traps sediment); note the date and sensor reading.",
+          "If rain is forecast within 24 hours, notify the owner of record and mark the inlet as restricted.",
+          "The owner arranges trained clearing or sock replacement and sediment disposal under the local procedure.",
+          "Record the photos, date, readings and work in the fault log. Arrange a manual check after the next rain; the console does not run field tests automatically."
+        ]
+      },
+      {
+        "synthetic": true,
+        "partId": "checkdam",
+        "name": "Check dams",
+        "purpose": "Slow flow on slopes",
+        "typicalFailure": "Undercutting or overtopping",
+        "optional": true,
+        "installed": true,
+        "status": "ok",
+        "sensorIds": [
+          "S1-POND",
+          "S1-VIS-checkdam"
+        ],
+        "readings": [],
+        "issue": "No open fault recorded for this part."
+      },
+      {
+        "synthetic": true,
+        "partId": "ponding",
+        "name": "Ponding / detention zone",
+        "purpose": "Temporary storage above the filter media",
+        "typicalFailure": "Persistent standing water",
+        "installed": true,
+        "status": "ok",
+        "sensorIds": [
+          "S1-POND",
+          "S1-POND-DURATION",
+          "S1-VIS-ponding"
+        ],
+        "readings": [],
+        "issue": "No open fault recorded for this part."
+      },
+      {
+        "synthetic": true,
+        "partId": "mulch",
+        "name": "Mulch layer",
+        "purpose": "Protects the surface and holds moisture",
+        "typicalFailure": "Thinning or floating away",
+        "installed": true,
+        "status": "ok",
+        "sensorIds": [
+          "S1-VIS-mulch"
+        ],
+        "readings": [],
+        "issue": "No open fault recorded for this part."
+      },
+      {
+        "synthetic": true,
+        "partId": "planting",
+        "name": "Planting",
+        "purpose": "Maintains a porous surface",
+        "typicalFailure": "Bare patches, weeds or dead planting",
+        "installed": true,
+        "status": "ok",
+        "sensorIds": [
+          "S1-VIS-planting"
+        ],
+        "readings": [],
+        "issue": "No open fault recorded for this part."
+      },
+      {
+        "synthetic": true,
+        "partId": "media",
+        "name": "Filter media",
+        "purpose": "Main infiltration layer; amendment depends on trial arm",
+        "typicalFailure": "Clogging, compaction or settlement",
+        "installed": true,
+        "status": "ok",
+        "sensorIds": [
+          "S1-MOIST-10",
+          "S1-TEMP-10",
+          "S1-MOIST-30",
+          "S1-TEMP-30",
+          "S1-INF-P1",
+          "S1-INF-P2",
+          "S1-INF-P3",
+          "S1-VIS-media"
+        ],
+        "readings": [],
+        "issue": "No open fault recorded for this part."
+      },
+      {
+        "synthetic": true,
+        "partId": "transition",
+        "name": "Transition / geotextile layer",
+        "purpose": "Limits downward fines migration",
+        "typicalFailure": "Fines migration; inferred by inspection",
+        "installed": true,
+        "status": "ok",
+        "sensorIds": [
+          "S1-VIS-transition"
+        ],
+        "readings": [],
+        "issue": "No open fault recorded for this part."
+      },
+      {
+        "synthetic": true,
+        "partId": "drainage",
+        "name": "Gravel drainage layer",
+        "purpose": "Carries water to the underdrain",
+        "typicalFailure": "Silting",
+        "installed": true,
+        "status": "ok",
+        "sensorIds": [
+          "S1-WELL",
+          "S1-VIS-drainage"
+        ],
+        "readings": [],
+        "issue": "No open fault recorded for this part."
+      },
+      {
+        "synthetic": true,
+        "partId": "underdrain",
+        "name": "Perforated underdrain",
+        "purpose": "Collects filtered water",
+        "typicalFailure": "Clogging, crushing or leaking joints",
+        "installed": true,
+        "status": "ok",
+        "sensorIds": [
+          "S1-OUTLET",
+          "S1-WELL",
+          "S1-VIS-underdrain"
+        ],
+        "readings": [],
+        "issue": "No open fault recorded for this part."
+      },
+      {
+        "synthetic": true,
+        "partId": "cleanout",
+        "name": "Cleanout / observation well",
+        "purpose": "Inspection and flushing access",
+        "typicalFailure": "Missing cap or silt",
+        "installed": true,
+        "status": "ok",
+        "sensorIds": [
+          "S1-WELL",
+          "S1-VIS-cleanout"
+        ],
+        "readings": [],
+        "issue": "No open fault recorded for this part."
+      },
+      {
+        "synthetic": true,
+        "partId": "liner",
+        "name": "Impermeable liner",
+        "purpose": "Optional isolation in sensitive soils",
+        "typicalFailure": "Not applicable when not installed",
+        "optional": true,
+        "installed": false,
+        "status": "ok",
+        "sensorIds": [],
+        "readings": [],
+        "issue": "Not installed in this pilot configuration."
+      },
+      {
+        "synthetic": true,
+        "partId": "overflow",
+        "name": "Overflow riser / grate",
+        "purpose": "Passes flows above storage capacity",
+        "typicalFailure": "Blocked grate or repeated overflow",
+        "installed": true,
+        "status": "ok",
+        "sensorIds": [
+          "S1-RISER",
+          "S1-VIS-overflow"
+        ],
+        "readings": [],
+        "issue": "No open fault recorded for this part."
+      },
+      {
+        "synthetic": true,
+        "partId": "outfall",
+        "name": "Outlet to drain network",
+        "purpose": "Discharges to the receiving drain",
+        "typicalFailure": "Blockage or backwater",
+        "installed": true,
+        "status": "ok",
+        "sensorIds": [
+          "S1-OUTLET",
+          "S1-VIS-outfall"
+        ],
+        "readings": [],
+        "issue": "No open fault recorded for this part."
+      }
+    ],
+    "ownerOfRecord": "Zone A maintenance lead",
+    "installedAt": "2026-08-17"
+  },
+  "GET /sensors": [
+    {
+      "synthetic": true,
+      "sensorId": "S1-INLET",
+      "ownerId": "S1",
+      "scope": "drainage",
+      "zone": "A",
+      "partId": "inlet",
+      "linkedPartIds": [
+        "inlet",
+        "pretreat",
+        "sock"
+      ],
+      "type": "Ultrasonic inlet level",
+      "metric": "Inlet water level",
+      "unit": "cm",
+      "lastValue": 18,
+      "role": "reference",
+      "proxyFor": "Reference for inlet water level",
+      "location": {
+        "x": -3,
+        "y": 0.8,
+        "z": 0
+      },
+      "siteLocation": {
+        "x": -15.073499999999997,
+        "y": 0.18,
+        "z": -1.1266666666666667
+      },
+      "lastAt": "2026-10-12T01:40:00.000Z",
+      "calibratedAt": "2026-10-01T01:40:00.000Z",
+      "drift": "none",
+      "status": "ok",
+      "usedByRules": [
+        "inlet_debris"
+      ]
+    }
+  ],
+  "GET /sensors/S1-INLET": {
+    "synthetic": true,
+    "sensorId": "S1-INLET",
+    "ownerId": "S1",
+    "scope": "drainage",
+    "zone": "A",
+    "partId": "inlet",
+    "linkedPartIds": [
+      "inlet",
+      "pretreat",
+      "sock"
+    ],
+    "type": "Ultrasonic inlet level",
+    "metric": "Inlet water level",
+    "unit": "cm",
+    "lastValue": 18,
+    "role": "reference",
+    "proxyFor": "Reference for inlet water level",
+    "location": {
+      "x": -3,
+      "y": 0.8,
+      "z": 0
+    },
+    "siteLocation": {
+      "x": -15.073499999999997,
+      "y": 0.18,
+      "z": -1.1266666666666667
+    },
+    "lastAt": "2026-10-12T01:40:00.000Z",
+    "calibratedAt": "2026-10-01T01:40:00.000Z",
+    "drift": "none",
+    "status": "ok",
+    "usedByRules": [
+      "inlet_debris"
+    ]
+  },
+  "GET /sensors/S1-INLET/readings": [
+    {
+      "synthetic": true,
+      "t": "2026-10-12T01:40:00.000Z",
+      "metric": "Inlet water level",
+      "value": 18,
+      "unit": "cm",
+      "sensorId": "S1-INLET"
+    }
+  ],
+  "GET /fault-rules": [
+    {
+      "synthetic": true,
+      "id": "RULE-INLET-DEBRIS-001",
+      "label": "Inlet sediment or debris",
+      "check": "Inspect sediment and debris at the inlet and forebay; check bypass.",
+      "diagnosingInput": "Inlet level + visual inspection",
+      "scope": "drainage",
+      "legacyId": "inlet_debris",
+      "title": "Inlet sediment or debris",
+      "appliesTo": [
+        "inlet",
+        "pretreat",
+        "sock"
+      ],
+      "diagnosingInputs": [
+        "S1-INLET",
+        "S1-SEDIMENT",
+        "S1-VIS-inlet",
+        "S1-VIS-pretreat",
+        "S1-VIS-sock",
+        "S2-INLET",
+        "S2-SEDIMENT",
+        "S2-VIS-inlet",
+        "S2-VIS-pretreat",
+        "S3-INLET",
+        "S3-SEDIMENT",
+        "S3-VIS-inlet",
+        "S3-VIS-pretreat",
+        "I1-INLET",
+        "I1-SEDIMENT",
+        "T1-INLET",
+        "T1-SEDIMENT",
+        "T1-VIS-inlet",
+        "T1-VIS-pretreat",
+        "T2-INLET",
+        "T2-SEDIMENT",
+        "T2-VIS-inlet",
+        "T2-VIS-pretreat"
+      ],
+      "sensorTypes": [
+        "Ultrasonic inlet level",
+        "Manual sediment inspection",
+        "Manual visual inspection"
+      ],
+      "thresholdKeys": [],
+      "triggerCondition": "A positive manual inspection finding for this part.",
+      "severity": 3,
+      "steps": [
+        "Inspect sediment and debris at the inlet and forebay; check bypass."
+      ],
+      "source": "Practitioner review required",
+      "version": "1.0.0"
+    }
+  ],
+  "GET /fault-rules/RULE-INLET-DEBRIS-001": {
+    "synthetic": true,
+    "id": "RULE-INLET-DEBRIS-001",
+    "label": "Inlet sediment or debris",
+    "check": "Inspect sediment and debris at the inlet and forebay; check bypass.",
+    "diagnosingInput": "Inlet level + visual inspection",
+    "scope": "drainage",
+    "legacyId": "inlet_debris",
+    "title": "Inlet sediment or debris",
+    "appliesTo": [
+      "inlet",
+      "pretreat",
+      "sock"
+    ],
+    "diagnosingInputs": [
+      "S1-INLET",
+      "S1-SEDIMENT",
+      "S1-VIS-inlet",
+      "S1-VIS-pretreat",
+      "S1-VIS-sock",
+      "S2-INLET",
+      "S2-SEDIMENT",
+      "S2-VIS-inlet",
+      "S2-VIS-pretreat",
+      "S3-INLET",
+      "S3-SEDIMENT",
+      "S3-VIS-inlet",
+      "S3-VIS-pretreat",
+      "I1-INLET",
+      "I1-SEDIMENT",
+      "T1-INLET",
+      "T1-SEDIMENT",
+      "T1-VIS-inlet",
+      "T1-VIS-pretreat",
+      "T2-INLET",
+      "T2-SEDIMENT",
+      "T2-VIS-inlet",
+      "T2-VIS-pretreat"
+    ],
+    "sensorTypes": [
+      "Ultrasonic inlet level",
+      "Manual sediment inspection",
+      "Manual visual inspection"
+    ],
+    "thresholdKeys": [],
+    "triggerCondition": "A positive manual inspection finding for this part.",
+    "severity": 3,
+    "steps": [
+      "Inspect sediment and debris at the inlet and forebay; check bypass."
+    ],
+    "source": "Practitioner review required",
+    "version": "1.0.0"
+  },
+  "GET /rainfall?from=2026-10-12T00:00:00.000Z&to=2026-10-12T02:00:00.000Z&step=10m": [
+    {
+      "synthetic": true,
+      "t": "2026-10-12T00:10:00.000Z",
+      "mmPerHr": 5,
+      "cumulativeMm": 0.8
+    }
+  ],
+  "GET /rainfall/zones?from=2026-10-12T00:00:00.000Z&to=2026-10-12T02:00:00.000Z": [
+    {
+      "synthetic": true,
+      "zone": "A",
+      "t": "2026-10-12T00:10:00.000Z",
+      "mmPerHr": 4.126984126984127,
+      "peakMmPerHr": 4.126984126984127,
+      "totalMm": 0.6603174603174603
+    }
+  ],
+  "GET /readings?featureId=S1&metric=infiltration_mm_hr": [
+    {
+      "synthetic": true,
+      "t": "2026-08-24T01:40:00.000Z",
+      "metric": "infiltration_mm_hr",
+      "value": 16,
+      "unit": "mm/h",
+      "sensorId": "S1-INF-P1",
+      "n": 6
+    }
+  ],
+  "GET /faults": [
+    {
+      "id": "F-001",
+      "featureId": "S1",
+      "partId": "sock",
+      "type": "blockage",
+      "severity": 3,
+      "zone": "A",
+      "synthetic": true,
+      "openedAt": "2026-10-11T22:40:00.000Z",
+      "status": "open",
+      "ruleId": "RULE-INLET-DEBRIS-001",
+      "sensorIds": [
+        "S1-INLET",
+        "S1-SEDIMENT",
+        "S1-VIS-sock"
+      ],
+      "sensorStatusesAtAlert": {
+        "S1-INLET": "ok",
+        "S1-SEDIMENT": "ok",
+        "S1-VIS-sock": "ok"
+      },
+      "diagnosingInput": "Level history + visual inspection",
+      "ruleKey": "F-001",
+      "raisedBy": "rule",
+      "history": []
+    }
+  ],
+  "GET /trials": [
+    {
+      "synthetic": true,
+      "featureId": "S1",
+      "arm": "compost",
+      "doseLabel": "Pilot dose B",
+      "doseCapOk": true,
+      "owner": {
+        "name": "Zone A maintenance lead",
+        "role": "Trial custodian",
+        "since": "2026-08-10"
+      },
+      "soilTexture": "Clay loam · synthetic",
+      "baselineDone": true,
+      "method": "Fixed-point ring infiltration test",
+      "markedPoints": 3,
+      "repeatsPerPoint": 2,
+      "n": 6,
+      "nextRetestDue": "2026-10-19",
+      "batchId": "B-03",
+      "appliedAt": "2026-08-17",
+      "appliedBy": "Trial crew",
+      "amendedDepthM": 0.15,
+      "tests": [
+        {
+          "synthetic": true,
+          "t": "2026-08-10T01:40:00.000Z",
+          "phase": "baseline",
+          "metric": "infiltration_mm_hr",
+          "value": 13,
+          "unit": "mm/h",
+          "pointId": "S1-P1",
+          "n": 2
+        },
+        {
+          "synthetic": true,
+          "t": "2026-08-10T01:40:00.000Z",
+          "phase": "baseline",
+          "metric": "infiltration_mm_hr",
+          "value": 13,
+          "unit": "mm/h",
+          "pointId": "S1-P2",
+          "n": 2
+        },
+        {
+          "synthetic": true,
+          "t": "2026-08-10T01:40:00.000Z",
+          "phase": "baseline",
+          "metric": "infiltration_mm_hr",
+          "value": 13,
+          "unit": "mm/h",
+          "pointId": "S1-P3",
+          "n": 2
+        },
+        {
+          "synthetic": true,
+          "t": "2026-08-24T01:40:00.000Z",
+          "phase": "retest",
+          "metric": "infiltration_mm_hr",
+          "value": 16,
+          "unit": "mm/h",
+          "pointId": "S1-P1",
+          "n": 2
+        },
+        {
+          "synthetic": true,
+          "t": "2026-08-24T01:40:00.000Z",
+          "phase": "retest",
+          "metric": "infiltration_mm_hr",
+          "value": 16,
+          "unit": "mm/h",
+          "pointId": "S1-P2",
+          "n": 2
+        },
+        {
+          "synthetic": true,
+          "t": "2026-08-24T01:40:00.000Z",
+          "phase": "retest",
+          "metric": "infiltration_mm_hr",
+          "value": 16,
+          "unit": "mm/h",
+          "pointId": "S1-P3",
+          "n": 2
+        },
+        {
+          "synthetic": true,
+          "t": "2026-08-31T01:40:00.000Z",
+          "phase": "retest",
+          "metric": "infiltration_mm_hr",
+          "value": 17,
+          "unit": "mm/h",
+          "pointId": "S1-P1",
+          "n": 2
+        },
+        {
+          "synthetic": true,
+          "t": "2026-08-31T01:40:00.000Z",
+          "phase": "retest",
+          "metric": "infiltration_mm_hr",
+          "value": 17,
+          "unit": "mm/h",
+          "pointId": "S1-P2",
+          "n": 2
+        },
+        {
+          "synthetic": true,
+          "t": "2026-08-31T01:40:00.000Z",
+          "phase": "retest",
+          "metric": "infiltration_mm_hr",
+          "value": 17,
+          "unit": "mm/h",
+          "pointId": "S1-P3",
+          "n": 2
+        },
+        {
+          "synthetic": true,
+          "t": "2026-09-07T01:40:00.000Z",
+          "phase": "retest",
+          "metric": "infiltration_mm_hr",
+          "value": 18,
+          "unit": "mm/h",
+          "pointId": "S1-P1",
+          "n": 2
+        },
+        {
+          "synthetic": true,
+          "t": "2026-09-07T01:40:00.000Z",
+          "phase": "retest",
+          "metric": "infiltration_mm_hr",
+          "value": 18,
+          "unit": "mm/h",
+          "pointId": "S1-P2",
+          "n": 2
+        },
+        {
+          "synthetic": true,
+          "t": "2026-09-07T01:40:00.000Z",
+          "phase": "retest",
+          "metric": "infiltration_mm_hr",
+          "value": 18,
+          "unit": "mm/h",
+          "pointId": "S1-P3",
+          "n": 2
+        },
+        {
+          "synthetic": true,
+          "t": "2026-09-14T01:40:00.000Z",
+          "phase": "retest",
+          "metric": "infiltration_mm_hr",
+          "value": 18,
+          "unit": "mm/h",
+          "pointId": "S1-P1",
+          "n": 2
+        },
+        {
+          "synthetic": true,
+          "t": "2026-09-14T01:40:00.000Z",
+          "phase": "retest",
+          "metric": "infiltration_mm_hr",
+          "value": 18,
+          "unit": "mm/h",
+          "pointId": "S1-P2",
+          "n": 2
+        },
+        {
+          "synthetic": true,
+          "t": "2026-09-14T01:40:00.000Z",
+          "phase": "retest",
+          "metric": "infiltration_mm_hr",
+          "value": 18,
+          "unit": "mm/h",
+          "pointId": "S1-P3",
+          "n": 2
+        },
+        {
+          "synthetic": true,
+          "t": "2026-09-21T01:40:00.000Z",
+          "phase": "retest",
+          "metric": "infiltration_mm_hr",
+          "value": 19,
+          "unit": "mm/h",
+          "pointId": "S1-P1",
+          "n": 2
+        },
+        {
+          "synthetic": true,
+          "t": "2026-09-21T01:40:00.000Z",
+          "phase": "retest",
+          "metric": "infiltration_mm_hr",
+          "value": 19,
+          "unit": "mm/h",
+          "pointId": "S1-P2",
+          "n": 2
+        },
+        {
+          "synthetic": true,
+          "t": "2026-09-21T01:40:00.000Z",
+          "phase": "retest",
+          "metric": "infiltration_mm_hr",
+          "value": 19,
+          "unit": "mm/h",
+          "pointId": "S1-P3",
+          "n": 2
+        },
+        {
+          "synthetic": true,
+          "t": "2026-09-28T01:40:00.000Z",
+          "phase": "retest",
+          "metric": "infiltration_mm_hr",
+          "value": 20,
+          "unit": "mm/h",
+          "pointId": "S1-P1",
+          "n": 2
+        },
+        {
+          "synthetic": true,
+          "t": "2026-09-28T01:40:00.000Z",
+          "phase": "retest",
+          "metric": "infiltration_mm_hr",
+          "value": 20,
+          "unit": "mm/h",
+          "pointId": "S1-P2",
+          "n": 2
+        },
+        {
+          "synthetic": true,
+          "t": "2026-09-28T01:40:00.000Z",
+          "phase": "retest",
+          "metric": "infiltration_mm_hr",
+          "value": 20,
+          "unit": "mm/h",
+          "pointId": "S1-P3",
+          "n": 2
+        },
+        {
+          "synthetic": true,
+          "t": "2026-10-05T01:40:00.000Z",
+          "phase": "retest",
+          "metric": "infiltration_mm_hr",
+          "value": 21,
+          "unit": "mm/h",
+          "pointId": "S1-P1",
+          "n": 2
+        },
+        {
+          "synthetic": true,
+          "t": "2026-10-05T01:40:00.000Z",
+          "phase": "retest",
+          "metric": "infiltration_mm_hr",
+          "value": 21,
+          "unit": "mm/h",
+          "pointId": "S1-P2",
+          "n": 2
+        },
+        {
+          "synthetic": true,
+          "t": "2026-10-05T01:40:00.000Z",
+          "phase": "retest",
+          "metric": "infiltration_mm_hr",
+          "value": 21,
+          "unit": "mm/h",
+          "pointId": "S1-P3",
+          "n": 2
+        },
+        {
+          "synthetic": true,
+          "t": "2026-10-12T01:40:00.000Z",
+          "phase": "retest",
+          "metric": "infiltration_mm_hr",
+          "value": 22,
+          "unit": "mm/h",
+          "pointId": "S1-P1",
+          "n": 2
+        },
+        {
+          "synthetic": true,
+          "t": "2026-10-12T01:40:00.000Z",
+          "phase": "retest",
+          "metric": "infiltration_mm_hr",
+          "value": 22,
+          "unit": "mm/h",
+          "pointId": "S1-P2",
+          "n": 2
+        },
+        {
+          "synthetic": true,
+          "t": "2026-10-12T01:40:00.000Z",
+          "phase": "retest",
+          "metric": "infiltration_mm_hr",
+          "value": 22,
+          "unit": "mm/h",
+          "pointId": "S1-P3",
+          "n": 2
+        }
+      ],
+      "guardrails": {
+        "nutrientExport": "not_tested",
+        "noOpenDrainContact": true,
+        "postStormCheck": "pending",
+        "washoutChecked": false,
+        "cloggingChecked": false,
+        "drainDownFlag": false
+      }
+    }
+  ],
+  "GET /trials/S1": {
+    "synthetic": true,
+    "featureId": "S1",
+    "arm": "compost",
+    "doseLabel": "Pilot dose B",
+    "doseCapOk": true,
+    "owner": {
+      "name": "Zone A maintenance lead",
+      "role": "Trial custodian",
+      "since": "2026-08-10"
+    },
+    "soilTexture": "Clay loam · synthetic",
+    "baselineDone": true,
+    "method": "Fixed-point ring infiltration test",
+    "markedPoints": 3,
+    "repeatsPerPoint": 2,
+    "n": 6,
+    "nextRetestDue": "2026-10-19",
+    "batchId": "B-03",
+    "appliedAt": "2026-08-17",
+    "appliedBy": "Trial crew",
+    "amendedDepthM": 0.15,
+    "tests": [
+      {
+        "synthetic": true,
+        "t": "2026-08-10T01:40:00.000Z",
+        "phase": "baseline",
+        "metric": "infiltration_mm_hr",
+        "value": 13,
+        "unit": "mm/h",
+        "pointId": "S1-P1",
+        "n": 2
+      },
+      {
+        "synthetic": true,
+        "t": "2026-08-10T01:40:00.000Z",
+        "phase": "baseline",
+        "metric": "infiltration_mm_hr",
+        "value": 13,
+        "unit": "mm/h",
+        "pointId": "S1-P2",
+        "n": 2
+      },
+      {
+        "synthetic": true,
+        "t": "2026-08-10T01:40:00.000Z",
+        "phase": "baseline",
+        "metric": "infiltration_mm_hr",
+        "value": 13,
+        "unit": "mm/h",
+        "pointId": "S1-P3",
+        "n": 2
+      },
+      {
+        "synthetic": true,
+        "t": "2026-08-24T01:40:00.000Z",
+        "phase": "retest",
+        "metric": "infiltration_mm_hr",
+        "value": 16,
+        "unit": "mm/h",
+        "pointId": "S1-P1",
+        "n": 2
+      },
+      {
+        "synthetic": true,
+        "t": "2026-08-24T01:40:00.000Z",
+        "phase": "retest",
+        "metric": "infiltration_mm_hr",
+        "value": 16,
+        "unit": "mm/h",
+        "pointId": "S1-P2",
+        "n": 2
+      },
+      {
+        "synthetic": true,
+        "t": "2026-08-24T01:40:00.000Z",
+        "phase": "retest",
+        "metric": "infiltration_mm_hr",
+        "value": 16,
+        "unit": "mm/h",
+        "pointId": "S1-P3",
+        "n": 2
+      },
+      {
+        "synthetic": true,
+        "t": "2026-08-31T01:40:00.000Z",
+        "phase": "retest",
+        "metric": "infiltration_mm_hr",
+        "value": 17,
+        "unit": "mm/h",
+        "pointId": "S1-P1",
+        "n": 2
+      },
+      {
+        "synthetic": true,
+        "t": "2026-08-31T01:40:00.000Z",
+        "phase": "retest",
+        "metric": "infiltration_mm_hr",
+        "value": 17,
+        "unit": "mm/h",
+        "pointId": "S1-P2",
+        "n": 2
+      },
+      {
+        "synthetic": true,
+        "t": "2026-08-31T01:40:00.000Z",
+        "phase": "retest",
+        "metric": "infiltration_mm_hr",
+        "value": 17,
+        "unit": "mm/h",
+        "pointId": "S1-P3",
+        "n": 2
+      },
+      {
+        "synthetic": true,
+        "t": "2026-09-07T01:40:00.000Z",
+        "phase": "retest",
+        "metric": "infiltration_mm_hr",
+        "value": 18,
+        "unit": "mm/h",
+        "pointId": "S1-P1",
+        "n": 2
+      },
+      {
+        "synthetic": true,
+        "t": "2026-09-07T01:40:00.000Z",
+        "phase": "retest",
+        "metric": "infiltration_mm_hr",
+        "value": 18,
+        "unit": "mm/h",
+        "pointId": "S1-P2",
+        "n": 2
+      },
+      {
+        "synthetic": true,
+        "t": "2026-09-07T01:40:00.000Z",
+        "phase": "retest",
+        "metric": "infiltration_mm_hr",
+        "value": 18,
+        "unit": "mm/h",
+        "pointId": "S1-P3",
+        "n": 2
+      },
+      {
+        "synthetic": true,
+        "t": "2026-09-14T01:40:00.000Z",
+        "phase": "retest",
+        "metric": "infiltration_mm_hr",
+        "value": 18,
+        "unit": "mm/h",
+        "pointId": "S1-P1",
+        "n": 2
+      },
+      {
+        "synthetic": true,
+        "t": "2026-09-14T01:40:00.000Z",
+        "phase": "retest",
+        "metric": "infiltration_mm_hr",
+        "value": 18,
+        "unit": "mm/h",
+        "pointId": "S1-P2",
+        "n": 2
+      },
+      {
+        "synthetic": true,
+        "t": "2026-09-14T01:40:00.000Z",
+        "phase": "retest",
+        "metric": "infiltration_mm_hr",
+        "value": 18,
+        "unit": "mm/h",
+        "pointId": "S1-P3",
+        "n": 2
+      },
+      {
+        "synthetic": true,
+        "t": "2026-09-21T01:40:00.000Z",
+        "phase": "retest",
+        "metric": "infiltration_mm_hr",
+        "value": 19,
+        "unit": "mm/h",
+        "pointId": "S1-P1",
+        "n": 2
+      },
+      {
+        "synthetic": true,
+        "t": "2026-09-21T01:40:00.000Z",
+        "phase": "retest",
+        "metric": "infiltration_mm_hr",
+        "value": 19,
+        "unit": "mm/h",
+        "pointId": "S1-P2",
+        "n": 2
+      },
+      {
+        "synthetic": true,
+        "t": "2026-09-21T01:40:00.000Z",
+        "phase": "retest",
+        "metric": "infiltration_mm_hr",
+        "value": 19,
+        "unit": "mm/h",
+        "pointId": "S1-P3",
+        "n": 2
+      },
+      {
+        "synthetic": true,
+        "t": "2026-09-28T01:40:00.000Z",
+        "phase": "retest",
+        "metric": "infiltration_mm_hr",
+        "value": 20,
+        "unit": "mm/h",
+        "pointId": "S1-P1",
+        "n": 2
+      },
+      {
+        "synthetic": true,
+        "t": "2026-09-28T01:40:00.000Z",
+        "phase": "retest",
+        "metric": "infiltration_mm_hr",
+        "value": 20,
+        "unit": "mm/h",
+        "pointId": "S1-P2",
+        "n": 2
+      },
+      {
+        "synthetic": true,
+        "t": "2026-09-28T01:40:00.000Z",
+        "phase": "retest",
+        "metric": "infiltration_mm_hr",
+        "value": 20,
+        "unit": "mm/h",
+        "pointId": "S1-P3",
+        "n": 2
+      },
+      {
+        "synthetic": true,
+        "t": "2026-10-05T01:40:00.000Z",
+        "phase": "retest",
+        "metric": "infiltration_mm_hr",
+        "value": 21,
+        "unit": "mm/h",
+        "pointId": "S1-P1",
+        "n": 2
+      },
+      {
+        "synthetic": true,
+        "t": "2026-10-05T01:40:00.000Z",
+        "phase": "retest",
+        "metric": "infiltration_mm_hr",
+        "value": 21,
+        "unit": "mm/h",
+        "pointId": "S1-P2",
+        "n": 2
+      },
+      {
+        "synthetic": true,
+        "t": "2026-10-05T01:40:00.000Z",
+        "phase": "retest",
+        "metric": "infiltration_mm_hr",
+        "value": 21,
+        "unit": "mm/h",
+        "pointId": "S1-P3",
+        "n": 2
+      },
+      {
+        "synthetic": true,
+        "t": "2026-10-12T01:40:00.000Z",
+        "phase": "retest",
+        "metric": "infiltration_mm_hr",
+        "value": 22,
+        "unit": "mm/h",
+        "pointId": "S1-P1",
+        "n": 2
+      },
+      {
+        "synthetic": true,
+        "t": "2026-10-12T01:40:00.000Z",
+        "phase": "retest",
+        "metric": "infiltration_mm_hr",
+        "value": 22,
+        "unit": "mm/h",
+        "pointId": "S1-P2",
+        "n": 2
+      },
+      {
+        "synthetic": true,
+        "t": "2026-10-12T01:40:00.000Z",
+        "phase": "retest",
+        "metric": "infiltration_mm_hr",
+        "value": 22,
+        "unit": "mm/h",
+        "pointId": "S1-P3",
+        "n": 2
+      }
+    ],
+    "guardrails": {
+      "nutrientExport": "not_tested",
+      "noOpenDrainContact": true,
+      "postStormCheck": "pending",
+      "washoutChecked": false,
+      "cloggingChecked": false,
+      "drainDownFlag": false
+    }
+  },
+  "GET /batches": [
+    {
+      "synthetic": true,
+      "id": "B-01",
+      "bay": "Bay 1",
+      "inputs": [
+        {
+          "kind": "food_bokashi",
+          "kg": 35
+        },
+        {
+          "kind": "trimmings",
+          "kg": 65
+        }
+      ],
+      "startedAt": "2026-07-10",
+      "status": "active",
+      "maturityGate": "blocked",
+      "gateReason": "Temperature has not returned to ambient.",
+      "readings": [
+        {
+          "synthetic": true,
+          "t": "2026-10-12T01:40:00.000Z",
+          "tempC": 47,
+          "moisturePct": 68,
+          "prompts": [
+            {
+              "rule": "Wet pile",
+              "action": "Add dry carbon",
+              "why": "Moisture 68% is above 60%.",
+              "severity": 2,
+              "synthetic": true
+            },
+            {
+              "rule": "Leachate guard",
+              "action": "Cover bay, hold turning, check sump",
+              "why": "Rain expected; cover not checked, sump not checked (level 23 cm; watch threshold 20 cm).",
+              "severity": 3,
+              "synthetic": true
+            },
+            {
+              "rule": "Sump level",
+              "action": "Check and empty the sump",
+              "why": "Sump 23 cm exceeds 20 cm.",
+              "severity": 3,
+              "synthetic": true
+            }
+          ]
+        }
+      ],
+      "rules": [
+        {
+          "rule": "Wet pile",
+          "action": "Add dry carbon",
+          "why": "Moisture 68% is above 60%.",
+          "severity": 2,
+          "synthetic": true
+        },
+        {
+          "rule": "Leachate guard",
+          "action": "Cover bay, hold turning, check sump",
+          "why": "Rain expected; cover not checked, sump not checked (level 23 cm; watch threshold 20 cm).",
+          "severity": 3,
+          "synthetic": true
+        },
+        {
+          "rule": "Sump level",
+          "action": "Check and empty the sump",
+          "why": "Sump 23 cm exceeds 20 cm.",
+          "severity": 3,
+          "synthetic": true
+        }
+      ],
+      "checks": {
+        "squeeze": "wet",
+        "smell": "normal",
+        "sumpLevelCm": 23,
+        "puddles": true,
+        "pests": false,
+        "ambientTempC": 30,
+        "ambientReached": false,
+        "didNotReheat": false,
+        "manualMaturity": false,
+        "intakeChecked": true,
+        "plasticsFound": false,
+        "glassFound": false,
+        "bayCovered": false,
+        "sumpChecked": false,
+        "rainExpected": true
+      }
+    }
+  ],
+  "GET /batches/B-01": {
+    "synthetic": true,
+    "id": "B-01",
+    "bay": "Bay 1",
+    "inputs": [
+      {
+        "kind": "food_bokashi",
+        "kg": 35
+      },
+      {
+        "kind": "trimmings",
+        "kg": 65
+      }
+    ],
+    "startedAt": "2026-07-10",
+    "status": "active",
+    "maturityGate": "blocked",
+    "gateReason": "Temperature has not returned to ambient.",
+    "readings": [
+      {
+        "synthetic": true,
+        "t": "2026-10-12T01:40:00.000Z",
+        "tempC": 47,
+        "moisturePct": 68,
+        "prompts": [
+          {
+            "rule": "Wet pile",
+            "action": "Add dry carbon",
+            "why": "Moisture 68% is above 60%.",
+            "severity": 2,
+            "synthetic": true
+          },
+          {
+            "rule": "Leachate guard",
+            "action": "Cover bay, hold turning, check sump",
+            "why": "Rain expected; cover not checked, sump not checked (level 23 cm; watch threshold 20 cm).",
+            "severity": 3,
+            "synthetic": true
+          },
+          {
+            "rule": "Sump level",
+            "action": "Check and empty the sump",
+            "why": "Sump 23 cm exceeds 20 cm.",
+            "severity": 3,
+            "synthetic": true
+          }
+        ]
+      }
+    ],
+    "rules": [
+      {
+        "rule": "Wet pile",
+        "action": "Add dry carbon",
+        "why": "Moisture 68% is above 60%.",
+        "severity": 2,
+        "synthetic": true
+      },
+      {
+        "rule": "Leachate guard",
+        "action": "Cover bay, hold turning, check sump",
+        "why": "Rain expected; cover not checked, sump not checked (level 23 cm; watch threshold 20 cm).",
+        "severity": 3,
+        "synthetic": true
+      },
+      {
+        "rule": "Sump level",
+        "action": "Check and empty the sump",
+        "why": "Sump 23 cm exceeds 20 cm.",
+        "severity": 3,
+        "synthetic": true
+      }
+    ],
+    "checks": {
+      "squeeze": "wet",
+      "smell": "normal",
+      "sumpLevelCm": 23,
+      "puddles": true,
+      "pests": false,
+      "ambientTempC": 30,
+      "ambientReached": false,
+      "didNotReheat": false,
+      "manualMaturity": false,
+      "intakeChecked": true,
+      "plasticsFound": false,
+      "glassFound": false,
+      "bayCovered": false,
+      "sumpChecked": false,
+      "rainExpected": true
+    }
+  },
+  "GET /batch-parts/B-01": [
+    {
+      "synthetic": true,
+      "partId": "intake",
+      "name": "Intake: scale and checklist",
+      "purpose": "Weigh inputs and record a human photo checklist",
+      "typicalFailure": "Contamination or missing checks",
+      "installed": true,
+      "status": "ok",
+      "sensorIds": [
+        "B-01-SCALE",
+        "B-01-PHOTO",
+        "B-01-VIS-intake"
+      ],
+      "readings": [],
+      "issue": "No open fault recorded for this part."
+    }
+  ],
+  "POST /faults/:id/status": {
+    "id": "F-001",
+    "featureId": "S1",
+    "partId": "sock",
+    "type": "blockage",
+    "severity": 3,
+    "zone": "A",
+    "synthetic": true,
+    "openedAt": "2026-10-11T22:40:00.000Z",
+    "status": "inspected",
+    "ruleId": "RULE-INLET-DEBRIS-001",
+    "sensorIds": [
+      "S1-INLET",
+      "S1-SEDIMENT",
+      "S1-VIS-sock"
+    ],
+    "sensorStatusesAtAlert": {
+      "S1-INLET": "ok",
+      "S1-SEDIMENT": "ok",
+      "S1-VIS-sock": "ok"
+    },
+    "diagnosingInput": "Level history + visual inspection",
+    "ruleKey": "F-001",
+    "raisedBy": "rule",
+    "history": [
+      {
+        "id": "6d42bb3d-c539-4052-9e93-8838d6cb861c",
+        "t": "2026-10-15T11:30:18.748Z",
+        "user": "Operator A",
+        "action": "Open → Inspected",
+        "note": "Inspected the sock"
+      }
+    ]
+  },
+  "POST /faults": {
+    "synthetic": true,
+    "id": "F-012",
+    "ruleKey": "8447e49e-6814-49c6-8682-19cf4730b22f",
+    "featureId": "S1",
+    "partId": "inlet",
+    "type": "blockage",
+    "ruleId": "MANUAL",
+    "sensorIds": [],
+    "sensorStatusesAtAlert": {},
+    "diagnosingInput": "Debris at inlet",
+    "severity": 3,
+    "openedAt": "2026-10-15T11:30:18.748Z",
+    "status": "open",
+    "zone": "A",
+    "raisedBy": "manual",
+    "history": [
+      {
+        "id": "57409f34-369d-449b-b78d-fa544f7733d7",
+        "t": "2026-10-15T11:30:18.748Z",
+        "user": "Operator A",
+        "action": "Reported",
+        "note": "Debris at inlet"
+      }
+    ]
+  },
+  "POST other successful writes": {
+    "ok": true
+  }
+}

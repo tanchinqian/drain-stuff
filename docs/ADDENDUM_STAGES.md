@@ -1,5 +1,7 @@
 # Addendum implementation stages
 
+> Historical record: sections before Round 3 describe the implementation and checks at that time. Round 3 below and PRODUCT.md, DESIGN.md, MAP_MODEL.md, PHYSICS_MODEL.md and BACKEND_HANDOFF.md supersede conflicting claims about data badges, moving houses, static rainfall, contract 2.0.0, control patterns, particle water and Sensors playback overlays.
+
 The accepted `CODEX_ADDENDUM.md` was applied to the local React app in three stages, preserving the existing cream and brown Archivo Map desk console. The separately published Sites visualization is an exact uploaded attachment and has separate source and hosting identity.
 
 | Completed stage | Result | Commit |
@@ -57,3 +59,20 @@ The user approved `CODEX_FIX_PROMPT.md` except colour tasks 1 and 2 and explicit
 | Verification and finish review | Final production build and lint passed, with all 18 unit tests and all 12 browser tests. Fresh desktop/mobile captures cover Overview, drainage detail and all three compost tabs. Independent manual review returned **Ship**, with no material fixes in supplied captures and sampled source. |
 
 The detector remained unavailable with `cache_directory_failed` and did not run. The manual disposition is limited to its reviewed evidence. The current source has 17 searchable dropdown call sites following house-selector consolidation and section-axis buttons; earlier search documents record their original 19-site stage. [The fix-round record](fix-round-1.md) records decisions, review scope and design-document drift. `DESIGN.md` and `.impeccable/design.json` remain preserved; this documentation handoff made no source or test changes and performed no commit or push.
+
+## Round 3 — current approved implementation
+
+The user approved CODEX_ROUND3_PROMPT.md except **all colour changes**. Cream/brown Archivo, seven radar colours and cyan water remain. This is a system component/layout refinement within Map desk, not a replacement identity. Earlier stage counts and behavior above remain historical.
+
+| Local commit | Result |
+| --- | --- |
+| `22f9c2b` | Shared records, API discovery/fallback, contract 3.0.0, sensor detail/history, fault registry/manual reports/status audit and feedback. |
+| `7b9e748` | Fixed pilot-only house interaction, zone/range-driven records, dated zone rainfall interpolation, chart legends/labels and non-modal house detail. |
+| `13ceffa` | Five trial records, readiness/actions/safety drawers, batch/compost master-detail, computed prompts, segmented human checks and history. |
+| `f87629f` | Water strokes/shading/pipe fill/flow strip, recorded amendment and Model details, final checks and the two scored finish fixes. |
+
+Final implementation verification reported production build/lint passed, 50 unit tests across 9 files and all 23 browser checks. Browser coverage includes eight-page axe/overflow at 1440/1920/360px, three-model zoom at two sizes, shared worker/clock/water and record flows. All 8 targeted Round 3 checks then passed after adding the Overview fault-count assertion and expanded guidance capture. No new tests were run for this documentation merge.
+
+Independent initial review of 24 captures identified two scored items: remaining standing-water copy and T2 click readiness. Both were fixed. Re-review of the same 24 refreshed captures plus expanded standing-water/glossary guidance returned **SHIP**, with no remaining items. This final verdict covers the two scored fixes, not a fresh whole-app audit. See [round3-review.md](round3-review.md).
+
+The context launcher reported `cache_directory_failed`; the detector did not run and was not repaired. No push occurred. Contract docs describe a local mock plus optional API transport, not a deployed backend. Optional rainfall grid, surveyed calibration and fully integrated compost thermal UI are not implemented. Current saved/API sensor records remain separate from feature virtual readings; dose never changes conductivity. Mock dataThrough stays fixed while new writes use wall-clock time and due status uses today's Singapore calendar day.

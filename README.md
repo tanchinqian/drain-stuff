@@ -1,6 +1,6 @@
 # Drain Trial Console
 
-A local React operator console for a synthetic drainage and compost pilot. The existing Map desk interface includes selectable site houses, sixteen drainage parts, eight compost parts, a sensor register, fault provenance and guarded trial records.
+A local React console for drainage and compost pilot operations. The cream/brown Archivo Map desk includes fixed pilot-house selection, six hydraulic feature models, trial and batch records, sensors, faults and audited local saves. Generated local records use the same client as an optional backend.
 
 ## Run in PowerShell
 
@@ -12,23 +12,33 @@ npm.cmd ci
 npm.cmd run dev
 ```
 
-`npm.cmd ci` is the fresh setup step. Open [Overview](http://127.0.0.1:5173/), [Sensors](http://127.0.0.1:5173/sensors), [S1 drainage model](http://127.0.0.1:5173/feature/S1) or [B-01 compost model](http://127.0.0.1:5173/batches/B-01). The default server binds to this computer only.
+`npm.cmd ci` is the fresh setup step. Open [Overview](http://127.0.0.1:5173/), [Trials](http://127.0.0.1:5173/trials), [Sensors](http://127.0.0.1:5173/sensors), [S1](http://127.0.0.1:5173/feature/S1) or [B-01](http://127.0.0.1:5173/batches/B-01). The default server binds to this computer only.
+
+## Current operator flow
+
+Overview combines a fixed map with fault cards, zone filtering, dated rainfall and drain-down charts. Only the 24 pilot houses and six feature destinations are interactive; context houses provide geometry. A pilot-house drawer closes with Close, Esc, map background selection or another map item. Last storm, 7 days and 8 weeks drive history requests and chart titles. Radar colours remain approved; rainfall is interpolated from dated zone records, not live radar.
+
+Registers share search, multi-select filters, sortable columns, saved column visibility, row selection, 25-row pagination, density and CSV export. Long lists use a single combobox; fewer than eight options use a plain select or segmented controls. Technical terms use glossary popovers. Writes show the saved destination/time and page activity history. Fault status changes refresh Overview counts.
+
+Trials compares the same marked points across three treatment arms. S1/S2/S3/T1/T2 each has a record, readiness progress, safety checklist and baseline/re-test drawer. Batches and compost bays show reading/check histories and computed prompts with reasons; human squeeze/smell checks and maturity gates remain explicit. Sensors shows **saved API readings**, with installation positions, calibration/method checks, rules and history in its drawer. Eligible feature virtual readings remain scenario outputs and do not overwrite the register/history.
 
 ## Play a feature storm
 
-Open [S1](http://127.0.0.1:5173/feature/S1), or replace S1 in `/feature/S1` with S2, S3, I1, T1 or T2. Select **Play storm** directly beneath the model. Pause, scrub the timeline, step by minute or reset; all six feature pages share the same clock. Changing model inputs recalculates the runs and resets playback. With reduced motion enabled, use the timeline and minute buttons.
+Open `/feature/S1`, S2, S3, I1, T1 or T2. Playback beneath the model supports Play, pause, scrubbing, minute steps, reset and jump to peak water. All six share the clock. Input changes recalculate runs and reset playback. Reduced motion supports manual timeline/minute controls.
 
-Expand **Storm settings, charts and model parameters** for peak rain, duration, rain pattern, scenarios, tailwater and conductivity. The section includes response charts with tables, water balance, **Export run CSV**, and a searchable **How this is calculated · parameters and sources** table. Parameter edits apply when leaving the field. **2D section** provides a live flat alternative; **3D water depth x5** changes only the display and is off by default.
+Short strokes show rain, cyan water follows engine depth, soil shading follows moisture, and partial pipe fill/static arrow width show drainage. The flow strip gives current values. The pink amendment layer records allocated depth and dose. Conductivity uses the latest trial test mean/sample count unless manually overridden; compost allocation never changes it.
 
-The feature geometry, water and eligible sensor readings now follow the same reduced-order run. S1/S2/S3 start with equal conductivity and weather; other parameter edits or scenario overrides can make the comparison unequal. Loading a trial re-test explicitly loads a **seeded synthetic** value, not a field calibration or treatment finding. Neighbourhood/Plan and compost views retain their earlier implementation. See [current equations and limits](docs/PHYSICS_MODEL.md); [STORM_SIMULATION.md](docs/STORM_SIMULATION.md) describes the earlier preview.
+**Model details** opens a non-modal drawer with six collapsed parameter groups (Rainfall, Catchment, Surface, Soil, Drain, Overflow), equations and a provenance footer. The expandable storm section contains scenario controls, charts/tables, water balance and **Export run CSV**. A live **2D section** is available. No water-depth exaggeration control is used in the current view. Uncalibrated scenarios are not treatment findings. The compost thermal engine is a foundation, not a fully integrated thermal UI.
 
 ## Data and API
 
-Without `VITE_API_BASE`, the app uses deterministic synthetic data. Its fixed clock is **12 October 2026, 09:40 Asia/Singapore** (`2026-10-12T01:40:00.000Z`), so age, due dates and new mock records do not advance with wall time. Records persist in this browser's local storage under `drain-trial-console-v1`; the current stored data version is 2. A browser with unavailable storage can still use the in-memory mock.
+Contract **3.0.0** is defined in `app/src/api/types.ts`, with transport in `app/src/api/client.ts`. Set `VITE_API_BASE` before starting/building Vite to prefer a backend; `VITE_DATA_SOURCE=mock` forces local mode. Startup probes `/config`; network, timeout or server failure falls back to mock for that page session. Authentication errors remain visible. After API discovery succeeds, failures remain errors and failed writes do not silently save locally.
 
-`VITE_API_BASE` selects an HTTP backend instead of the mock. Leave it unset for the browser-local demo. A future backend supplies its API origin/base prefix; set it before starting Vite. The client appends paths such as `/config`, `/sensors`, `/fault-rules` and `/batch-parts/:id` directly to that base. The backend must implement contract **2.0.0**, defined in `app/src/api/types.ts`, with endpoint functions in `app/src/api/client.ts`, sensor filters, part catalogs, trust snapshots and the existing POST allocation gates. There is no bundled backend. The interface retains its synthetic data labels; real deployment requires reviewed labeling and validated configuration.
+`VITE_SHOW_DATA_NOTICE` controls one small notice on About; unset shows it only in mock mode. Operational screens have no persistent data badge. No backend, authenticated identity provider or real probe integration is bundled. Read [BACKEND_HANDOFF.md](docs/BACKEND_HANDOFF.md), [contract changelog](docs/CONTRACT_CHANGELOG.md) and [JSON examples](docs/contract-examples.v3.json) for endpoints, flags, errors, gates, audits and production responsibilities.
 
-## Checks
+Mock observations use deterministic seed 2026 and `dataThrough` **12 October 2026, 09:40 Singapore** (`2026-10-12T01:40:00.000Z`). New writes/audits use wall-clock time; new tests schedule the next re-test seven days later. Overdue status uses today's Singapore calendar day. Storage key `drain-trial-console-v1` retains schema version 2 while the wire contract is 3.0.0; migration preserves records and refreshes fixed house placement. Unavailable storage allows in-memory use without reload persistence. Source switching does not upload local data.
+
+## Checks and review
 
 From `app/`:
 
@@ -39,23 +49,14 @@ npm.cmd test
 npm.cmd run test:e2e
 ```
 
-The browser checks need a Playwright Chromium installation. If a compatible Chromium is already installed, set `$env:PLAYWRIGHT_CHROMIUM_EXECUTABLE` to its executable path; otherwise install Playwright's browser with `npx.cmd playwright install chromium`. Playwright starts or reuses the local development server and writes refreshed captures to `docs/screens/`.
+Browser checks need Playwright Chromium. Use `$env:PLAYWRIGHT_CHROMIUM_EXECUTABLE` for an installed browser, or install it with `npx.cmd playwright install chromium`. Playwright starts/reuses the local server and refreshes `docs/screens/`.
 
-The browser checks cover the operator flow and allocation gates, every sensor row/site marker, register filters, sixteen/eight model parts and compost fault inputs. They also run axe WCAG A/AA checks on Overview, Detail, Compost, Sensors and Faults and check document overflow at 360px. The wheel-zoom regression checks the household, drainage and compost models at 1440px and 360px, including repeated scrolling to both zoom limits and Reset view. These automated checks do not establish complete accessibility or field validity. The stage record in `docs/ADDENDUM_STAGES.md` records the executed results and review scope.
+Completed Round 3 verification reported build/lint passed, **50 unit tests in 9 files**, all **23 browser checks**, then all **8 targeted Round 3 checks** after the final assertion/guidance capture update. Coverage includes axe on eight pages at 1440/1920/360px, zoom for three models at two sizes, record changes and shared worker/clock/water behavior. Independent finish verdict: **SHIP for two scored fixes**, following 24 refreshed captures and expanded guidance evidence; this is not a fresh whole-app audit. The Impeccable launcher failed with `cache_directory_failed`; the detector did not run. See [Round 3 review](docs/round3-review.md).
 
 ## Limits and project records
 
-The Overview uses an offline public map extract for 589 house footprints and 111 road ways in the Gamelan / Rodat housing window of Bandar Bukit Raja Phase 1. All 24 pilot assignments, readings, faults, trials and batches remain synthetic. Roof shapes, heights and drainage locations are illustrative. The map covers a window of Phase 1, not the full phase boundary or a complete building inventory. See [map sources and model limits](docs/MAP_MODEL.md).
+The offline map contains 589 house footprints and 111 road ways in the Phase 1 Gamelan / Rodat window, not a complete phase inventory. Pilot assignments, records, heights and drainage locations require field confirmation. Map data is © OpenStreetMap contributors under ODbL 1.0. See [MAP_MODEL.md](docs/MAP_MODEL.md).
 
-S1/S2/S3 have large clickable pins and direct trial links. Mapped houses can be selected and moved locally; context houses have no invented pilot readings. Rainfall is a static, irregular radar-coloured cloud field with adjustable opacity in 3D and the same raster in desktop Plan. It interpolates synthetic zone values; it is not live radar or a forecast. Reset layout restores mapped placement. Map data is © OpenStreetMap contributors under ODbL 1.0; attribution is visible beside the map.
+Models are schematics with provisional coefficients/thresholds requiring local confirmation. Moisture proxies need reference checks; human tests/checks remain necessary. No survey, hardware calibration, actual backend compatibility, flood-reduction percentage, universal compost efficacy or Lighthouse score is claimed. The optional rainfall-grid endpoint is not implemented; zone time series drive the layer.
 
-Models are schematics; layer dimensions and thresholds require confirmation against MSMA and the local authority. Soil moisture is an indirect infiltration proxy; inexpensive compost moisture is relative and needs a human reference check. Manual infiltration tests, squeeze/smell logs and photo checklists remain human records. No hardware calibration, surveyed geometry, treatment proof or Lighthouse score is claimed.
-
-`PRODUCT.md` holds accepted scope. `DESIGN.md` and `.impeccable/design.json` record the incumbent system. `docs/addendum-review.md` records the independent finish review. The separately published Sites visualization is an exact uploaded attachment with its own source and hosting identity.
-
-## Review round 1
-
-Overview leads with faults; Detail opens on the part model; compost bays have Model, Readings and Checks tabs. Advanced model controls are in Debug. Repair prompts remain drafts. Current radar and cyan water colours are intentionally preserved at the user's request. See [the local fix-round record](docs/fix-round-1.md).
-## Physics integration checkpoint
-
-Stage B/B2 connects six feature models to a shared worker and timeline, config-derived geometry, live sensor overlays, temporary capacity alerts, charts and CSV. The thermal engine exists but compost UI integration and neighbourhood routing remain later work. [Equations and limits](docs/PHYSICS_MODEL.md), [parameter sources](docs/PHYSICS_PARAMETERS.md), [216-input inventory](docs/PHYSICS_SENSORS.md), and [implementation status and verification](docs/fix-round-2.md) document the boundary. Defaults are uncalibrated placeholders. Radar and cyan water colours are preserved; changes remain local with no push. Independent review cleared the four requested visual fixes; this is not completion of later physics stages.
+[PRODUCT.md](PRODUCT.md) records accepted scope; [DESIGN.md](DESIGN.md) and `.impeccable/design.json` record the system. [PHYSICS_MODEL.md](docs/PHYSICS_MODEL.md), [PHYSICS_PARAMETERS.md](docs/PHYSICS_PARAMETERS.md) and [PHYSICS_SENSORS.md](docs/PHYSICS_SENSORS.md) describe equations, coefficients and input boundaries. [ADDENDUM_STAGES.md](docs/ADDENDUM_STAGES.md) preserves earlier stages as history. User-approved radar and cyan water colours remain; changes are local with no push. The separately published Sites attachment has separate source and hosting identity.

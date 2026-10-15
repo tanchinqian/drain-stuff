@@ -2,32 +2,32 @@
 
 ## Purpose and users
 
-An operator console for a small drainage and compost pilot. Operators inspect houses, drainage parts, compost bays, sensor trust and faults, then record checks and compare the control, decompaction and decompaction plus compost trial arms.
+An operator console for a small drainage and compost pilot. Operators inspect pilot houses, drainage parts, compost bays, sensor trust and faults, then record checks and compare untreated soil, loosened soil and soil loosened with compost at the same marked spots.
 
 ## Accepted scope
 
-- Local React app in `app/`, with browser-local synthetic data by default.
-- Selected design direction: Map desk, with cream and brown surfaces, Archivo typography, readable native controls and geometric 3D schematics.
-- Overview with selectable and movable houses, a plan alternative and sensor layers.
-- An offline map of the Phase 1 Gamelan / Rodat housing window, with mapped footprints,
-  synthetic pilot assignments and adjustable radar-coloured rainfall clouds. Radar colours
-  are approved for the rainfall data layer; the surrounding console keeps its cream/brown palette.
-- Sixteen separate drainage parts, including explicit states for optional parts that are not installed.
-- Eight compost-bay parts with the same selection, explode, section, movement, isolation and reset controls.
-- Every sensor and human input has a stable ID, a position marker and a row on the Sensors page. Readings include metric, unit, timestamp, calibration or method-check date, drift, trust state, proxy/reference role and fault-rule links.
-- Fault records identify the diagnosing inputs and their trust states when the alert opened.
-- Manual squeeze and smell logs, photo checklists and fixed-point infiltration tests remain human records.
+- Local React app in `app/`, using contract **3.0.0** through one API client. A configured, reachable backend is preferred; the browser-local mock is the fallback. No backend is bundled.
+- Confirmed identity: **Map desk**, with cream and brown surfaces, Archivo typography, native controls and geometric schematics. The user explicitly retained the seven radar colours and cyan water when approving Round 3's other changes.
+- Wide responsive work surface, shared record tables, master-detail registers, non-modal drawers, plain display names, glossary popovers and dated save feedback/history.
+- Overview uses fixed mapped geometry, **24 interactive pilot houses**, six feature destinations, a Plan alternative and optional sensor markers. Context houses are geometry only. House movement and layout editing are removed.
+- The offline Gamelan / Rodat housing window uses mapped footprints; pilot assignments, heights and drainage geometry require field confirmation. Rainfall interpolates dated API zone samples and follows the selected history window and shared playback; it is not live radar or a forecast.
+- Sixteen drainage parts and eight compost-bay parts retain selection, explode, section, isolate, hide and reset controls. Advanced part movement remains a model control, separate from fixed map houses. Optional parts show “Not installed”.
+- S1/S2/S3/I1/T1/T2 share a worker-driven hydraulic timeline, cyan waterline, short rain strokes, soil moisture shading, partial pipe fill, flow-width arrows, flow strip, charts, CSV and grouped Model details. Compost amendment depth/dose/batch are recorded separately from conductivity.
+- Five trial records support fixed-point baselines/re-tests, safety checks, guarded allocations and dated history. Readiness uses `config.minTests`; due status compares today's Singapore calendar day.
+- Batch prompts derive from readings, checks and configurable thresholds. Segmented squeeze/smell controls, maturity reasons and check/reading histories preserve human decisions. The compost model presents batch records/checks; the thermal engine is not a fully integrated thermal UI.
+- Sensors shows saved API latest readings, trust and updated time; detail drawers hold positions, calibration/method checks, history and linked rules. Feature views overlay eligible virtual readings without writing them into sensor history.
+- Faults have sequential IDs, rule provenance, manual reporting, changeable status and audit history. Unresolved faults remain in Overview counts across date windows; temporary model alerts remain separate scenario outputs.
 
 ## Boundaries and evidence
 
-Operational readings, trials and fault records are labelled synthetic. Mapped footprints and roads use credited public map data; pilot assignments, heights and drainage geometry are illustrative. The models are not surveys or design drawings. Geometry and layer defaults require confirmation against MSMA and the local authority. Foreign inspection guidance provides prompts, not Malaysian proof of the compost trial. Soil and compost moisture are indirect or relative proxies; manual reference checks and calibration remain necessary.
+The data-source notice belongs only on **About / Data and limits**, controlled by `VITE_DATA_SOURCE` and `VITE_SHOW_DATA_NOTICE`. Operational pages and exports use plain record names without persistent synthetic/demo badges. About and technical docs retain data provenance and model limits. Mock data is generated, not field evidence; new saves use wall-clock time while seeded observations end at 12 October 2026, 09:40 Singapore.
 
-The console supports local ponding and drain upkeep claims only. Trial allocation requires mature compost, a baseline, a labelled dose and the existing guardrails. Oxygen and ammonia gas probes are excluded for the reasons stated in the accepted addendum, with human smell checks retained.
+Public map geometry is credited; the models are not surveys or design drawings. Dimensions, engineering coefficients, thresholds, dose caps and targets are provisional pending practitioner confirmation against MSMA and the local authority. Soil and compost moisture are indirect/relative proxies requiring reference checks. Manual infiltration tests, squeeze/smell logs and photo checklists remain human records. Oxygen and ammonia gas probes remain excluded.
 
-## Current work authorization
+The console supports local ponding and drain upkeep decisions. It makes no flood-reduction percentage or general compost efficacy claim. Conductivity follows the latest trial test mean/sample count unless manually overridden, never the compost dose. Trial histories, current model scenarios and human observations remain distinct. The model does not solve reverse river flow, full sediment transport, biological fault causes or a dynamic sewer network.
 
-Apply `CODEX_ADDENDUM.md` to the local React app in stages. The separately published visualization is an exact copy of the supplied attachment and has separate source and hosting identity.
+## Current authorization and records
 
-Physics round 2 is authorized in stages under `CODEX_PHYSICS_PROMPT.md`, with radar colours and cyan water retained and no GitHub push. Stage B/B2 now connects S1/S2/S3/I1/T1/T2 feature geometry, water, eligible sensor records and temporary capacity alerts to one worker-driven timeline. Playback sits beneath the model; storm settings, charts, water balance, CSV and parameter/source tables sit in an expandable section. Live 2D sections and manual stepping support alternatives to 3D and animated playback.
+Round 3 applies `CODEX_ROUND3_PROMPT.md` **except all colour changes**, as approved by the user, within the existing Map desk identity. Changes remain local; no push is authorized. Earlier addendum and physics stage records are historical where superseded by this scope.
 
-Neighbourhood/Plan routing, moved-house integration and compost UI remain earlier implementations or later stages. House sensors stay seeded; human checks and offline last-known records are preserved. The thermal engine foundation is not a live compost UI claim, and not every visual fault has a solved physical cause. All coefficients are placeholders unless explicitly sourced. The default three-arm comparison uses equal conductivity and weather; independent parameter/scenario changes can confound it. Explicitly loaded trial conductivity is still seeded synthetic data. Engine outputs must remain distinguishable from seeded history and human observations; compost allocation must not alter conductivity. See `docs/PHYSICS_MODEL.md` and `docs/fix-round-2.md` for current coverage, verification and remaining review.
+See `docs/BACKEND_HANDOFF.md` for the current transport/record contract, `docs/PHYSICS_MODEL.md` for equations and limitations, `docs/MAP_MODEL.md` for mapping behavior, and `docs/round3-review.md` for the bounded review evidence. The separately published Sites visualization remains an exact copy of its supplied attachment with separate source and hosting identity.
