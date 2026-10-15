@@ -5,7 +5,6 @@ import {
   CartesianGrid,
   ComposedChart,
   Line,
-  LineChart,
   ReferenceLine,
   ResponsiveContainer,
   Tooltip,
@@ -18,7 +17,6 @@ import { api } from '../api/client';
 import ChartFrame from './ChartFrame';
 import ChartTooltip from './ChartTooltip';
 import Chip from './Chip';
-import Term from './Term';
 import { armName, dateTime } from '../utils';
 const colors = { control: '#7b4daf', decompaction: '#b07a12', compost: '#b03a78' };
 export default function OverviewCharts({
@@ -96,6 +94,10 @@ export default function OverviewCharts({
         .filter((r) => r.metric === 'sediment_mm')
         .map((r) => ({ asset: d.feature.id, ...r })),
     ) ?? [];
+  const faultCounts = (['open', 'inspected', 'closed'] as const).map((status) => ({
+    status: status[0].toUpperCase() + status.slice(1),
+    count: faults.filter((fault) => fault.status === status).length,
+  }));
   return (
     <div className="charts-grid">
       <ChartFrame
@@ -194,7 +196,11 @@ export default function OverviewCharts({
         <div className="charts-grid">
           <ChartFrame
             title={'Water absorption by treatment · ' + range}
-            subtitle="How fast water soaks into the soil at the same marked spots (mm/h). Higher is better."
+            subtitle={
+              trends.length === 1
+                ? 'One sample per treatment in this range (mm/h). Select 8 weeks to see the recorded trend.'
+                : 'How fast water soaks into the soil at the same marked spots (mm/h). Higher is better.'
+            }
             headers={['Time', armName.control, armName.decompaction, armName.compost]}
             rows={trends.map((r) => [
               r.time,
@@ -205,7 +211,7 @@ export default function OverviewCharts({
             takeaway="A small pilot needs repeated tests at the same marked points before comparing treatments."
           >
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart
+              <ComposedChart
                 data={trends}
                 margin={{ top: 15, right: 15, left: 0, bottom: 10 }}
                 accessibilityLayer
@@ -215,19 +221,30 @@ export default function OverviewCharts({
                 <YAxis width={40} />
                 <Tooltip content={<ChartTooltip />} />
                 <Legend />
-                {(['control', 'decompaction', 'compost'] as const).map((arm) => (
-                  <Line
-                    key={arm}
-                    dataKey={arm}
-                    name={armName[arm]}
-                    stroke={colors[arm]}
-                    strokeDasharray={arm === 'control' ? '5 4' : undefined}
-                    dot={{ r: 3 }}
-                    connectNulls={false}
-                    isAnimationActive={false}
-                  />
-                ))}
-              </LineChart>
+                {(['control', 'decompaction', 'compost'] as const).map((arm) =>
+                  trends.length === 1 ? (
+                    <Bar
+                      key={arm}
+                      dataKey={arm}
+                      name={armName[arm]}
+                      fill={colors[arm]}
+                      maxBarSize={64}
+                      isAnimationActive={false}
+                    />
+                  ) : (
+                    <Line
+                      key={arm}
+                      dataKey={arm}
+                      name={armName[arm]}
+                      stroke={colors[arm]}
+                      strokeDasharray={arm === 'control' ? '5 4' : undefined}
+                      dot={{ r: 3 }}
+                      connectNulls={false}
+                      isAnimationActive={false}
+                    />
+                  ),
+                )}
+              </ComposedChart>
             </ResponsiveContainer>
           </ChartFrame>
           <ChartFrame
@@ -249,11 +266,34 @@ export default function OverviewCharts({
               </BarChart>
             </ResponsiveContainer>
           </ChartFrame>
-          <section className="panel full-span">
-            <h2>Recorded faults · {range}</h2>
-            <p>{faults.length} faults in this period and zone filter.</p>
-            <Term text="Drain-down" />
-          </section>
+          <ChartFrame
+            title={'Recorded faults · ' + range}
+            subtitle={`${faults.length} faults in this period and zone filter, grouped by current status.`}
+            headers={['Status', 'Faults']}
+            rows={faultCounts.map((row) => [row.status, row.count])}
+            takeaway="Counts include only faults recorded in the selected period and zone."
+          >
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={faultCounts}
+                margin={{ top: 15, right: 15, left: 0, bottom: 10 }}
+                accessibilityLayer
+              >
+                <CartesianGrid vertical={false} stroke="#cfc7b4" />
+                <XAxis dataKey="status" />
+                <YAxis width={40} allowDecimals={false} />
+                <Tooltip content={<ChartTooltip />} />
+                <Bar
+                  dataKey="count"
+                  name="Faults"
+                  fill="#8e3a2e"
+                  maxBarSize={64}
+                  isAnimationActive={false}
+                  label={{ position: 'top', fill: '#2f2b26' }}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartFrame>
         </div>
       </details>
     </div>
