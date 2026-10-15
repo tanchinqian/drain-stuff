@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useOutletContext } from 'react-router-dom';
-import { api, isMock } from '../api/client';
+import { api, isMock, showDataNotice } from '../api/client';
 import { QueryState } from '../components/QueryState';
 export default function About() {
   const config = useQuery({ queryKey: ['config'], queryFn: api.config }),
@@ -10,7 +10,7 @@ export default function About() {
       <div className="page-heading">
         <div>
           <h1>What this pilot can tell us</h1>
-          <p className="sub">About and limits · Synthetic demonstration</p>
+          <p className="sub">Data and limits</p>
         </div>
       </div>
       <section className="panel limits-copy">
@@ -122,29 +122,18 @@ export default function About() {
             evidence. Human smell records are retained.
           </li>
         </ul>
-        <h2>What is synthetic</h2>
+        <h2>Data and limits</h2>
+        {showDataNotice() && (
+          <p className="small">
+            {isMock
+              ? 'This environment uses generated local records stored in this browser.'
+              : 'This environment reads records from the configured API.'}
+          </p>
+        )}
         <p>
-          Every house, sensor reading, fault, trial, compost batch and forecast displayed here is
-          invented demonstration data. The Bandar Bukit Raja Phase 1 inspired scene is schematic,
-          not a survey. This is an original hackathon console, not an official township system.
-        </p>
-        <h2>Data contract and sensor mapping</h2>
-        <p>
-          Contract version: {config.data?.contractVersion}. Current data source:{' '}
-          {isMock
-            ? 'browser-local deterministic mock'
-            : 'configured HTTP API, expecting labelled synthetic payloads'}
-          .
-        </p>
-        <p>
-          Real feeds map a stable feature and sensor ID, an ISO timestamp, metric, numeric value,
-          unit and sample count into the reading contract. Offline or missing readings remain
-          unavailable, rather than zero. The backend owner supplies the configuration and enforces
-          the same allocation gates.
-        </p>
-        <p>
-          The current interface keeps its synthetic label. Real-data use requires a reviewed
-          data-source label and validated thresholds before rollout.
+          The storm model calculates a scenario from entered settings; it does not establish a
+          measured effect of compost. Parameters need local calibration. A small pilot cannot
+          establish a flood-reduction percentage or resolve river overflow.
         </p>
       </section>
       {context?.demo && (

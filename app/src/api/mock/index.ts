@@ -1,4 +1,12 @@
-import type { AllocationInput, BatchDetail, FaultAction, Guardrails, TestInput } from '../types';
+import type {
+  Fault,
+  AuditEntry,
+  AllocationInput,
+  BatchDetail,
+  FaultAction,
+  Guardrails,
+  TestInput,
+} from '../types';
 import { allocateBatch, parseBatchChecks, recordGuardrails, recordTrialTest } from './mutations';
 import { generateMock, DEMO_NOW, type Database } from './seed';
 import { evaluateRules, maturityReason } from './rules';
@@ -80,6 +88,7 @@ try {
 export const resetMock = () => {
   db = generateMock();
   refreshSensors();
+  normalizeFaults();
   persist();
 };
 function persist() {
@@ -127,17 +136,81 @@ function refreshSensors() {
     if (
       !db.faults.some(
         (f) =>
-          f.featureId === alert.featureId && f.partId === alert.partId && f.ruleId === alert.ruleId,
+          f.featureId === alert.featureId &&
+          f.partId === alert.partId &&
+          (f.ruleId === alert.ruleId ||
+            f.ruleId === registry.find((r) => r.legacyId === alert.ruleId)?.id),
       )
     )
       db.faults.push(alert);
 }
+const audit = (action: string, note?: string, user = 'Local operator'): AuditEntry => ({
+  id: crypto.randomUUID(),
+  t: new Date().toISOString(),
+  user,
+  action,
+  note,
+});
+const registry = faultRules.map((r) => ({
+  ...r,
+  id: `RULE-${r.id.replaceAll('_', '-').toUpperCase()}-001`,
+  title: r.label,
+  appliesTo: ['inlet', 'sock', 'media', 'outfall', 'bay', 'sump'],
+  sensorTypes: r.scope === 'sensor' ? ['All sensors'] : [r.diagnosingInput],
+  thresholdKeys: r.id.includes('standing')
+    ? ['drainDownLimitH']
+    : r.scope === 'compost'
+      ? ['temperature', 'moisture']
+      : ['inspection'],
+  severity: 2 as const,
+  steps: [r.check],
+  source: 'Practitioner review required',
+  version: '1.0.0',
+  legacyId: r.id,
+}));
+function normalizeFaults() {
+  db.config.contractVersion = '3.0.0';
+  db.config.minTests ??= db.config.minimumN;
+  db.faults.forEach((f, i) => {
+    f.ruleKey ??= f.id;
+    f.id = `F-${String(i + 1).padStart(3, '0')}`;
+    f.raisedBy ??= 'rule';
+    f.history ??= [];
+    const r = registry.find((r) => r.id === f.ruleId || r.legacyId === f.ruleId);
+    if (r) f.ruleId = r.id;
+    if (f.openedAt === DEMO_NOW)
+      f.openedAt = new Date(Date.parse(DEMO_NOW) - (i + 1) * 3 * 3600000).toISOString();
+  });
+}
 refreshSensors();
+normalizeFaults();
 export async function mockRequest(path: string, method = 'GET', body?: unknown): Promise<unknown> {
   const url = new URL(path, 'http://mock.local');
   const segments = url.pathname.split('/').filter(Boolean);
   const [resource, id, action] = segments;
   if (method === 'GET') {
+    if (resource === 'sensors' && id && action === 'readings') {
+      const sensor = find(db.sensors, (s) => s.sensorId === id);
+      const rows = (db.readings[sensor.ownerId] ?? []).filter((r) => r.sensorId === id);
+      return structuredClone(
+        rows.length
+          ? rows
+          : sensor.lastValue === null
+            ? []
+            : [
+                {
+                  synthetic: true,
+                  t: sensor.lastAt,
+                  metric: sensor.metric,
+                  value: sensor.lastValue,
+                  unit: sensor.unit,
+                  sensorId: id,
+                },
+              ],
+      );
+    }
+    if (resource === 'sensors' && id)
+      return structuredClone(find(db.sensors, (s) => s.sensorId === id));
     if (resource === 'sensors')
       return structuredClone(
         sensorRows(db.sensors, {
@@ -147,7 +220,8 @@ export async function mockRequest(path: string, method = 'GET', body?: unknown):
           status: url.searchParams.get('status') || undefined,
         }),
       );
-    if (resource === 'fault-rules') return structuredClone(faultRules);
+    if (resource === 'fault-rules')
+      return structuredClone(id ? find(registry, (r) => r.id === id) : registry);
     if (resource === 'config') return structuredClone(db.config);
     if (resource === 'zones') return structuredClone(db.zones);
     if (resource === 'houses')
@@ -181,13 +255,22 @@ export async function mockRequest(path: string, method = 'GET', body?: unknown):
         installedAt: '2026-08-17',
       });
     }
-    if (resource === 'rainfall' && id === 'zones')
-      return db.zones.map((z) => ({
-        synthetic: true,
-        zone: z.id,
-        peakMmPerHr: z.peakMmPerHr,
-        totalMm: z.peakMmPerHr * 0.57,
-      }));
+    if (resource === 'rainfall' && id === 'zones') {
+      const from = url.searchParams.get('from') || '',
+        to = url.searchParams.get('to') || '9999';
+      return db.zones.flatMap((z) =>
+        db.rainfall
+          .filter((r) => r.t >= from && r.t <= to)
+          .map((r) => ({
+            synthetic: true,
+            zone: z.id,
+            t: r.t,
+            mmPerHr: (r.mmPerHr * z.peakMmPerHr) / 63,
+            peakMmPerHr: (r.mmPerHr * z.peakMmPerHr) / 63,
+            totalMm: (r.cumulativeMm * z.peakMmPerHr) / 63,
+          })),
+      );
+    }
     if (resource === 'rainfall') {
       const from = url.searchParams.get('from') || '',
         to = url.searchParams.get('to') || '9999';
@@ -207,7 +290,10 @@ export async function mockRequest(path: string, method = 'GET', body?: unknown):
     if (resource === 'faults')
       return structuredClone(
         db.faults.filter(
-          (f) => !url.searchParams.get('status') || f.status === url.searchParams.get('status'),
+          (f) =>
+            (!url.searchParams.get('status') || f.status === url.searchParams.get('status')) &&
+            (!url.searchParams.get('from') || f.openedAt >= url.searchParams.get('from')!) &&
+            (!url.searchParams.get('to') || f.openedAt <= url.searchParams.get('to')!),
         ),
       );
     if (resource === 'trials')
@@ -221,7 +307,74 @@ export async function mockRequest(path: string, method = 'GET', body?: unknown):
   }
   if (method !== 'POST') throw new Error('Unsupported mock request.');
   const input = record(body);
-  if (resource === 'faults' && action === 'actions') {
+  if (resource === 'faults' && action === 'status') {
+    const fault = find(db.faults, (f) => f.id === id);
+    if (!['open', 'inspected', 'closed'].includes(String(input.status)))
+      throw new Error('Choose a valid status.');
+    if (typeof input.user !== 'string' || !input.user.trim())
+      throw new Error('Record who made the change.');
+    const previous = fault.status;
+    fault.status = input.status as Fault['status'];
+    (fault.history ??= []).push(
+      audit(
+        `${previous} → ${fault.status}`,
+        typeof input.note === 'string' ? input.note : undefined,
+        input.user,
+      ),
+    );
+    persist();
+    return structuredClone(fault);
+  } else if (resource === 'faults' && !id) {
+    const feature = find(db.features, (f) => f.id === input.featureId);
+    if (
+      ![
+        'blockage',
+        'sediment',
+        'standing_water',
+        'mulch_loss',
+        'sensor_offline',
+        'scour',
+        'joint_leak',
+        'missing_cap',
+        'sparse_planting',
+        'not_heating',
+        'too_wet',
+        'pests',
+        'leachate',
+      ].includes(String(input.type))
+    )
+      throw new Error('Choose a valid fault type.');
+    if (
+      typeof input.note !== 'string' ||
+      !input.note.trim() ||
+      typeof input.user !== 'string' ||
+      !input.user.trim()
+    )
+      throw new Error('Add a description and reporter.');
+    const part = buildParts(feature.id, db.sensors, []).find((p) => p.partId === input.partId);
+    if (!part) throw new Error('Choose a part at this asset.');
+    const row: Fault = {
+      synthetic: true,
+      id: `F-${String(db.faults.length + 1).padStart(3, '0')}`,
+      ruleKey: crypto.randomUUID(),
+      featureId: feature.id,
+      partId: part.partId,
+      type: input.type as Fault['type'],
+      ruleId: 'MANUAL',
+      sensorIds: [],
+      sensorStatusesAtAlert: {},
+      diagnosingInput: input.note,
+      severity: finite(input.severity, 1, 3) as 1 | 2 | 3,
+      openedAt: new Date().toISOString(),
+      status: 'open',
+      zone: feature.zone,
+      raisedBy: 'manual',
+      history: [audit('Reported', input.note, input.user)],
+    };
+    db.faults.push(row);
+    persist();
+    return structuredClone(row);
+  } else if (resource === 'faults' && action === 'actions') {
     const fault = find(db.faults, (f) => f.id === id);
     const a = input.action as FaultAction;
     if (!['inspected', 'cleaned', 'work_order'].includes(a))
@@ -234,11 +387,10 @@ export async function mockRequest(path: string, method = 'GET', body?: unknown):
       find(db.trials, (t) => t.featureId === id),
       input as unknown as TestInput,
     );
-  } else if (resource === 'trials' && action === 'guardrails') {
-    recordGuardrails(
-      find(db.trials, (t) => t.featureId === id),
-      input as unknown as Guardrails,
-    );
+  } else if (resource === 'trials' && (action === 'guardrails' || action === 'checks')) {
+    const trial = find(db.trials, (t) => t.featureId === id);
+    recordGuardrails(trial, input as unknown as Guardrails);
+    (trial.history ??= []).push(audit('Safety checks saved'));
   } else if (resource === 'batches' && action === 'readings') {
     const batch = find(db.batches, (b) => b.id === id);
     batch.readings.push({
@@ -251,6 +403,10 @@ export async function mockRequest(path: string, method = 'GET', body?: unknown):
   } else if (resource === 'batches' && action === 'checks') {
     const batch = find(db.batches, (b) => b.id === id);
     batch.checks = parseBatchChecks(batch.checks, input);
+    (batch.checkHistory ??= []).push({
+      ...audit('Checks saved'),
+      checks: structuredClone(batch.checks),
+    });
     const reason = maturityReason(
       batch.checks,
       batch.readings.at(-1)?.tempC,
@@ -300,6 +456,7 @@ export async function mockRequest(path: string, method = 'GET', body?: unknown):
     });
   } else throw new Error('Unsupported mock endpoint.');
   refreshSensors();
+  normalizeFaults();
   persist();
   return ok;
 }

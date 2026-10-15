@@ -1,0 +1,25 @@
+export const glossary: Record<string, string> = {
+  'infiltration rate':
+    'Millimetres of water depth that soak into the soil in one hour, like the height of a water layer disappearing per hour.',
+  'mm/h':
+    'Millimetres of water depth per hour. For infiltration, this is the depth of a water layer that soaks away in an hour.',
+  decompaction: 'Loosening compacted soil mechanically without adding anything.',
+  'compost arm': 'The trial sites where loosened soil receives a recorded compost dose.',
+  control: 'Untreated soil used as the comparison.',
+  'drain-down': 'Hours for standing water to clear after rain.',
+  'marked points': 'The same fixed positions used for each soil test.',
+  baseline: 'Measurements taken before treatment.',
+  're-test': 'A repeat measurement at the same marked points after treatment.',
+  'owner of record': 'The person responsible for checks and records at this asset.',
+  proxy: 'An indirect sensor estimate that needs checking against a reference measurement.',
+  reference: 'The comparison measurement used to check an indirect sensor estimate.',
+  'trust state': 'Whether a reading is reliable, needs checking or is unavailable.',
+  'maturity gate': 'Checks that must pass before compost can be allocated.',
+  leachate: 'Liquid that drains from compost and can carry nutrients or contaminants.',
+  sump: 'The low collection chamber that catches drainage liquid.',
+  'L/min': 'Litres of water moving past a point each minute.',
+  mm: 'Millimetres; ten millimetres equal one centimetre.',
+  m: 'Metres; one metre equals one hundred centimetres.',
+  '°C': 'Temperature in degrees Celsius.',
+  '%': 'A proportion out of one hundred.',
+};

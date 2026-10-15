@@ -50,6 +50,14 @@ export interface FaultRule extends Synthetic {
   check: string;
   diagnosingInput: string;
   scope: 'drainage' | 'compost' | 'sensor';
+  title?: string;
+  appliesTo?: PartId[];
+  sensorTypes?: string[];
+  thresholdKeys?: string[];
+  severity?: 1 | 2 | 3;
+  steps?: string[];
+  source?: string;
+  version?: string;
 }
 export type Metric = 'infiltration_mm_hr' | 'drain_down_h' | 'sediment_mm' | 'water_level_cm';
 export interface Synthetic {
@@ -118,8 +126,20 @@ export interface ZoneRain extends Synthetic {
   zone: ZoneId;
   peakMmPerHr: number;
   totalMm: number;
+  t?: string;
+  mmPerHr?: number;
+}
+export interface AuditEntry {
+  id: string;
+  t: string;
+  user: string;
+  action: string;
+  note?: string;
 }
 export interface Fault extends Synthetic {
+  ruleKey?: string;
+  history?: AuditEntry[];
+  raisedBy?: 'rule' | 'manual';
   id: string;
   featureId: string;
   partId: PartId;
@@ -184,6 +204,8 @@ export interface Trial extends Synthetic {
   batchId?: string;
   appliedAt?: string;
   appliedBy?: string;
+  amendedDepthM?: number;
+  history?: AuditEntry[];
 }
 export interface TrialDetail extends Trial {
   tests: TestResult[];
@@ -222,7 +244,7 @@ export interface BatchChecks {
   sumpChecked: boolean;
   rainExpected: boolean;
   squeeze: 'wet' | 'ok' | 'dry';
-  smell: 'normal' | 'putrid' | 'ammonia';
+  smell: 'normal' | 'putrid' | 'ammonia' | 'sour';
   sumpLevelCm: number;
   puddles: boolean;
   pests: boolean;
@@ -232,6 +254,7 @@ export interface BatchDetail extends Batch {
   readings: BatchReading[];
   rules: RuleOutput[];
   checks: BatchChecks;
+  checkHistory?: (AuditEntry & { checks: BatchChecks })[];
 }
 export interface Config extends Synthetic {
   contractVersion: string;
@@ -240,6 +263,7 @@ export interface Config extends Synthetic {
   pilotDoses: { label: string; lPerM2: number }[];
   drainDownLimitH: number;
   minimumN: number;
+  minTests?: number;
   heavyRainMmHr: number;
   temperature: {
     goodMin: number;

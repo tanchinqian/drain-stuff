@@ -4,6 +4,8 @@ import {
   isValidElement,
   useId,
   useState,
+  useRef,
+  type ChangeEvent,
   type ReactNode,
   type SelectHTMLAttributes,
 } from 'react';
@@ -36,66 +38,91 @@ export default function SearchableSelect({
   const [query, setQuery] = useState('');
   const id = useId();
   const options = optionsFrom(children);
-  const term = query.trim().toLocaleLowerCase();
-  const matches = options.filter((o) => `${o.label} ${o.value}`.toLocaleLowerCase().includes(term));
-  const selected = options.find((o) => o.value === String(props.value));
-  return (
-    <div className="searchable-select">
-      <div className="select-search">
-        <input
-          type="search"
-          aria-label={`Search ${label.toLowerCase()} options`}
-          placeholder={`Search ${label.toLowerCase()}…`}
-          value={query}
-          disabled={props.disabled}
-          aria-controls={props.id ?? id}
-          onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') e.preventDefault();
-            if (e.key === 'Escape') {
-              e.preventDefault();
-              setQuery('');
-            }
-          }}
-        />
-        {query && (
-          <button
-            type="button"
-            disabled={props.disabled}
-            aria-label={`Clear ${label.toLowerCase()} search`}
-            onClick={() => setQuery('')}
-          >
-            Clear
-          </button>
-        )}
-      </div>
-      <select
-        {...props}
-        id={props.id ?? id}
-        aria-label={props['aria-label'] ?? label}
-        onChange={(e) => {
-          onChange?.(e);
-          setQuery('');
-        }}
-      >
-        {selected && !matches.includes(selected) && (
-          <option value={selected.value} hidden>
-            {selected.label}
-          </option>
-        )}
-        {matches.map((o) => (
-          <option key={o.value} value={o.value} disabled={o.disabled}>
-            {o.label}
-          </option>
-        ))}
+  const [open, setOpen] = useState(false),
+    [active, setActive] = useState(0);
+  const ref = useRef<HTMLDivElement>(null);
+  if (options.length < 8)
+    return (
+      <select {...props} aria-label={props['aria-label'] ?? label} onChange={onChange}>
+        {children}
       </select>
-      {query && (
-        <span className="small" role="status">
-          {matches.length
-            ? `${matches.length} matching options`
-            : 'No matching options. Clear search to see all.'}
-          {selected && !matches.includes(selected) ? ' Current selection kept.' : ''}
-        </span>
+    );
+  const matches = options.filter((o) => o.label.toLowerCase().includes(query.toLowerCase()));
+  const selected = options.find((o) => o.value === String(props.value));
+  const choose = (value: string) => {
+    onChange?.({ target: { value }, currentTarget: { value } } as ChangeEvent<HTMLSelectElement>);
+    setOpen(false);
+    setQuery('');
+  };
+  return (
+    <div
+      className="combobox"
+      ref={ref}
+      onBlur={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget)) {
+          setOpen(false);
+          setQuery('');
+        }
+      }}
+    >
+      <input
+        role="combobox"
+        aria-label={props['aria-label'] ?? label}
+        aria-expanded={open}
+        aria-controls={id}
+        aria-autocomplete="list"
+        aria-activedescendant={open && matches[active] ? id + '-' + active : undefined}
+        value={open ? query : (selected?.label ?? '')}
+        disabled={props.disabled}
+        onFocus={() => {
+          setOpen(true);
+          setQuery('');
+          setActive(0);
+        }}
+        onChange={(e) => {
+          setQuery(e.target.value);
+          setOpen(true);
+          setActive(0);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Escape') {
+            setOpen(false);
+            setQuery('');
+          }
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+            e.preventDefault();
+            setOpen(true);
+            setActive((i) =>
+              Math.max(0, Math.min(matches.length - 1, i + (e.key === 'ArrowDown' ? 1 : -1))),
+            );
+          }
+          if (e.key === 'Enter' && open) {
+            e.preventDefault();
+            if (matches[active] && !matches[active].disabled) choose(matches[active].value);
+          }
+        }}
+      />
+      {open && (
+        <div role="listbox" id={id} aria-label={label + ' options'}>
+          {matches.length ? (
+            matches.map((o, i) => (
+              <button
+                type="button"
+                role="option"
+                id={id + '-' + i}
+                aria-selected={o.value === String(props.value)}
+                disabled={o.disabled}
+                key={o.value}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => choose(o.value)}
+              >
+                {o.label}
+              </button>
+            ))
+          ) : (
+            <p role="status">No results</p>
+          )}
+        </div>
       )}
     </div>
   );

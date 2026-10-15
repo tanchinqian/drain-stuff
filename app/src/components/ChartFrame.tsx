@@ -1,3 +1,4 @@
+import DataTable from './DataTable';
 import { useState, type ReactNode } from 'react';
 import { exportCsv } from '../utils';
 export default function ChartFrame({
@@ -23,7 +24,7 @@ export default function ChartFrame({
       <div className="panel-heading">
         <div>
           <h2>{title}</h2>
-          <p className="sub">{subtitle} · synthetic</p>
+          <p className="sub">{subtitle}</p>
         </div>
         <div className="inline">
           <button aria-pressed={table} onClick={() => setTable(!table)}>
@@ -45,31 +46,17 @@ export default function ChartFrame({
       {!hasData ? (
         <p className="empty">No readings in this range</p>
       ) : table ? (
-        <div className="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                {headers.map((h) => (
-                  <th key={h}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row, i) => (
-                <tr key={i}>
-                  {row.map((v, j) => (
-                    <td key={j}>{v ?? 'No reading'}</td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <DataTable<{ cells: (string | number | null)[]; index: number }>
+          id={title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}
+          rows={rows.map((cells, index) => ({ cells, index }))}
+          rowId={(r) => String(r.index)}
+          columns={headers.map((label, i) => ({ key: String(i), label, value: (r) => r.cells[i] }))}
+        />
       ) : (
         <div
           className="chart-area"
           role="group"
-          aria-label={title + '. Synthetic chart. View as table is available.'}
+          aria-label={title + '. View as table is available.'}
         >
           {children}
         </div>

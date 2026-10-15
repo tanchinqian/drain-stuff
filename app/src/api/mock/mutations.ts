@@ -145,6 +145,14 @@ export function allocateBatch(db: Database, batch: BatchDetail, input: Allocatio
   trial.batchId = batch.id;
   trial.appliedAt = DEMO_NOW;
   trial.appliedBy = input.appliedBy;
+  trial.amendedDepthM = input.lPerM2 / 1000;
+  (trial.history ??= []).push({
+    id: crypto.randomUUID(),
+    t: new Date().toISOString(),
+    user: input.appliedBy,
+    action: 'Compost allocated',
+    note: batch.id + ' / ' + input.lPerM2 + ' L/m2',
+  });
   batch.status = 'released';
 }
 export function parseBatchChecks(
@@ -169,7 +177,7 @@ export function parseBatchChecks(
   });
   if (
     !['wet', 'ok', 'dry'].includes(String(input.squeeze)) ||
-    !['normal', 'putrid', 'ammonia'].includes(String(input.smell))
+    !['normal', 'putrid', 'ammonia', 'sour'].includes(String(input.smell))
   )
     throw new Error('Choose a squeeze result and smell log.');
   return {
