@@ -2089,3 +2089,12 @@ main > .about {
 .record-source {display:flex;gap:12px;margin:16px 0;font-size:14px;}
 .record-source dt {font-weight:600;}
 .record-source dd {margin:0;}
+
+[hidden] {display:none!important;}
+.register-tabs {margin-block:16px;}
+.register-tabs [aria-selected=true] {background:var(--ink);color:var(--panel);}
+.rules-only {grid-template-columns:minmax(0,1fr);}
+.data-table table {table-layout:fixed;}
+.data-table th:first-child {width:13%;}
+.data-table .row-open {max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+@media (min-width:1200px) {.sensor-workspace.has-detail {padding-right:424px;grid-template-columns:170px minmax(0,1fr);}.detail-drawer.docked {width:400px;right:24px;top:16px;bottom:16px;height:calc(100dvh - 32px);padding:20px;}.sensor-workspace.has-detail .data-table td {font-size:12px;}}
