@@ -13,7 +13,7 @@ test('fault status saves, persists and has an audit trail', async ({ page }) => 
     id = label!.replace('Status for ', '');
   const next = (await control.inputValue()) === 'closed' ? 'open' : 'closed';
   await control.selectOption(next);
-  await expect(page.getByRole('status').filter({ hasText: 'Saved fault status' })).toBeVisible();
+  await expect(page.getByRole('status').filter({ hasText: id + ' moved to' })).toBeVisible();
   await page.reload();
   await page.getByRole('searchbox', { name: 'Search faults', exact: true }).fill(id);
   await expect(page.getByRole('combobox', { name: label!, exact: true })).toHaveValue(next);
@@ -56,9 +56,9 @@ test('fixed pilot map, non-modal selection, range and zone scoping', async ({ pa
   await page.locator('.plan-svg').click({ position: { x: 10, y: 10 } });
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await page.getByRole('button', { name: '7 days', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Rainfall · 7 days', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /^Rainfall · 7 days/ })).toBeVisible();
   await page.getByRole('button', { name: 'Zone B', exact: true }).click();
-  await expect(page.locator('.feature-jumps')).not.toContainText('S1');
+  await expect(page.locator('.map-zones')).not.toContainText('Zone A');
   await expect(page.locator('.map-zones')).toContainText('Zone B');
 });
 test('trial test drawer saves repeats and updates its record', async ({ page }) => {
@@ -99,7 +99,8 @@ test('compost prompts follow readings and human checks have buttons and history'
   await expect(
     page.getByRole('status').filter({ hasText: 'Saved to batch B-01 check log' }),
   ).toBeVisible();
-  await expect(page.getByRole('table', { name: 'batch checks B 01' })).toContainText('Sour');
+  await page.locator('.record-history summary').click();
+  await expect(page.locator('.record-history')).toContainText('Sour');
 });
 test('feature water path, model drawer and recorded compost are visible', async ({ page }) => {
   await page.goto('/feature/S1');
@@ -154,7 +155,7 @@ test('standing-water guidance and help popovers stay readable', async ({ page })
     /synthetic|placeholder|seeded|demo data|to confirm/i,
   );
   await page.screenshot({
-    path: '../.impeccable/review/round3/standing-water-review-1440.png',
+    path: '../docs/screens/round4/after/standing-water-review-1440.png',
     fullPage: true,
   });
   await page.goto('/feature/S1');
@@ -164,7 +165,7 @@ test('standing-water guidance and help popovers stay readable', async ({ page })
   await page.keyboard.press('Escape');
   await expect(page.locator('.glossary-popover:visible')).toHaveCount(0);
   await page.screenshot({
-    path: '../.impeccable/review/round3/glossary-review-1440.png',
+    path: '../docs/screens/round4/after/glossary-review-1440.png',
     fullPage: true,
   });
 });

@@ -3,12 +3,12 @@ export default function Drawer({
   title,
   onClose,
   children,
-  docked=false,
+  docked = false,
 }: {
   title: string;
   onClose: () => void;
   children: ReactNode;
-  docked?:boolean;
+  docked?: boolean;
 }) {
   const panel = useRef<HTMLElement>(null),
     closeRef = useRef(onClose);
@@ -28,7 +28,7 @@ export default function Drawer({
   return (
     <aside
       ref={panel}
-      className={'detail-drawer'+(docked?' docked':'')}
+      className={'detail-drawer' + (docked ? ' docked' : '')}
       role="dialog"
       aria-modal="false"
       aria-label={title}

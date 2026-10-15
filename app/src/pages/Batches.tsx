@@ -5,7 +5,7 @@ import { QueryState } from '../components/QueryState';
 import BatchWorkspace from '../components/BatchWorkspace';
 import DataTable from '../components/DataTable';
 import Chip from '../components/Chip';
-import { dateOnly, displayName } from '../utils';
+import { dateOnly } from '../utils';
 export default function Batches() {
   const [params, setParams] = useSearchParams();
   const query = useQuery({
@@ -94,7 +94,15 @@ export default function Batches() {
                     key: 'input',
                     label: 'Inputs',
                     value: (b) =>
-                      b.inputs.map((i) => displayName(i.kind) + ': ' + i.kg + ' kg').join(', '),
+                      b.inputs
+                        .map(
+                          (i) =>
+                            (i.kind === 'food_bokashi' ? 'Food/bokashi' : 'Trimmings') +
+                            ' ' +
+                            i.kg +
+                            ' kg',
+                        )
+                        .join(' · '),
                   },
                   { key: 'date', label: 'Started', value: (b) => dateOnly(b.startedAt) },
                   {

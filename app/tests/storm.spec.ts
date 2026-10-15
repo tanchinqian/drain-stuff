@@ -45,7 +45,7 @@ test('shared physics playback, live geometry, CSV and responsive controls', asyn
       .analyze();
     expect(results.violations.map((v) => v.id)).toEqual([]);
     await page.screenshot({
-      path: `../.impeccable/review/physics-${width === 1440 ? 'desktop' : 'mobile'}.png`,
+      path: `../docs/screens/round4/after/physics-${width === 1440 ? 'desktop' : 'mobile'}.png`,
       fullPage: true,
     });
   }
@@ -81,7 +81,7 @@ test('feature-specific inlet and tree models and reduced motion', async ({ page 
       await page.locator('.storm-disclosure > summary').click();
       await expect(page.locator('.dimension-label').filter({ hasText: '0.40 m' })).toHaveCount(1);
       await page.screenshot({
-        path: '../.impeccable/review/physics-inlet-desktop.png',
+        path: '../docs/screens/round4/after/physics-inlet-desktop.png',
         fullPage: true,
       });
       await page.getByLabel('2D section', { exact: true }).check();
@@ -97,7 +97,7 @@ test('feature-specific inlet and tree models and reduced motion', async ({ page 
         await page.setViewportSize({ width, height: 1000 });
         await page.evaluate(() => window.scrollTo(0, 0));
         await page.screenshot({
-          path: `../.impeccable/review/physics-inlet-2d-${width === 1440 ? 'desktop' : 'mobile'}.png`,
+          path: `../docs/screens/round4/after/physics-inlet-2d-${width === 1440 ? 'desktop' : 'mobile'}.png`,
           fullPage: true,
         });
       }

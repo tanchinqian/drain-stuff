@@ -39,8 +39,8 @@ export default function OverviewCharts({
   from: string;
   to: string;
   range: string;
-  observationDate:string;
-  sampleAt:string;
+  observationDate: string;
+  sampleAt: string;
 }) {
   const measurements = useQuery({
     queryKey: ['overview-measurements', from, to, features.map((f) => f.id).join(',')],
@@ -115,13 +115,22 @@ export default function OverviewCharts({
             <XAxis
               dataKey="time"
               minTickGap={50}
-              tickFormatter={(v) => range==='Last storm'?String(v).split(',').at(-1)!.trim():String(v).split(',')[0]}
+              tickFormatter={(v) =>
+                range === 'Last storm'
+                  ? String(v).split(',').at(-1)!.trim()
+                  : String(v).split(',')[0]
+              }
             />
             <YAxis yAxisId="rate" width={40} />
             <YAxis yAxisId="depth" orientation="right" width={50} />
             <Tooltip content={<ChartTooltip />} />
             <Legend />
-            <ReferenceLine yAxisId="rate" x={dateTime(sampleAt)} stroke="#2f2b26" strokeDasharray="3 3" />
+            <ReferenceLine
+              yAxisId="rate"
+              x={dateTime(sampleAt)}
+              stroke="#2f2b26"
+              strokeDasharray="3 3"
+            />
             <Bar
               yAxisId="rate"
               dataKey="mmPerHr"

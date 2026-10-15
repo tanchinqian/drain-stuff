@@ -3,7 +3,9 @@ import AxeBuilder from '@axe-core/playwright';
 import { mkdir } from 'node:fs/promises';
 test('baseline, safety checks and compost allocation remain guarded', async ({ page }) => {
   await page.goto('/trials?feature=T1');
+  await page.getByRole('button', { name: 'Allocate mature compost', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Allocate to T1', exact: true })).toBeDisabled();
+  await page.keyboard.press('Escape');
   await page
     .locator('.master-content .actions')
     .getByRole('button', { name: 'Record baseline', exact: true })
@@ -26,6 +28,7 @@ test('baseline, safety checks and compost allocation remain guarded', async ({ p
   await page.getByRole('button', { name: 'Save safety checks', exact: true }).click();
   await expect(page.getByRole('status').filter({ hasText: 'Saved safety checks' })).toBeVisible();
   await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: 'Allocate mature compost', exact: true }).click();
   await page.getByRole('combobox', { name: 'Batch', exact: true }).selectOption('B-03');
   await expect(page.getByRole('button', { name: 'Allocate to T1', exact: true })).toBeEnabled();
   await page.getByRole('button', { name: 'Allocate to T1', exact: true }).click();
@@ -38,7 +41,7 @@ test('all pages meet axe, width and mobile containment and have review captures'
 }) => {
   test.setTimeout(180000);
   await mkdir('../docs/screens', { recursive: true });
-  await mkdir('../.impeccable/review/round3', { recursive: true });
+  await mkdir('../docs/screens/round4/after/round3', { recursive: true });
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   for (const [path, name] of [
@@ -74,12 +77,12 @@ test('all pages meet axe, width and mobile containment and have review captures'
         name + ' ' + width,
       ).toEqual([]);
       await page.screenshot({
-        path: `../.impeccable/review/round3/${name}-${width}.png`,
+        path: `../docs/screens/round4/after/${name}-${width}.png`,
         fullPage: true,
       });
       if (width !== 1920)
         await page.screenshot({
-          path: `../docs/screens/${name}-${width === 1440 ? 'desktop' : 'mobile'}.png`,
+          path: `../docs/screens/round4/after/${name}-${width === 1440 ? 'desktop' : 'mobile'}.png`,
           fullPage: true,
         });
     }
@@ -91,7 +94,7 @@ test('sensor pagination, trust filters and feature-specific parts remain availab
 }) => {
   await page.goto('/sensors');
   const table = page.getByRole('table', { name: 'sensors', exact: true });
-  await expect(table.locator('tbody tr')).toHaveCount(25);
+  await expect(table.locator('tbody tr')).toHaveCount(10);
   await page
     .locator('.table-filter')
     .filter({ has: page.locator('summary', { hasText: /^Status$/ }) })

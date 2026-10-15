@@ -7,6 +7,7 @@ import type { Sensor } from '../api/types';
 import DataTable from '../components/DataTable';
 import Drawer from '../components/Drawer';
 import AssetList from '../components/AssetList';
+import Timestamp from '../components/Timestamp';
 import Chip from '../components/Chip';
 import Term from '../components/Term';
 import ChartFrame from '../components/ChartFrame';
@@ -115,8 +116,16 @@ export default function Sensors() {
         Where each sensor and manual input is installed, its latest reading, and whether it can be
         trusted.
       </p>
-      <div className={'master-detail sensor-workspace'+(selected?' has-detail':'')}>
-        <AssetList label="Sensor assets" value={asset} onChange={setAsset} items={Array.from(new Set(live.map(s=>s.ownerId))).map(id=>{const count=live.filter(s=>s.ownerId===id).length;return {id,detail:count+' '+(count===1?'input':'inputs')};})}/>
+      <div className={'master-detail sensor-workspace' + (selected ? ' has-detail' : '')}>
+        <AssetList
+          label="Sensor assets"
+          value={asset}
+          onChange={setAsset}
+          items={Array.from(new Set(live.map((s) => s.ownerId))).map((id) => {
+            const count = live.filter((s) => s.ownerId === id).length;
+            return { id, detail: count + ' ' + (count === 1 ? 'input' : 'inputs') };
+          })}
+        />
         <section className="panel master-content">
           <DataTable
             id="sensors"
@@ -163,7 +172,7 @@ export default function Sensors() {
                 key: 'time',
                 label: 'Updated',
                 value: (s) => s.lastAt,
-                render: (s) => timeLabel(s.lastAt),
+                render: (s) => <Timestamp value={s.lastAt} />,
               },
             ]}
           />

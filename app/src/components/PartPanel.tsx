@@ -21,10 +21,14 @@ export default function PartPanel({
   sensors?: Sensor[];
 }) {
   const rules = useQuery({ queryKey: ['fault-rules'], queryFn: api.faultRules });
-  const action = useWrite((value: FaultAction) => {
-    if (!fault) throw new Error('No open fault is attached to this part.');
-    return api.faultAction(fault.id, value);
-  },(value)=>`${fault?.id??'Fault'} · ${value==='cleaned'?'Clean logged':value==='inspected'?'Marked inspected':'Work order recorded'}`);
+  const action = useWrite(
+    (value: FaultAction) => {
+      if (!fault) throw new Error('No open fault is attached to this part.');
+      return api.faultAction(fault.id, value);
+    },
+    (value) =>
+      `${fault?.id ?? 'Fault'} · ${value === 'cleaned' ? 'Clean logged' : value === 'inspected' ? 'Marked inspected' : 'Work order recorded'}`,
+  );
   return (
     <section className="panel detail-readings" aria-label="Selected part readings">
       <div className="panel-heading">
@@ -34,7 +38,7 @@ export default function PartPanel({
       <p>{part.purpose}</p>
       <p className="small">Typical failure: {part.typicalFailure}</p>
       <h3 style={{ marginTop: 20 }}>Sensors on this part</h3>
-      {!!sensors.length&&<PartSensors sensors={sensors}/>}
+      {!!sensors.length && <PartSensors sensors={sensors} />}
       {!sensors.length && (
         <p className="small">
           {part.installed
@@ -43,7 +47,13 @@ export default function PartPanel({
         </p>
       )}
       {fault && (
-        <details className="notice fault-explanation" open={sensors.some(s=>s.scope==='compost')?undefined:true}><summary><h3>Why is this highlighted?</h3></summary>
+        <details
+          className="notice fault-explanation"
+          open={sensors.some((s) => s.scope === 'compost') ? undefined : true}
+        >
+          <summary>
+            <h3>Why is this highlighted?</h3>
+          </summary>
           <p>Input: {fault.sensorIds.join(', ') || 'Human inspection'}</p>
           <p title={fault.ruleId}>
             Rule:{' '}
@@ -137,8 +147,7 @@ export default function PartPanel({
             <dt>Reading age</dt>
             <dd>
               {part.readings.length
-                ? Math.round((Date.now() - Date.parse(part.readings.at(-1)!.t)) / 60000) +
-                  ' min'
+                ? Math.round((Date.now() - Date.parse(part.readings.at(-1)!.t)) / 60000) + ' min'
                 : 'Offline / unavailable'}
             </dd>
             <dt>Record flag</dt>

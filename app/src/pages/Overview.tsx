@@ -28,7 +28,10 @@ export default function Overview() {
     zoneId = useSelection((s) => s.zoneId),
     selectZone = useSelection((s) => s.selectZone),
     second = useSimulation((s) => s.second);
-  useEffect(()=>{selectZone(null);selectHouse(null);},[selectZone,selectHouse]);
+  useEffect(() => {
+    selectZone(null);
+    selectHouse(null);
+  }, [selectZone, selectHouse]);
   const config = useQuery({ queryKey: ['config'], queryFn: api.config });
   const to = config.data?.dataThrough ?? now,
     from = new Date(
@@ -84,9 +87,23 @@ export default function Overview() {
       totalMm: point?.totalMm ?? 0,
     };
   });
-  const weatherTimes=Array.from(new Set((data?.rain??[]).filter(r=>!zoneId||r.zone===zoneId).map(r=>r.t??start))).sort();
-  const chartRain=weatherTimes.map(t=>{const rows=(data?.rain??[]).filter(r=>(r.t??start)===t&&(!zoneId||r.zone===zoneId));return {t,mmPerHr:rows.reduce((n,r)=>n+(r.mmPerHr??r.peakMmPerHr),0)/Math.max(1,rows.length),cumulativeMm:rows.reduce((n,r)=>n+r.totalMm,0)/Math.max(1,rows.length)};});
-  const sampleAt=samples[0]?.t??start;
+  const weatherTimes = Array.from(
+    new Set(
+      (data?.rain ?? []).filter((r) => !zoneId || r.zone === zoneId).map((r) => r.t ?? start),
+    ),
+  ).sort();
+  const chartRain = weatherTimes.map((t) => {
+    const rows = (data?.rain ?? []).filter(
+      (r) => (r.t ?? start) === t && (!zoneId || r.zone === zoneId),
+    );
+    return {
+      t,
+      mmPerHr:
+        rows.reduce((n, r) => n + (r.mmPerHr ?? r.peakMmPerHr), 0) / Math.max(1, rows.length),
+      cumulativeMm: rows.reduce((n, r) => n + r.totalMm, 0) / Math.max(1, rows.length),
+    };
+  });
+  const sampleAt = samples[0]?.t ?? start;
   return (
     <QueryState loading={config.isPending || query.isPending} error={query.error ?? config.error}>
       <div className="page-heading">
@@ -171,9 +188,11 @@ export default function Overview() {
                   />
                   <output>{cloudOpacity}%</output>
                 </label>
-
               </div>
-              <p className="small rainfall-instant">Current rainfall sample · {dateTime(sampleAt)}. Chart shows the full selected period.</p>
+              <p className="small rainfall-instant">
+                Current rainfall sample · {dateTime(sampleAt)}. Chart shows the full selected
+                period.
+              </p>
               <div className="map-zones" aria-label="Zone rainfall" data-sample-time={sampleAt}>
                 {samples
                   .filter((s) => !zoneId || s.zone === zoneId)
@@ -208,7 +227,8 @@ export default function Overview() {
                 />
               )}
               <p className="scene-caption">
-                Click a pilot house or pin. Drag to orbit · Scroll to zoom. Use Plan for keyboard access.
+                Click a pilot house or pin. Drag to orbit · Scroll to zoom. Use Plan for keyboard
+                access.
               </p>
               <div className="heat-legend">
                 <span>

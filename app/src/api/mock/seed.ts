@@ -196,7 +196,7 @@ export function generateMock(seed = 2026): Database {
     ...f,
     synthetic: true,
     openedAt: SEED_REFERENCE,
-    status: f.id==='F-002'?'inspected':'open',
+    status: f.id === 'F-002' ? 'inspected' : 'open',
     ruleId:
       f.type === 'sensor_offline'
         ? 'sensor_trust'
@@ -332,10 +332,10 @@ export function generateMock(seed = 2026): Database {
     id: 'B-0' + (i + 1),
     bay: 'Bay ' + (i + 1),
     inputs: [
-      { kind: 'food_bokashi', kg: [28,42,35][i] },
-      { kind: 'trimmings', kg: [72,58,80][i] },
+      { kind: 'food_bokashi', kg: [28, 42, 35][i] },
+      { kind: 'trimmings', kg: [72, 58, 80][i] },
     ],
-    startedAt: new Date(Date.parse(SEED_REFERENCE)-[18,35,63][i]*86400000).toISOString(),
+    startedAt: new Date(Date.parse(SEED_REFERENCE) - [18, 35, 63][i] * 86400000).toISOString(),
     status: i === 0 ? 'active' : i === 1 ? 'curing' : 'released',
     maturityGate: i === 2 ? 'passed' : 'blocked',
     gateReason:

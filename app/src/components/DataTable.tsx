@@ -4,6 +4,7 @@ import { exportCsv, displayName, formatValue } from '../utils';
 import Term from './Term';
 export interface Column<T> {
   key: string;
+  width?: string;
   label: string;
   value: (row: T) => string | number | null;
   render?: (row: T) => ReactNode;
@@ -122,7 +123,7 @@ export default function DataTable<T>({
             </summary>
             <fieldset>
               <legend>{f.label}</legend>
-              {Array.from(new Set(rows.map(f.value)))
+              {Array.from(new Set(rows.map((row) => f.value(row))))
                 .sort()
                 .map((value) => (
                   <label key={value}>
@@ -204,6 +205,7 @@ export default function DataTable<T>({
                   {cols.map((c) => (
                     <th
                       key={c.key}
+                      style={c.width ? { width: c.width } : undefined}
                       aria-sort={
                         sort.key === c.key
                           ? sort.direction === 1

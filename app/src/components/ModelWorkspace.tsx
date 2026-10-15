@@ -24,7 +24,7 @@ export default function ModelWorkspace({
   summary,
 }: {
   physics?: ModelPhysics;
-  summary?:ReactNode;
+  summary?: ReactNode;
   ownerId: string;
   parts: Part[];
   sensors: Sensor[];
@@ -107,7 +107,7 @@ export default function ModelWorkspace({
   const part = parts.find((p) => p.partId === selected);
   if (!part) return null;
   return (
-    <div className={'model-workspace '+(kind==='compost'?'compost-model':'')} >
+    <div className={'model-workspace ' + (kind === 'compost' ? 'compost-model' : '')}>
       <div className="field mobile-part-picker">
         <span>Model part</span>
         <SearchableSelect
@@ -160,24 +160,23 @@ export default function ModelWorkspace({
             ))}
         </aside>
         <section className="panel model-card">
-      <div className="model-mode">
-        <div className="segments">
-          {(['Operator', 'Debug', 'Troubleshoot'] as const).map((value) => (
-            <button
-              key={value}
-              aria-pressed={mode === value}
-              onClick={() => {
-                setMode(value);
-                setShowSensors(value === 'Debug');
-                setMove(false);
-              }}
-            >
-              {value}
-            </button>
-          ))}
-        </div>
-
-      </div>
+          <div className="model-mode">
+            <div className="segments">
+              {(['Operator', 'Debug', 'Troubleshoot'] as const).map((value) => (
+                <button
+                  key={value}
+                  aria-pressed={mode === value}
+                  onClick={() => {
+                    setMode(value);
+                    setShowSensors(value === 'Debug');
+                    setMove(false);
+                  }}
+                >
+                  {value}
+                </button>
+              ))}
+            </div>
+          </div>
 
           {physics && flat ? (
             <PhysicsSection {...physics} />

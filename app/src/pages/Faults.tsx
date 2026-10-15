@@ -9,12 +9,13 @@ import DataTable from '../components/DataTable';
 import Drawer from '../components/Drawer';
 import AssetList from '../components/AssetList';
 import RecordHistory from '../components/RecordHistory';
+import Timestamp from '../components/Timestamp';
 import Chip from '../components/Chip';
 import { QueryState } from '../components/QueryState';
 import { drainParts, partName, partLink } from '../api/modelCatalog';
 export default function Faults() {
   const [params, setParams] = useSearchParams();
-  const [tab,setTab]=useState<'faults'|'rules'>('faults');
+  const [tab, setTab] = useState<'faults' | 'rules'>('faults');
   const [asset, setAsset] = useState(params.get('asset') ?? ''),
     [selected, setSelected] = useState<Fault | null>(null),
     [rule, setRule] = useState<FaultRule | null>(null),
@@ -33,7 +34,7 @@ export default function Faults() {
   const save = useWrite(
     (input: { id: string; status: Fault['status'] }) =>
       api.faultStatus(input.id, { status: input.status, note, user }),
-    (input)=>`${input.id} moved to ${displayName(input.status)}${note?' · Note: '+note:''}`,
+    (input) => `${input.id} moved to ${displayName(input.status)}${note ? ' · Note: ' + note : ''}`,
   );
   const create = useWrite(
     () => api.reportFault({ ...entry, note, user }),
@@ -65,12 +66,43 @@ export default function Faults() {
         </button>
       </div>
       <p>Faults appear when a rule fires on a reading or an operator reports a problem.</p>
-      <div className="segments register-tabs" role="tablist" aria-label="Fault registers">{(['faults','rules'] as const).map(t=><button role="tab" id={'tab-'+t} aria-controls={'register-'+t} aria-selected={tab===t} key={t} onClick={()=>setTab(t)}>{displayName(t)}</button>)}</div>
-      {params.get('rule')&&<button onClick={()=>setParams({})}>Show all faults</button>}
-      <div className={'master-detail fault-workspace '+(tab==='rules'?'rules-only':'')}>
-        {tab==='faults'&&<AssetList label="Fault assets" value={asset} onChange={setAsset} items={Array.from(new Set(faults.data?.map(f=>f.featureId)??[])).map(id=>({id,detail:(faults.data?.filter(f=>f.featureId===id&&f.status!=='closed').length??0)+' open'}))}/>}
+      <div className="segments register-tabs" role="tablist" aria-label="Fault registers">
+        {(['faults', 'rules'] as const).map((t) => (
+          <button
+            role="tab"
+            id={'tab-' + t}
+            aria-controls={'register-' + t}
+            aria-selected={tab === t}
+            key={t}
+            onClick={() => setTab(t)}
+          >
+            {displayName(t)}
+          </button>
+        ))}
+      </div>
+      {params.get('rule') && <button onClick={() => setParams({})}>Show all faults</button>}
+      <div className={'master-detail fault-workspace ' + (tab === 'rules' ? 'rules-only' : '')}>
+        {tab === 'faults' && (
+          <AssetList
+            label="Fault assets"
+            value={asset}
+            onChange={setAsset}
+            items={Array.from(new Set(faults.data?.map((f) => f.featureId) ?? [])).map((id) => ({
+              id,
+              detail:
+                (faults.data?.filter((f) => f.featureId === id && f.status !== 'closed').length ??
+                  0) + ' open',
+            }))}
+          />
+        )}
         <div className="master-content stack">
-          <section className="panel" id="register-faults" role="tabpanel" aria-labelledby="tab-faults" hidden={tab!=='faults'}>
+          <section
+            className="panel"
+            id="register-faults"
+            role="tabpanel"
+            aria-labelledby="tab-faults"
+            hidden={tab !== 'faults'}
+          >
             <DataTable
               id="faults"
               rows={rows}
@@ -82,12 +114,13 @@ export default function Faults() {
                 { key: 'status', label: 'Status', value: (f) => f.status },
               ]}
               columns={[
-                { key: 'id', label: 'ID', value: (f) => f.id },
-                { key: 'title', label: 'Title', value: (f) => displayName(f.type) },
-                { key: 'asset', label: 'Asset', value: (f) => f.featureId },
-                { key: 'part', label: 'Part', value: (f) => partName(f.partId) },
+                { key: 'id', label: 'ID', width: '7%', value: (f) => f.id },
+                { key: 'title', label: 'Title', width: '18%', value: (f) => displayName(f.type) },
+                { key: 'asset', label: 'Asset', width: '6%', value: (f) => f.featureId },
+                { key: 'part', label: 'Part', width: '16%', value: (f) => partName(f.partId) },
                 {
                   key: 'severity',
+                  width: '9%',
                   label: 'Severity',
                   value: (f) => f.severity,
                   render: (f) => (
@@ -96,25 +129,48 @@ export default function Faults() {
                 },
                 {
                   key: 'opened',
+                  width: '16%',
                   label: 'Opened',
                   value: (f) => f.openedAt,
-                  render: (f) => timeLabel(f.openedAt),
+                  render: (f) => <Timestamp value={f.openedAt} />,
                 },
                 {
                   key: 'status',
+                  width: '11%',
                   label: 'Status',
                   value: (f) => f.status,
-                  render:(f)=><select className="status-select" aria-label={'Status for '+f.id} value={f.status} disabled={save.isPending} onChange={e=>save.mutate({id:f.id,status:e.target.value as Fault['status']})}>{['open','inspected','closed'].map(v=><option key={v} value={v}>{displayName(v)}</option>)}</select>,
+                  render: (f) => (
+                    <select
+                      className="status-select"
+                      aria-label={'Status for ' + f.id}
+                      value={f.status}
+                      disabled={save.isPending}
+                      onChange={(e) =>
+                        save.mutate({ id: f.id, status: e.target.value as Fault['status'] })
+                      }
+                    >
+                      {['open', 'inspected', 'closed'].map((v) => (
+                        <option key={v} value={v}>
+                          {displayName(v)}
+                        </option>
+                      ))}
+                    </select>
+                  ),
                 },
                 {
                   key: 'rule',
+                  width: '17%',
                   label: 'Rule',
                   value: (f) =>
                     rules.data?.find((r) => r.id === f.ruleId)?.label ?? 'Manual report',
                   render: (f) => (
                     <button
                       className="text-link"
-                      title={f.ruleId}
+                      title={
+                        (rules.data?.find((r) => r.id === f.ruleId)?.label ?? 'Manual report') +
+                        ' · ' +
+                        f.ruleId
+                      }
                       disabled={f.ruleId === 'MANUAL'}
                       onClick={() => selectRule(f.ruleId)}
                     >
@@ -123,10 +179,15 @@ export default function Faults() {
                   ),
                 },
               ]}
-
             />
           </section>
-          <section className="panel" id="register-rules" role="tabpanel" aria-labelledby="tab-rules" hidden={tab!=='rules'}>
+          <section
+            className="panel"
+            id="register-rules"
+            role="tabpanel"
+            aria-labelledby="tab-rules"
+            hidden={tab !== 'rules'}
+          >
             <h2>Fault rules and diagnosing inputs</h2>
             {params.get('rule') && <button onClick={() => setParams({})}>Show all faults</button>}
             <DataTable
@@ -195,7 +256,7 @@ export default function Faults() {
               </button>
             ))}
           </div>
-          <RecordHistory entries={active.history??[]} title="Audit trail"/>
+          <RecordHistory entries={active.history ?? []} title="Audit trail" />
           <h3>Diagnosing inputs</h3>
           {active.sensorIds.map((id) => (
             <p key={id}>

@@ -11,7 +11,7 @@ import { buildParts } from '../api/parts';
 import type { Sensor } from '../api/types';
 const emptySensors: Sensor[] = [];
 import { QueryState } from '../components/QueryState';
-import { armName, dateOnly, testMean } from '../utils';
+import { armName, dateOnly, testMean, trialDue } from '../utils';
 export default function FeatureDetail() {
   const { id = 'S1' } = useParams();
   const result = useQuery({
@@ -67,7 +67,7 @@ export default function FeatureDetail() {
             </div>
             <div>
               <small>Next re-test</small>
-              {data.trial ? dateOnly(data.trial.nextRetestDue) : 'No trial scheduled'}
+              {data.trial ? dateOnly(trialDue(data.trial)) : 'No trial scheduled'}
             </div>
             <div>
               <small>Owner of record</small>

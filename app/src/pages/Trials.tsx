@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { api } from '../api/client';
-import { armName, dateOnly, trialStatus, testMean, formatValue } from '../utils';
+import { armName, dateOnly, trialStatus, trialDue, testMean, formatValue } from '../utils';
 import { QueryState } from '../components/QueryState';
 import TrialComparison from '../components/TrialComparison';
 import TrialTestForm from '../components/TrialTestForm';
@@ -31,7 +31,7 @@ export default function Trials() {
   const d = query.data,
     selected =
       d?.trials.find((t) => t.featureId === (params.get('feature') ?? 'S1')) ?? d?.trials[0];
-  const state=trialStatus;
+  const state = trialStatus;
   return (
     <QueryState loading={query.isPending} error={query.error}>
       <div className="page-heading">
@@ -86,7 +86,7 @@ export default function Trials() {
                       value: (t) => t.tests.at(-1)?.t ?? 'No test',
                       render: (t) => (t.tests.length ? dateOnly(t.tests.at(-1)!.t) : 'No test'),
                     },
-                    { key: 'next', label: 'Next re-test', value: (t) => dateOnly(t.nextRetestDue) },
+                    { key: 'next', label: 'Next re-test', value: (t) => dateOnly(trialDue(t)) },
                     {
                       key: 'state',
                       label: 'Status',
@@ -137,12 +137,19 @@ export default function Trials() {
                     {selected.owner?.name ?? 'Unassigned'}
                   </div>
                 </div>
-                <dl className="record-source"><dt>Data source</dt><dd>Field test log {selected.featureId}{selected.batchId?' · Batch record '+selected.batchId:''}</dd></dl>
+                <dl className="record-source">
+                  <dt>Data source</dt>
+                  <dd>
+                    Field test log {selected.featureId}
+                    {selected.batchId ? ' · Batch record ' + selected.batchId : ''}
+                  </dd>
+                </dl>
                 <div className="actions">
                   <button onClick={() => setDrawer('test')}>
                     {selected.baselineDone ? 'Log a re-test' : 'Record baseline'}
                   </button>
-                  <button onClick={() => setDrawer('checks')}>Update safety checks</button><button onClick={()=>setDrawer('allocation')}>Allocate mature compost</button>
+                  <button onClick={() => setDrawer('checks')}>Update safety checks</button>
+                  <button onClick={() => setDrawer('allocation')}>Allocate mature compost</button>
                 </div>
                 <h3>Safety checks</h3>
                 <ul className="check-results">
@@ -177,9 +184,11 @@ export default function Trials() {
                     First heavy rain: washout, clogging, photo and result.
                   </li>
                 </ul>
-                <RecordHistory entries={selected.history??[]} title={'Trial history · '+selected.featureId}/>
+                <RecordHistory
+                  entries={selected.history ?? []}
+                  title={'Trial history · ' + selected.featureId}
+                />
               </section>
-
             </div>
           </div>
           {drawer && (
@@ -187,7 +196,9 @@ export default function Trials() {
               title={
                 drawer === 'test'
                   ? 'Log a test · ' + selected.featureId
-                  : drawer==='checks'?'Safety checks · ' + selected.featureId:'Allocate mature compost · '+selected.featureId
+                  : drawer === 'checks'
+                    ? 'Safety checks · ' + selected.featureId
+                    : 'Allocate mature compost · ' + selected.featureId
               }
               onClose={() => setDrawer(null)}
             >
@@ -196,9 +207,16 @@ export default function Trials() {
                   key={selected.featureId + '-' + selected.baselineDone}
                   trial={selected}
                 />
-              ) : drawer==='checks' ? (
+              ) : drawer === 'checks' ? (
                 <GuardrailForm key={selected.featureId} trial={selected} config={d.config} />
-              ) : <AllocationForm key={selected.featureId} trial={selected} batches={d.batches} config={d.config}/>}
+              ) : (
+                <AllocationForm
+                  key={selected.featureId}
+                  trial={selected}
+                  batches={d.batches}
+                  config={d.config}
+                />
+              )}
             </Drawer>
           )}
         </>

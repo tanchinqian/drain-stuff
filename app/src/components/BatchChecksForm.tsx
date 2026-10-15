@@ -152,8 +152,14 @@ export default function BatchChecksForm({ batch }: { batch: BatchDetail }) {
           </p>
         )}
       </form>
-      <RecordHistory entries={(batch.checkHistory??[]).map(r=>({...r,action:batch.id+' checks saved',note:`Squeeze: ${displayName(r.checks.squeeze)}; smell: ${displayName(r.checks.smell)}; cover: ${r.checks.bayCovered?'checked':'pending'}; sump ${r.checks.sumpLevelCm} cm`}))} title="Check history"/>
-
+      <RecordHistory
+        entries={(batch.checkHistory ?? []).map((r) => ({
+          ...r,
+          action: batch.id + ' checks saved',
+          note: `Squeeze: ${displayName(r.checks.squeeze)}; smell: ${displayName(r.checks.smell)}; cover: ${r.checks.bayCovered ? 'checked' : 'pending'}; sump ${r.checks.sumpLevelCm} cm`,
+        }))}
+        title="Check history"
+      />
     </section>
   );
 }

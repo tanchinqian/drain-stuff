@@ -7,7 +7,7 @@ test('attention order and operator controls', async ({ page }) => {
   const faults = await page.locator('.attention-faults').boundingBox();
   const map = await page.locator('.overview-map').boundingBox();
   expect(map!.y).toBeLessThan(faults!.y);
-  await expect(page.getByRole('combobox', { name: 'Pilot house', exact: true })).toHaveCount(1);
+  await expect(page.getByRole('combobox', { name: 'Pilot house', exact: true })).toHaveCount(0);
   await expect(page.locator('.zone-filter button')).toHaveCount(5);
   await page.goto('/feature/S1');
   await expect(page.locator('.cad-scene')).toBeVisible();
@@ -90,7 +90,7 @@ test('approved rainfall palette and compost form accessibility are retained', as
         .analyze();
       expect(a11y.violations.map((v) => v.id)).toEqual([]);
       await page.screenshot({
-        path: `../docs/screens/compost-${tab.toLowerCase()}-${width === 1440 ? 'desktop' : 'mobile'}.png`,
+        path: `../docs/screens/round4/after/compost-${tab.toLowerCase()}-${width === 1440 ? 'desktop' : 'mobile'}.png`,
         fullPage: true,
       });
     }

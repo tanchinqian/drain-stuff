@@ -282,7 +282,9 @@ export async function mockRequest(path: string, method = 'GET', body?: unknown):
           : {}),
         parts: buildParts(id, db.sensors, db.faults),
         ownerOfRecord: house?.ownerOfRecord || 'Zone ' + feature?.zone + ' maintenance lead',
-        installedAt: '2026-08-17',
+        installedAt: new Date(Date.parse(db.clockAnchor ?? DEMO_NOW) - 56 * 86400000)
+          .toISOString()
+          .slice(0, 10),
       });
     }
     if (resource === 'rainfall' && id === 'zones') {
@@ -449,7 +451,10 @@ export async function mockRequest(path: string, method = 'GET', body?: unknown):
     const batch = find(db.batches, (b) => b.id === id);
     batch.checks = parseBatchChecks(batch.checks, input);
     (batch.checkHistory ??= []).push({
-      ...audit(batch.id+' checks saved',`Squeeze: ${batch.checks.squeeze}; smell: ${batch.checks.smell}; sump: ${batch.checks.sumpLevelCm} cm`),
+      ...audit(
+        batch.id + ' checks saved',
+        `Squeeze: ${batch.checks.squeeze}; smell: ${batch.checks.smell}; sump: ${batch.checks.sumpLevelCm} cm`,
+      ),
       checks: structuredClone(batch.checks),
     });
     const reason = maturityReason(
