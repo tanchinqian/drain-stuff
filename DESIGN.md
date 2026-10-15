@@ -139,7 +139,7 @@ components:
 
 Map desk is a compact operator console with warm paper surfaces, brown ink, mapped site views and geometric assembly schematics. Archivo keeps headings firm and records readable. Thin borders, tonal wells and dark selected controls make the next inspection action easy to find.
 
-Native controls, tabular numerals, explicit units and shape plus text states support practical inspection. The user-approved radar colours serve rainfall data and cyan serves physical water; the surrounding console retains cream and brown. Round 3 expands the work surface and unifies records within this confirmed identity. Decorative gradients and glow remain excluded.
+Native controls, tabular numerals, explicit units and shape plus text states support practical inspection. The user-approved radar colours serve rainfall data and cyan serves physical water; the surrounding console retains cream and brown. Round 4 stabilises the work surface and record controls within this confirmed identity. Decorative gradients and glow remain excluded.
 
 **Key Characteristics:**
 
@@ -150,7 +150,7 @@ Native controls, tabular numerals, explicit units and shape plus text states sup
 - Shape plus text states, readable units and glossary help.
 - Preserved seven-colour rainfall data and cyan model water.
 
-This merge documents durable patterns in `app/src/styles.css`, current shared components, model geometry and `site/weather.ts`, with Round 3 captures in `.impeccable/review/round3/`. Existing frontmatter primitives remain confirmed. The sidecar holds extensions and representative samples. Source remains the implementation authority.
+This merge documents durable patterns in `app/src/styles.css`, current shared components, model geometry and `site/weather.ts`, with current Round 4 captures in `docs/screens/round4/` and historical Round 3 captures in `.impeccable/review/round3/`. Existing frontmatter primitives remain confirmed. The sidecar holds extensions and representative samples. Source remains the implementation authority.
 
 ## Colors
 
@@ -188,17 +188,17 @@ About copy is limited to 72ch. Use sentence-case human names instead of raw enum
 
 ## Layout
 
-The main work surface uses a maximum width of **1760px**, width `calc(100% - 48px)`, a 12-column grid and 20px column gap. Main children span the grid; composed workspaces define their own columns. Panels retain 22px padding. Shared master-detail layouts use a **220px** sticky list plus flexible content, with a 20px gap. Lists have bounded vertical scrolling.
+The main work surface is uncapped, with width `calc(100% - 48px)`, 24px gutters, a 12-column grid and 20px column gap. Main children span the grid; composed workspaces define their own columns. Panels retain 22px padding. Shared master-detail layouts use a **220px** sticky list plus flexible content, with a 20px gap. Asset rails group searchable features, compost bays and collapsed pilot houses. Their scroll is bounded to the viewport.
 
-At desktop widths from 1100px, Overview uses a flexible map and 340px fault rail. Feature detail uses 200px / flexible / 300px columns; from 1500px these become 220px / flexible / 340px. Existing 1100/800/580px rules still adapt model and chart layouts. At 760px the main width becomes `calc(100% - 24px)`, master-detail stacks and its list becomes static with a 220px maximum height. At 580px panels use 16px padding, navigation wraps, native part selection replaces the desktop list and Plan retains native pilot/feature access.
+At desktop widths from 1100px, Overview uses a flexible map and 340px fault rail. Feature detail uses 180px / flexible / 340px columns; from 1700px these become 200px / flexible / 390px. Compost uses 165px / flexible / 320px, becoming 180px / flexible / 350px from 1700px. Existing 1100/800/580px rules still adapt model and chart layouts. At 760px the main width becomes `calc(100% - 24px)`, master-detail stacks and its asset rail becomes static with a 240px maximum height. At 580px panels use 16px padding, navigation wraps, native part selection replaces the desktop list and Plan retains native pilot/feature access.
 
-Tables scroll within their panel, with sticky headers and a 600px maximum scroll area. The flow strip scrolls horizontally within its own width. The document itself stays within the phone viewport. Drawers occupy at most 650px or 95vw, scroll independently and use 24px padding, reduced to 16px at 760px. Glossary popovers fit within the viewport and close through native popover behavior.
+Tables scroll horizontally within their panel, with no internal vertical height cap; rows remain in page flow. The flow strip scrolls horizontally within its own width. The document itself stays within the phone viewport. Drawers occupy at most 650px or 95vw, scroll independently and use 24px padding, reduced to 16px at 760px. Glossary popovers fit within the viewport and close through native popover behavior.
 
 ## Elevation & Depth
 
-Record surfaces stay flat, separated by borders and paper tones. Non-modal drawers add a restrained structural edge shadow (`-12px 0 32px #2f2b261a`) to distinguish the overlay. This is an implemented exception to the older blanket no-shadow description. Drawers have no blocking backdrop. Schematics use geometry, edge lines, translucent cyan water and material layers; rain strokes, soil shading and static flow-width arrows encode state.
+Record surfaces stay flat, separated by borders and paper tones. Non-modal drawers add a restrained structural edge shadow (`-12px 0 32px #2f2b261a`) to distinguish the overlay. This is an implemented exception to the older blanket no-shadow description. Open table filter/Columns menus use a small separation shadow (`0 6px 16px #2f2b2614`). Drawers have no blocking backdrop. Schematics use geometry, edge lines, translucent cyan water and material layers; rain strokes, soil shading and static flow-width arrows encode state.
 
-**The Flat Surface Rule.** Keep record surfaces flat with the existing paper tones and borders; reserve the implemented edge shadow for the detail drawer.
+**The Flat Surface Rule.** Keep record surfaces flat with existing paper tones and borders; reserve edge shadows for drawers and open table menus.
 
 UI changes are immediate; no reusable transition scale is defined. Reduced motion disables animation, transitions and smooth scrolling, while timeline/minute controls retain model access.
 
@@ -216,11 +216,11 @@ Paper secondary actions have a thin border and brown ink; hover uses `well2`. Pr
 
 ### Shared record table
 
-`DataTable` supplies text search, checkbox multi-select filters, sortable sentence-case headers, saved column visibility, row selection, 25-row pagination, sticky header, loading/empty states, row actions and comfortable/compact density. Selected rows use `well`; compact cells use 6px vertical padding. CSV exports filtered/sorted visible columns, narrowed to selected records when selection exists. Preferences are client-local, not server pagination.
+`DataTable` supplies an icon-led search field, checkbox multi-select filters with selected counts/carets, sortable sentence-case headers, saved column visibility, loading/empty states, row actions and comfortable/compact density. Filter and Columns menus use native `details` with a shared name so only one opens at a time. Desktop toolbar controls are 36px tall; mobile actions are 40px. IDs are plain monospace text with a dedicated detail action. Rows are 40px comfortable or 32px compact. Pagination offers 10, 20 or 25 rows, starting at 10. There are no selection checkboxes. CSV exports filtered/sorted visible columns. Preferences and pagination are client-local.
 
 ### Chips, panels and feedback
 
-Chips combine icon, word and border. Watch uses a dashed border; fault uses brick. Paper panels retain existing radius/padding, with wrapping headings/actions. Charts keep their own legend/direct labels, table alternative and export. “No reading” stays explicit rather than becoming zero. Saves show a dated toast and page history with a destination; record audit remains a separate data responsibility. The persistent synthetic-data badge is removed; source notice belongs on About only.
+Chips combine icon, word and border. Watch uses a dashed border; fault uses brick. Paper panels retain existing radius/padding, with wrapping headings/actions. Charts keep their own legend/direct labels, table alternative and export. “No reading” stays explicit rather than becoming zero. Saves show a dated toast with a destination. Record audit uses a collapsed history section, latest five distinct entries by default and Show all for the remaining entries. Repeated action/note/user entries are grouped for display; original saved history remains the data responsibility. The persistent synthetic-data badge is removed; source notice belongs on About only.
 
 ### Fields and help
 
@@ -228,11 +228,13 @@ Inputs, selects and textareas retain native behavior, paper backgrounds, thin bo
 
 ### Non-modal drawers
 
-The shared detail drawer is an `aside` with dialog semantics and `aria-modal=false`. It focuses Close when opened, closes with Esc/Close and restores the previous focus; it does not trap focus or block the page. Pilot-house selection also closes on map background or changes with another selection. Sensor, fault/rule, trial logging and Model details use the same pattern.
+The shared detail drawer is an `aside` with dialog semantics and `aria-modal=false`. It focuses Close when opened, closes with Esc/Close and restores the previous focus; it does not trap focus or block the page. Pilot-house selection also closes on map background or changes with another selection. Sensor, fault/rule, trial logging, allocations and Model details use the same pattern.
 
 ### Model workspace
 
 Part selection drives readings and fault context. Operator controls lead with model inspection; advanced settings stay in Debug. Shared storm playback sits beneath the model. Short rain strokes, an engine-depth cyan surface/waterline, soil moisture shading, partial pipe fill and discharge-width arrows replace particle droplets and visual depth exaggeration. The flow strip labels inlet through outfall/overflow. The pink amendment layer reflects recorded depth/dose. Model details groups Rainfall, Catchment, Surface, Soil, Drain and Overflow in collapsed sections, with equations and a source footer.
+
+Compost defaults to the model and uses small Model / Readings / Checks modes inside the bay workspace. Part sensors use a compact Input / Value / Role / Status table. Latest bay temperature, moisture and human checks appear beneath the model. Trial comparisons use paired horizontal Before / Latest bars on a shared scale with recorded counts, units and readiness progress.
 
 ### Site map
 

@@ -1,0 +1,338 @@
+[
+  {
+    "name": "overview",
+    "width": 1440,
+    "main": 1392,
+    "overflow": false,
+    "rows": []
+  },
+  {
+    "name": "overview",
+    "width": 1920,
+    "main": 1872,
+    "overflow": false,
+    "rows": []
+  },
+  {
+    "name": "overview",
+    "width": 360,
+    "main": 336,
+    "overflow": false,
+    "rows": []
+  },
+  {
+    "name": "trials",
+    "width": 1440,
+    "main": 1392,
+    "overflow": false,
+    "rows": [
+      40,
+      40,
+      40,
+      40,
+      40
+    ]
+  },
+  {
+    "name": "trials",
+    "width": 1920,
+    "main": 1872,
+    "overflow": false,
+    "rows": [
+      40,
+      40,
+      40,
+      40,
+      40
+    ]
+  },
+  {
+    "name": "trials",
+    "width": 360,
+    "main": 336,
+    "overflow": false,
+    "rows": [
+      40,
+      40,
+      40,
+      40,
+      40
+    ]
+  },
+  {
+    "name": "batches",
+    "width": 1440,
+    "main": 1392,
+    "overflow": false,
+    "rows": [
+      0,
+      53,
+      53,
+      53
+    ]
+  },
+  {
+    "name": "batches",
+    "width": 1920,
+    "main": 1872,
+    "overflow": false,
+    "rows": [
+      0,
+      53,
+      53,
+      53
+    ]
+  },
+  {
+    "name": "batches",
+    "width": 360,
+    "main": 336,
+    "overflow": false,
+    "rows": [
+      0,
+      53,
+      53,
+      53
+    ]
+  },
+  {
+    "name": "compost",
+    "width": 1440,
+    "main": 1392,
+    "overflow": false,
+    "rows": [
+      0
+    ]
+  },
+  {
+    "name": "compost",
+    "width": 1920,
+    "main": 1872,
+    "overflow": false,
+    "rows": [
+      0
+    ]
+  },
+  {
+    "name": "compost",
+    "width": 360,
+    "main": 336,
+    "overflow": false,
+    "rows": [
+      0
+    ]
+  },
+  {
+    "name": "sensors",
+    "width": 1440,
+    "main": 1392,
+    "overflow": false,
+    "rows": [
+      40,
+      40,
+      40,
+      40,
+      40,
+      40,
+      40,
+      40,
+      40,
+      40
+    ]
+  },
+  {
+    "name": "sensors",
+    "width": 1920,
+    "main": 1872,
+    "overflow": false,
+    "rows": [
+      40,
+      40,
+      40,
+      40,
+      40,
+      40,
+      40,
+      40,
+      40,
+      40
+    ]
+  },
+  {
+    "name": "sensors",
+    "width": 360,
+    "main": 336,
+    "overflow": false,
+    "rows": [
+      40,
+      40,
+      40,
+      40,
+      40,
+      40,
+      40,
+      40,
+      40,
+      40
+    ]
+  },
+  {
+    "name": "faults",
+    "width": 1440,
+    "main": 1392,
+    "overflow": false,
+    "rows": [
+      40,
+      40,
+      40,
+      40,
+      40,
+      40,
+      40,
+      40,
+      40,
+      40,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "name": "faults",
+    "width": 1920,
+    "main": 1872,
+    "overflow": false,
+    "rows": [
+      40,
+      40,
+      40,
+      40,
+      40,
+      40,
+      40,
+      40,
+      40,
+      40,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "name": "faults",
+    "width": 360,
+    "main": 336,
+    "overflow": false,
+    "rows": [
+      40,
+      40,
+      40,
+      40,
+      40,
+      40,
+      40,
+      40,
+      40,
+      40,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "name": "feature",
+    "width": 1440,
+    "main": 1392,
+    "overflow": false,
+    "rows": [
+      40,
+      40,
+      40,
+      40,
+      40,
+      40,
+      40,
+      40,
+      40,
+      40
+    ]
+  },
+  {
+    "name": "feature",
+    "width": 1920,
+    "main": 1872,
+    "overflow": false,
+    "rows": [
+      40,
+      40,
+      40,
+      40,
+      40,
+      40,
+      40,
+      40,
+      40,
+      40
+    ]
+  },
+  {
+    "name": "feature",
+    "width": 360,
+    "main": 336,
+    "overflow": false,
+    "rows": [
+      40,
+      40,
+      40,
+      40,
+      40,
+      40,
+      40,
+      40,
+      40,
+      40
+    ]
+  },
+  {
+    "name": "about",
+    "width": 1440,
+    "main": 1392,
+    "overflow": false,
+    "rows": []
+  },
+  {
+    "name": "about",
+    "width": 1920,
+    "main": 1872,
+    "overflow": false,
+    "rows": []
+  },
+  {
+    "name": "about",
+    "width": 360,
+    "main": 336,
+    "overflow": false,
+    "rows": []
+  }
+]

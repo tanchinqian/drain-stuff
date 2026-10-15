@@ -61,7 +61,7 @@ Every response shape below has a JSON example in `contract-examples.v3.json`; `G
 
 `GET /rainfall/grid` is **not implemented or requested by this client**; the brief made it optional. The drawing uses zone samples instead.
 
-All list search, multi-select filters, sorting, selection, 25-row pagination, density and CSV are currently client-side. Column visibility is local preference. Return the complete authorized collection; do not silently server-paginate. A future pagination envelope needs a coordinated contract/client update. Timestamp filtering belongs to the server. Lists must not leak unauthorized assets.
+All list search, multi-select filters, sorting, 10/20/25-row pagination (10 by default), density and CSV are currently client-side. Tables have no row-selection checkboxes; CSV follows the filtered/sorted visible columns. Column visibility is local preference. Return the complete authorized collection; do not silently server-paginate. A future pagination envelope needs a coordinated contract/client update. Timestamp filtering belongs to the server. Lists must not leak unauthorized assets.
 
 ## Write endpoints and JSON requests
 
@@ -194,7 +194,7 @@ The physics engine's separate typed parameter register is [PHYSICS_PARAMETERS.md
 
 ## Mock persistence and migration
 
-Deterministic seed 2026, observation clock 12 Oct 2026 09:40 Singapore; older fault times spread at three-hour offsets. Rainfall history and seeded sensor times remain fixed. New user writes/audits use wall clock; next re-test is seven days after a new test. Mock zone rainfall scales a common ten-minute storm by zone peaks 52/68/34/18 relative to 63 mm/h. Pilot assignments, owners and trial outcomes are invented; OSM buildings supply context geometry only.
+Deterministic seed 2026 supplies values; newly generated observation dates, sensor times, rainfall and dataThrough anchor to app load time. The historical reference 12 Oct 2026 09:40 Singapore is a seed construction reference, not the current observation clock. Persisted writes and actual audit/check histories retain their saved timestamps. New user writes/audits use wall clock; next re-test is seven days after a new test. Client due status uses the earlier of the recorded due day and latest test plus seven days, compared as a Singapore calendar day. Mock zone rainfall scales a common ten-minute storm by zone peaks 52/68/34/18 relative to 63 mm/h. Pilot assignments, owners and trial outcomes are invented; OSM buildings supply context geometry only.
 
 Browser storage key `drain-trial-console-v1` holds schema version 2. Migration preserves tests, checks, allocations, trust and calibration while refreshing fixed map coordinates, filling missing checklist fields, normalizing fault IDs/rule IDs, adding histories and setting contract version 3.0.0. Old Batches with missing prompt snapshots are backfilled once using available current checks; these are not genuine historical check snapshots. New readings store their prompt snapshot at save time. Existing allocations without a mixing depth display “not recorded” until an operator records one. The static default S1 allocation includes 150 mm depth.
 

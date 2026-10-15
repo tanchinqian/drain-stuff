@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-15T11:50:09.276Z",
+  "generatedAt": "2026-10-15T13:09:41.716Z",
   "title": "Design System: Drain Trial Console",
   "extensions": {
     "colorMeta": {
@@ -123,7 +123,12 @@
       {
         "name": "drawer-edge",
         "value": "-12px 0 32px #2f2b261a",
-        "purpose": "Structural separation for the non-modal detail drawer only."
+        "purpose": "Structural separation for the non-modal detail drawer."
+      },
+      {
+        "name": "table-menu",
+        "value": "0 6px 16px #2f2b2614",
+        "purpose": "Separate open native table filter and Columns menus from records."
       }
     ],
     "motion": [],
@@ -222,9 +227,9 @@
     {
       "name": "Shared Record Table",
       "kind": "custom",
-      "description": "Scrollable records with search, filters, saved columns, selection, sorting, pagination, density and CSV.",
-      "html": "<div class=\"ds-table\"><label>Search records <input type=\"search\"></label><table><thead><tr><th>Sensor</th><th>Latest reading</th></tr></thead><tbody><tr><td>S1-INLET</td><td>0.07 cm</td></tr></tbody></table><button>Export CSV</button><p>Page 1 of 1</p></div>",
-      "css": ".ds-table {color:var(--ink,#2f2b26);font:400 14px/1.45 Archivo,sans-serif;max-height:600px;overflow:auto}.ds-table table {border-collapse:collapse;width:100%}.ds-table th {position:sticky;top:0;background:var(--well2,#e2dccb)}.ds-table th,.ds-table td {padding:12px;text-align:left;border-bottom:1px solid var(--border,#cfc7b4)}.ds-table input,.ds-table button {background:var(--panel,#f2eee4);color:var(--ink,#2f2b26);border:1px solid var(--border,#cfc7b4);padding:10px;border-radius:3px}.ds-table button:hover {background:var(--well2,#e2dccb)}.ds-table input:focus-visible,.ds-table button:focus-visible {outline:2px solid var(--ink,#2f2b26);outline-offset:3px}"
+      "description": "Compact searchable records with native mutually exclusive filter/Columns menus, 10/20/25 pagination, 40px or 32px rows, plain monospace IDs, no row selection and panel-contained horizontal scrolling.",
+      "html": "<div class=\"ds-table\"><label class=\"ds-search\">Search records <input type=\"search\"></label><table><thead><tr><th>Sensor</th><th>Latest reading</th></tr></thead><tbody><tr><td class=\"ds-id\">S1-INLET</td><td>0.07 cm</td></tr></tbody></table><button>Export CSV</button><p>10 rows · Page 1 of 1</p></div>",
+      "css": ".ds-table {color:var(--ink,#2f2b26);font:400 14px/1.45 Archivo,sans-serif;min-width:0;overflow-x:auto}.ds-table table {border-collapse:collapse;width:100%}.ds-table th {height:36px;background:var(--well2,#e2dccb)}.ds-table th,.ds-table td {padding:4px 10px;text-align:left;border-bottom:1px solid var(--border,#cfc7b4);white-space:nowrap}.ds-table td {height:40px}.ds-table .ds-id {font:13px ui-monospace,Consolas,monospace}.ds-table input,.ds-table button {background:var(--panel,#f2eee4);color:var(--ink,#2f2b26);border:1px solid var(--border,#cfc7b4);height:36px;padding:0 10px;border-radius:3px}.ds-table button:hover {background:var(--well2,#e2dccb)}.ds-table input:focus-visible,.ds-table button:focus-visible {outline:2px solid var(--ink,#2f2b26);outline-offset:3px}"
     },
     {
       "name": "Non-modal Detail Drawer",
@@ -236,7 +241,7 @@
   ],
   "narrative": {
     "northStar": "Map desk",
-    "overview": "Map desk is a compact operator console with warm paper surfaces, brown ink, mapped site views and geometric assembly schematics. Archivo keeps headings firm and records readable. Thin borders, tonal wells and dark selected controls make the next inspection action easy to find.\n\nNative controls, tabular numerals, explicit units and shape plus text states support practical inspection. The user-approved radar colours serve rainfall data and cyan serves physical water; the surrounding console retains cream and brown. Round 3 expands the work surface and unifies records within this confirmed identity. Decorative gradients and glow remain excluded.",
+    "overview": "Map desk is a compact operator console with warm paper surfaces, brown ink, mapped site views and geometric assembly schematics. Archivo keeps headings firm and records readable. Thin borders, tonal wells and dark selected controls make the next inspection action easy to find.\n\nNative controls, tabular numerals, explicit units and shape plus text states support practical inspection. The user-approved radar colours serve rainfall data and cyan serves physical water; the surrounding console retains cream and brown. Round 4 stabilises the uncapped work surface and compact record controls within this confirmed identity. Decorative gradients and glow remain excluded.",
     "keyCharacteristics": [
       "Warm cream ground, paper panels and brown ink.",
       "Compact Archivo hierarchy with tabular numerals.",
@@ -258,7 +263,7 @@
       },
       {
         "name": "The Flat Surface Rule",
-        "body": "Keep record surfaces flat with the existing paper tones and borders; reserve the implemented edge shadow for the detail drawer.",
+        "body": "Keep record surfaces flat with existing paper tones and borders; reserve edge shadows for drawers and open table menus.",
         "section": "elevation"
       }
     ],
