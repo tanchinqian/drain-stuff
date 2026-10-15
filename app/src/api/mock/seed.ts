@@ -196,7 +196,7 @@ export function generateMock(seed = 2026): Database {
     ...f,
     synthetic: true,
     openedAt: SEED_REFERENCE,
-    status: 'open',
+    status: f.id==='F-002'?'inspected':f.id==='F-003'?'closed':'open',
     ruleId:
       f.type === 'sensor_offline'
         ? 'sensor_trust'
@@ -398,7 +398,7 @@ export function generateMock(seed = 2026): Database {
     featureId: 'S3',
     partId: 'media',
     type: 'sensor_suspect',
-    severity: 2,
+    severity: 1,
     zone: 'C',
     openedAt: SEED_REFERENCE,
     status: 'open',

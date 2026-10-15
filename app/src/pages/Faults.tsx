@@ -7,11 +7,14 @@ import { displayName, timeLabel, faultOrder } from '../utils';
 import { useWrite } from '../hooks';
 import DataTable from '../components/DataTable';
 import Drawer from '../components/Drawer';
+import AssetList from '../components/AssetList';
+import RecordHistory from '../components/RecordHistory';
 import Chip from '../components/Chip';
 import { QueryState } from '../components/QueryState';
 import { drainParts, partName, partLink } from '../api/modelCatalog';
 export default function Faults() {
   const [params, setParams] = useSearchParams();
+  const [tab,setTab]=useState<'faults'|'rules'>('faults');
   const [asset, setAsset] = useState(params.get('asset') ?? ''),
     [selected, setSelected] = useState<Fault | null>(null),
     [rule, setRule] = useState<FaultRule | null>(null),
@@ -30,7 +33,7 @@ export default function Faults() {
   const save = useWrite(
     (input: { id: string; status: Fault['status'] }) =>
       api.faultStatus(input.id, { status: input.status, note, user }),
-    'Saved fault status to the fault register',
+    (input)=>`${input.id} moved to ${displayName(input.status)}${note?' · Note: '+note:''}`,
   );
   const create = useWrite(
     () => api.reportFault({ ...entry, note, user }),
@@ -62,23 +65,12 @@ export default function Faults() {
         </button>
       </div>
       <p>Faults appear when a rule fires on a reading or an operator reports a problem.</p>
-      <div className="master-detail">
-        <aside className="master-list" aria-label="Fault assets">
-          <button aria-pressed={!asset} onClick={() => setAsset('')}>
-            All assets
-          </button>
-          {Array.from(new Set(faults.data?.map((f) => f.featureId) ?? [])).map((id) => (
-            <button key={id} aria-pressed={asset === id} onClick={() => setAsset(id)}>
-              {id}
-              <small>
-                {faults.data?.filter((f) => f.featureId === id && f.status !== 'closed').length}{' '}
-                open
-              </small>
-            </button>
-          ))}
-        </aside>
+      <div className="segments register-tabs" role="tablist" aria-label="Fault registers">{(['faults','rules'] as const).map(t=><button role="tab" id={'tab-'+t} aria-controls={'register-'+t} aria-selected={tab===t} key={t} onClick={()=>setTab(t)}>{displayName(t)}</button>)}</div>
+      {params.get('rule')&&<button onClick={()=>setParams({})}>Show all faults</button>}
+      <div className={'master-detail fault-workspace '+(tab==='rules'?'rules-only':'')}>
+        {tab==='faults'&&<AssetList label="Fault assets" value={asset} onChange={setAsset} items={Array.from(new Set(faults.data?.map(f=>f.featureId)??[])).map(id=>({id,detail:(faults.data?.filter(f=>f.featureId===id&&f.status!=='closed').length??0)+' open'}))}/>}
         <div className="master-content stack">
-          <section className="panel">
+          <section className="panel" id="register-faults" role="tabpanel" aria-labelledby="tab-faults" hidden={tab!=='faults'}>
             <DataTable
               id="faults"
               rows={rows}
@@ -112,7 +104,7 @@ export default function Faults() {
                   key: 'status',
                   label: 'Status',
                   value: (f) => f.status,
-                  render: (f) => <Chip value={f.status} />,
+                  render:(f)=><select className="status-select" aria-label={'Status for '+f.id} value={f.status} disabled={save.isPending} onChange={e=>save.mutate({id:f.id,status:e.target.value as Fault['status']})}>{['open','inspected','closed'].map(v=><option key={v} value={v}>{displayName(v)}</option>)}</select>,
                 },
                 {
                   key: 'rule',
@@ -121,6 +113,7 @@ export default function Faults() {
                     rules.data?.find((r) => r.id === f.ruleId)?.label ?? 'Manual report',
                   render: (f) => (
                     <button
+                      className="text-link"
                       title={f.ruleId}
                       disabled={f.ruleId === 'MANUAL'}
                       onClick={() => selectRule(f.ruleId)}
@@ -130,28 +123,10 @@ export default function Faults() {
                   ),
                 },
               ]}
-              actions={(f) => (
-                <label className="field">
-                  Update status
-                  <select
-                    aria-label={'Status for ' + f.id}
-                    value={f.status}
-                    disabled={save.isPending}
-                    onChange={(e) =>
-                      save.mutate({ id: f.id, status: e.target.value as Fault['status'] })
-                    }
-                  >
-                    {['open', 'inspected', 'closed'].map((v) => (
-                      <option key={v} value={v}>
-                        {displayName(v)}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              )}
+
             />
           </section>
-          <section className="panel">
+          <section className="panel" id="register-rules" role="tabpanel" aria-labelledby="tab-rules" hidden={tab!=='rules'}>
             <h2>Fault rules and diagnosing inputs</h2>
             {params.get('rule') && <button onClick={() => setParams({})}>Show all faults</button>}
             <DataTable
@@ -220,18 +195,7 @@ export default function Faults() {
               </button>
             ))}
           </div>
-          <h3>Audit trail</h3>
-          <DataTable
-            id="fault-history"
-            rows={active.history ?? []}
-            rowId={(r) => r.id}
-            columns={[
-              { key: 'action', label: 'Change', value: (r) => r.action },
-              { key: 'user', label: 'Who', value: (r) => r.user },
-              { key: 'time', label: 'When', value: (r) => timeLabel(r.t) },
-              { key: 'note', label: 'Note', value: (r) => r.note ?? '' },
-            ]}
-          />
+          <RecordHistory entries={active.history??[]} title="Audit trail"/>
           <h3>Diagnosing inputs</h3>
           {active.sensorIds.map((id) => (
             <p key={id}>

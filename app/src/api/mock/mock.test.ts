@@ -12,7 +12,7 @@ describe('deterministic synthetic generator', () => {
     expect(a.zones.map((z) => z.peakMmPerHr)).toEqual([52, 68, 34, 18]);
     expect(a.zones.map((z) => z.housesHoldingWater6h)).toEqual([4, 2, 1, 0]);
     expect(Math.max(...a.rainfall.map((r) => r.mmPerHr))).toBe(63);
-    expect(a.faults.filter((f) => f.status === 'open')).toHaveLength(4);
+    expect(a.faults.filter((f) => f.status === 'open')).toHaveLength(2);
     expect(a.readings.I1.some((r) => r.metric === 'drain_down_h')).toBe(false);
     expect(
       a.readings.S1.filter((r) => r.metric === 'infiltration_mm_hr').map((r) => r.value),

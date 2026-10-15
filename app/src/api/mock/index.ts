@@ -348,7 +348,7 @@ export async function mockRequest(path: string, method = 'GET', body?: unknown):
     fault.status = input.status as Fault['status'];
     (fault.history ??= []).push(
       audit(
-        `${previous[0].toUpperCase() + previous.slice(1)} → ${fault.status[0].toUpperCase() + fault.status.slice(1)}`,
+        `${fault.id} moved to ${fault.status[0].toUpperCase() + fault.status.slice(1)} (from ${previous})`,
         typeof input.note === 'string' ? input.note : undefined,
         input.user,
       ),
