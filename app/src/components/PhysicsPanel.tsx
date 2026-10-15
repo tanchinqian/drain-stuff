@@ -1,9 +1,9 @@
+import DataTable from './DataTable';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { TrialDetail } from '../api/types';
 import {
   conductivityNotice,
-  modelNotice,
   validateConfig,
   scenarios,
   type ParameterKey,
@@ -26,13 +26,11 @@ export default function PhysicsPanel({ ownerId, trial }: { ownerId: string; tria
     runs = useSimulation((s) => s.runs),
     second = useSimulation((s) => s.second);
   const [rainEditor, setRainEditor] = useState(false),
-    [search, setSearch] = useState(''),
     [error, setError] = useState(''),
     [drawn, setDrawn] = useState('0, 0\n10, 30\n20, 63\n30, 20');
   const state = useSimulation.getState();
   if (!config || !base) return null;
   const v = base.values,
-    current = config.values,
     latest = trial ? testMean(trial.tests, 'retest') : undefined;
   const points = (run?.frames ?? []).filter(
     (f, i, all) => i === 0 || f.second % 60 < 0.001 || i === all.length - 1,
@@ -80,7 +78,7 @@ export default function PhysicsPanel({ ownerId, trial }: { ownerId: string; tria
         <div className="panel-heading">
           <div>
             <h2>Storm settings · {ownerId}</h2>
-            <p className="sub">{modelNotice}</p>
+            <p className="sub">Adjust rainfall and drainage settings for the current storm.</p>
           </div>
           <button disabled={!run} onClick={save}>
             Export run CSV
@@ -98,7 +96,7 @@ export default function PhysicsPanel({ ownerId, trial }: { ownerId: string; tria
               value={v.peak.value * 3.6e6}
               onChange={(e) => state.weather('peak', Number(e.target.value) / 3.6e6)}
             />
-            <small>placeholder · shared storm</small>
+            <small>Shared storm</small>
           </label>
           <label className="field">
             Duration · {v.duration.value / 60} min
@@ -111,7 +109,7 @@ export default function PhysicsPanel({ ownerId, trial }: { ownerId: string; tria
               value={v.duration.value / 60}
               onChange={(e) => state.weather('duration', Number(e.target.value) * 60)}
             />
-            <small>placeholder · shared storm</small>
+            <small>Shared storm</small>
           </label>
           <label className="field">
             Rain pattern
@@ -157,7 +155,7 @@ export default function PhysicsPanel({ ownerId, trial }: { ownerId: string; tria
                 state.weather('tailwater', Number(e.target.value));
               }}
             />
-            <small>placeholder · relative to outfall invert</small>
+            <small>Relative to outfall invert</small>
           </label>
           <label className="field">
             Conductivity · {ownerId} · mm/h
@@ -170,9 +168,7 @@ export default function PhysicsPanel({ ownerId, trial }: { ownerId: string; tria
               value={Number((v.ks.value * 3.6e6).toFixed(4))}
               onChange={(e) => update('ks', Number(e.target.value) / 3.6e6)}
             />
-            <small>
-              {v.ks.source} · n = {base.sampleCount}
-            </small>
+            <small>n = {base.sampleCount}</small>
           </label>
         </div>
         <p>{conductivityNotice}. Compost allocation does not change conductivity.</p>
@@ -182,7 +178,7 @@ export default function PhysicsPanel({ ownerId, trial }: { ownerId: string; tria
               state.parameter(ownerId, 'ks', latest.value / 3.6e6, 'trial-record', latest.n)
             }
           >
-            Load seeded trial re-test: {latest.value.toFixed(1)} mm/h · n = {latest.n}
+            Load trial re-test: {latest.value.toFixed(1)} mm/h · n = {latest.n}
           </button>
         )}
         <p className="small">
@@ -351,36 +347,31 @@ export default function PhysicsPanel({ ownerId, trial }: { ownerId: string; tria
           </p>
           <details>
             <summary>View as table · current model outputs</summary>
-            <div className="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Quantity</th>
-                    <th>Value</th>
-                    <th>Unit</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {[
-                    ...Object.entries(frame.cell).map(([k, val]) => [
-                      k,
-                      val,
-                      k === 'clog' ? 'fraction' : 'm³',
-                    ]),
-                    ...Object.entries(frame.flux).map(([k, val]) => [k, val, 'm³/s']),
-                    ['moisture', frame.moisture, 'm³/m³'],
-                    ['ponding', frame.ponding, 'm'],
-                    ['step', frame.dt, 's'],
-                  ].map(([k, val, unit]) => (
-                    <tr key={String(k)}>
-                      <th>{k}</th>
-                      <td>{Number(val).toPrecision(6)}</td>
-                      <td>{unit}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <DataTable
+              id={'model-outputs-' + ownerId}
+              rows={[
+                ...Object.entries(frame.cell).map(([name, value]) => ({
+                  name,
+                  value,
+                  unit: name === 'clog' ? 'fraction' : 'm³',
+                })),
+                ...Object.entries(frame.flux).map(([name, value]) => ({
+                  name: name + ' flow',
+                  value: value * 60000,
+                  unit: 'L/min',
+                })),
+              ]}
+              rowId={(r) => r.name}
+              columns={[
+                {
+                  key: 'name',
+                  label: 'Quantity',
+                  value: (r) => r.name.replace(/^./, (c) => c.toUpperCase()),
+                },
+                { key: 'value', label: 'Value', value: (r) => Number(r.value.toFixed(3)) },
+                { key: 'unit', label: 'Unit', value: (r) => r.unit },
+              ]}
+            />
           </details>
         </section>
       )}
@@ -405,8 +396,8 @@ export default function PhysicsPanel({ ownerId, trial }: { ownerId: string; tria
                   </h3>
                   {r && <PhysicsSection config={r.config} frame={f} />}
                   <p>
-                    {((r?.config.values.ks.value ?? 0) * 3.6e6).toFixed(1)} mm/h ·{' '}
-                    {r?.config.values.ks.source ?? 'calculating'} · n = {r?.config.sampleCount ?? 0}
+                    {((r?.config.values.ks.value ?? 0) * 3.6e6).toFixed(1)} mm/h · n ={' '}
+                    {r?.config.sampleCount ?? 0}
                   </p>
                   <p>
                     Ponding {((f?.ponding ?? 0) * 1000).toFixed(1)} mm · outlet{' '}
@@ -418,76 +409,6 @@ export default function PhysicsPanel({ ownerId, trial }: { ownerId: string; tria
           </div>
         </section>
       )}
-      <details className="panel">
-        <summary>How this is calculated · parameters and sources</summary>
-        <p>
-          Explicit donor-limited transfers, at most 10 s; reduced further for routing stability.
-          Stage volume L(bh+zh²); infiltration Ks(1−clog)(1+(h+ψ)/L); K(θ)=Ks exp(−HCO(φ−θ)); drain
-          Q=C(h−offset)ⁿ; weir Q=Cw L h^1.5; pipe Q=A R^(2/3) √S/n. Rain uses normalized alternating
-          blocks, not a station design event. Enter MSMA 2nd edition coefficients for the chosen
-          station.
-        </p>
-        <input
-          type="search"
-          aria-label="Search model parameters"
-          placeholder="Search parameters, units or equations…"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-        <p className="small">
-          Edit a value, then leave the field to recalculate. SI units below. Scenario overrides
-          appear in the effective-value column. Geometry uses these same dimensions. Layer
-          thicknesses require local confirmation.
-        </p>
-        <div className="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Parameter</th>
-                <th>Entered value</th>
-                <th>Effective value</th>
-                <th>Unit</th>
-                <th>Source</th>
-                <th>Equation</th>
-              </tr>
-            </thead>
-            <tbody>
-              {Object.entries(v)
-                .slice(0, Object.keys(v).indexOf('compostDx'))
-                .filter(([k, p]) =>
-                  [k, p.unit, p.equation].join(' ').toLowerCase().includes(search.toLowerCase()),
-                )
-                .map(([key, p]) => (
-                  <tr key={key}>
-                    <th>{key}</th>
-                    <td>
-                      {['peak', 'duration', 'tailwater'].includes(key) ? (
-                        p.value
-                      ) : (
-                        <input
-                          key={`${ownerId}-${p.value}`}
-                          aria-label={`Parameter ${key}`}
-                          type="number"
-                          min="0"
-                          step="any"
-                          defaultValue={p.value}
-                          onBlur={(e) => {
-                            const n = Number(e.target.value);
-                            if (n !== p.value) update(key as ParameterKey, n);
-                          }}
-                        />
-                      )}
-                    </td>
-                    <td>{current[key as ParameterKey].value}</td>
-                    <td>{p.unit}</td>
-                    <td>{p.source}</td>
-                    <td>{p.equation}</td>
-                  </tr>
-                ))}
-            </tbody>
-          </table>
-        </div>
-      </details>
     </div>
   );
 }

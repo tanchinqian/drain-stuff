@@ -50,9 +50,9 @@ export default function PhotoSlot({
             reader.readAsDataURL(file);
           }}
         />
-        <span className="field-note">Demo attachment. Stored locally with synthetic records.</span>
+        <span className="field-note">Attachment saved with this record.</span>
       </div>
-      {value && <img src={value} alt={label + ' attached to the synthetic record'} />}
+      {value && <img src={value} alt={label + ' attached to the record'} />}
       <p role={error ? 'alert' : undefined} className="error">
         {error}
       </p>

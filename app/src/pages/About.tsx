@@ -1,159 +1,59 @@
 import { useQuery } from '@tanstack/react-query';
-import { useOutletContext } from 'react-router-dom';
 import { api, isMock, showDataNotice } from '../api/client';
 import { QueryState } from '../components/QueryState';
 export default function About() {
-  const config = useQuery({ queryKey: ['config'], queryFn: api.config }),
-    context = useOutletContext<{ demo: boolean } | undefined>();
+  const config = useQuery({ queryKey: ['config'], queryFn: api.config });
   return (
     <QueryState loading={config.isPending} error={config.error}>
       <div className="page-heading">
-        <div>
-          <h1>What this pilot can tell us</h1>
-          <p className="sub">Data and limits</p>
-        </div>
+        <h1>Data and limits</h1>
       </div>
       <section className="panel limits-copy">
-        <h2>Feature scale, small sample</h2>
-        <p style={{ marginTop: 12 }}>
-          This console tracks a controlled comparison of local soil treatments, ponding and drain
-          upkeep. The control, decompaction and decompaction + compost arms are measured at the same
-          marked points.
-        </p>
-        <div className="notice">
-          Pilot, small sample, not proof. No treatment verdict is inferred from these synthetic
-          readings.
-        </div>
-        <h2>Limits of the claim</h2>
-        <ul>
-          <li>
-            Measured at feature scale only. The console does not establish effects on river
-            overflow, pond capacity or cross-boundary runoff.
-          </li>
-          <li>
-            The team’s project brief reports: Malaysian compost-in-swale trials not found in its
-            evidence pack. Verify that evidence gap before presenting the search as exhaustive.
-          </li>
-          <li>Foreign evidence, mostly from temperate US settings, is not Malaysian proof.</li>
-          <li>The effect can fade, so re-tests are scheduled.</li>
-          <li>
-            Soil type changes the effect and compost may have negative effects in some soils. That
-            is why the control arm exists.
-          </li>
-          <li>
-            All thresholds labelled as placeholders require practitioner confirmation. Mature
-            compost and a baseline are required before allocation.
-          </li>
-        </ul>
-        <h2>Schematic and sensor limits</h2>
+        <h2>What the pilot can tell us</h2>
         <p>
-          The optional S1 storm preview is an illustrative storage simulation, independent of sensor
-          readings. Its exaggerated water depth is not a flood forecast. Highlighted parts identify
-          recorded faults or suspect inputs; a highlight does not establish a cause. Draft repair
-          steps require the local authority's procedure and a trained operator. Field re-tests
-          remain manual.
+          This pilot compares untreated soil, loosened soil and soil loosened with compost at the
+          same marked spots. Repeat field tests establish the measured differences. A small pilot
+          cannot establish a flood-reduction percentage or prove that compost works in every soil.
+        </p>
+        <h2>Model limits</h2>
+        <p>
+          The shared storm clock runs a reduced-order storage and drainage model. Entered
+          conductivity and test records control infiltration. The recorded compost dose does not
+          change conductivity automatically. The model needs local calibration and is not a forecast
+          or an engineering design.
         </p>
         <p>
-          The household map uses OpenStreetMap footprints and roads for a Gamelan / Rodat window in
-          Bandar Bukit Raja Phase 1. It is not the complete phase boundary. Heights, roofs, pilot
-          assignments and drainage placements are illustrative. Rainfall clouds interpolate
-          synthetic readings; they are not live radar or a forecast.
+          Inlet, forebay and sock share a modelled path level. Soil shading represents equivalent
+          wet depth from stored moisture. Pipe fill is estimated from local head. Reverse river
+          flow, sediment transport, mulch loss and biological fault causes are not fully solved. The
+          compost model view presents the batch record and its checks.
+        </p>
+        <h2>Field checks matter</h2>
+        <p>
+          Check indirect sensors against a reference measurement. Human squeeze, smell, intake and
+          maturity checks remain necessary. Offline readings stay unavailable. Thresholds and layer
+          dimensions require practitioner confirmation against MSMA and the local authority before
+          field use.
         </p>
         <p>
-          {config.data?.schematic.label}. Layer-depth defaults are illustrative and informed by
-          foreign guidance, including temperate-climate examples. They are not verified Malaysian
-          standard dimensions.
+          Soil and compost moisture probes measure relative wetness. These readings do not establish
+          nutrient safety, compost maturity, gas concentration or odour. Oxygen and ammonia probes
+          are excluded; human smell checks remain.
         </p>
-        <ul>
-          <li>
-            Soil moisture and temperature provide an indirect infiltration proxy. The manual
-            fixed-point test is the trial outcome.
-          </li>
-          <li>
-            Level sensors can drift and need recalibration. A suspect sensor can cause an alert.
-          </li>
-          <li>
-            Cheap capacitive compost moisture sensors read relatively, not absolutely; calibrate
-            against the human squeeze test.
-          </li>
-          <li>The model is a schematic, not a design drawing.</li>
-        </ul>
-        <h3>Reference guidance</h3>
-        <ul>
-          <li>
-            <a
-              href="https://www.melbournewater.com.au/building-and-works/developer-guides-and-resources/standards-and-specifications/biofiltration"
-              target="_blank"
-              rel="noreferrer"
-            >
-              Melbourne Water biofiltration guidance
-            </a>{' '}
-            - Australian context.
-          </li>
-          <li>
-            <a
-              href="https://www.epa.gov/sites/default/files/2016-11/documents/final_gi_maintenance_508.pdf"
-              target="_blank"
-              rel="noreferrer"
-            >
-              US EPA green-infrastructure inspection guidance
-            </a>{' '}
-            - Foreign inspection prompts, including prolonged ponding.
-          </li>
-          <li>
-            <a
-              href="https://redac.eng.usm.my/index.php/sustainability-redac/bioecods-information/introduction"
-              target="_blank"
-              rel="noreferrer"
-            >
-              USM BIOECODS description
-            </a>{' '}
-            - Malaysian drainage-system context; not evidence of this compost trial.
-          </li>
-        </ul>
-        <h3>Sensors excluded from this pilot</h3>
-        <ul>
-          <li>
-            Oxygen probe: excluded by the project brief because moisture can damage the proposed
-            probe.
-          </li>
-          <li>
-            Ammonia gas sensor: excluded because the team has not established usable low-cost
-            evidence. Human smell records are retained.
-          </li>
-        </ul>
-        <h2>Data and limits</h2>
+        <h2>Data</h2>
         {showDataNotice() && (
           <p className="small">
             {isMock
-              ? 'This environment uses generated local records stored in this browser.'
-              : 'This environment reads records from the configured API.'}
+              ? 'This environment uses generated local records, deterministic rainfall and browser-local saved changes.'
+              : 'This environment reads and saves records through the configured API.'}
           </p>
         )}
         <p>
-          The storm model calculates a scenario from entered settings; it does not establish a
-          measured effect of compost. Parameters need local calibration. A small pilot cannot
-          establish a flood-reduction percentage or resolve river overflow.
+          Map footprints use credited OpenStreetMap geometry. Household assignments, heights and
+          drain locations require a site survey. Record the same marked points, a baseline, the
+          batch and labelled dose, the responsible person and follow-up checks.
         </p>
       </section>
-      {context?.demo && (
-        <section className="panel limits-copy" style={{ marginTop: 18 }}>
-          <h2>Questions for the team · demo only</h2>
-          <h3 style={{ marginTop: 15 }}>Mentor questions</h3>
-          <ul>
-            <li>Which swale or bioretention assets does the township operator still maintain?</li>
-            <li>Where do landscape trimmings currently go?</li>
-            <li>Which precinct could host a controlled pilot?</li>
-            <li>Are infiltration and ponding already tracked?</li>
-          </ul>
-          <h3>Practitioner questions</h3>
-          <ul>
-            <li>Which maturity tests should be used?</li>
-            <li>Which temperature, moisture and dose thresholds fit tropical conditions?</li>
-            <li>Who owns each feature after handover?</li>
-          </ul>
-        </section>
-      )}
     </QueryState>
   );
 }

@@ -1,20 +1,31 @@
-import { useId } from 'react';
+import { useId, useRef, useEffect } from 'react';
 import { glossary } from '../glossary';
-export default function Term({ text }: { text: string }) {
+export default function Term({ text, helpOnly = false }: { text: string; helpOnly?: boolean }) {
   const id = useId(),
+    popover = useRef<HTMLSpanElement>(null),
     key = Object.keys(glossary).find((k) => k.toLowerCase() === text.toLowerCase());
+  useEffect(() => {
+    popover.current?.setAttribute('popover', 'auto');
+  }, [key]);
   return (
     <span className="term">
-      {text}
+      {!helpOnly && text}
       {key && (
-        <details className="term-help">
-          <summary aria-label={'Explain ' + text} aria-controls={id}>
+        <>
+          <button
+            className="term-trigger"
+            type="button"
+            aria-label={'Explain ' + text}
+            onClick={() => popover.current?.togglePopover()}
+          >
             ?
-          </summary>
-          <span id={id} role="note">
+          </button>
+          <span ref={popover} id={id} role="note" className="glossary-popover">
+            <strong>{text}</strong>
+            <br />
             {glossary[key]}
           </span>
-        </details>
+        </>
       )}
     </span>
   );

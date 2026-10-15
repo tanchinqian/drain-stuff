@@ -312,6 +312,7 @@ export function generateMock(seed = 2026): Database {
         batchId: f.id === 'S1' ? 'B-03' : undefined,
         appliedAt: f.id === 'S1' ? '2026-08-17' : undefined,
         appliedBy: f.id === 'S1' ? 'Trial crew' : undefined,
+        amendedDepthM: f.id === 'S1' ? 0.15 : undefined,
         tests,
         guardrails: {
           nutrientExport: 'not_tested',

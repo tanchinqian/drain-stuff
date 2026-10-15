@@ -8,7 +8,7 @@ import type {
   TestInput,
   TrialDetail,
 } from '../types';
-import { DEMO_NOW, type Database } from './seed';
+import { type Database } from './seed';
 import { maturityReason } from './rules';
 const finite = (v: unknown, max = 1000) => {
   if (typeof v !== 'number' || !Number.isFinite(v) || v < 0 || v > max)
@@ -16,6 +16,7 @@ const finite = (v: unknown, max = 1000) => {
   return v;
 };
 export function recordTrialTest(db: Database, trial: TrialDetail, input: TestInput) {
+  const recordedAt = new Date().toISOString();
   finite(input.value);
   if (
     !['baseline', 'retest'].includes(input.phase) ||
@@ -46,7 +47,7 @@ export function recordTrialTest(db: Database, trial: TrialDetail, input: TestInp
     input.metric === 'infiltration_mm_hr' ? 'mm/h' : input.metric === 'drain_down_h' ? 'h' : 'mm';
   const test = {
     synthetic: true as const,
-    t: DEMO_NOW,
+    t: recordedAt,
     phase: input.phase,
     metric: input.metric,
     value: input.value,
@@ -56,7 +57,7 @@ export function recordTrialTest(db: Database, trial: TrialDetail, input: TestInp
   };
   const existing = trial.tests.findIndex(
     (t) =>
-      t.t === DEMO_NOW &&
+      (input.phase === 'baseline' || t.t === recordedAt) &&
       t.pointId === input.pointId &&
       t.phase === input.phase &&
       t.metric === input.metric,
@@ -74,14 +75,14 @@ export function recordTrialTest(db: Database, trial: TrialDetail, input: TestInp
   trial.n = trial.baselineDone
     ? trial.tests.filter((t) => t.phase === 'baseline').reduce((n, t) => n + t.n, 0)
     : 0;
-  trial.nextRetestDue = '2026-10-19';
+  trial.nextRetestDue = new Date(Date.parse(recordedAt) + 7 * 86400000).toISOString().slice(0, 10);
   const current = trial.tests.filter(
-    (t) => t.t === DEMO_NOW && t.phase === input.phase && t.metric === input.metric,
+    (t) => t.t === recordedAt && t.phase === input.phase && t.metric === input.metric,
   );
   const value = current.reduce((sum, t) => sum + t.value, 0) / current.length;
   const reading: Reading = {
     synthetic: true,
-    t: DEMO_NOW,
+    t: recordedAt,
     metric: input.metric,
     value,
     unit,
@@ -95,7 +96,7 @@ export function recordTrialTest(db: Database, trial: TrialDetail, input: TestInp
     n: current.reduce((sum, t) => sum + t.n, 0),
   };
   const series = db.readings[trial.featureId] || [];
-  const at = series.findIndex((r) => r.t === DEMO_NOW && r.metric === input.metric);
+  const at = series.findIndex((r) => r.t === recordedAt && r.metric === input.metric);
   if (at >= 0) series[at] = reading;
   else series.push(reading);
   db.readings[trial.featureId] = series;
@@ -143,12 +144,16 @@ export function allocateBatch(db: Database, batch: BatchDetail, input: Allocatio
     throw new Error('Confirm no contact with an open drain before allocation.');
   if (typeof input.appliedBy !== 'string' || !input.appliedBy.trim())
     throw new Error('Record who applied the batch.');
+  if (input.amendedDepthM !== undefined) {
+    finite(input.amendedDepthM, 1);
+    if (input.amendedDepthM <= 0) throw new Error('Record a positive mixing depth.');
+  }
   trial.doseLabel = input.doseLabel;
   trial.doseCapOk = true;
   trial.batchId = batch.id;
-  trial.appliedAt = DEMO_NOW;
+  trial.appliedAt = new Date().toISOString();
   trial.appliedBy = input.appliedBy;
-  trial.amendedDepthM = input.lPerM2 / 1000;
+  if (input.amendedDepthM !== undefined) trial.amendedDepthM = input.amendedDepthM;
   (trial.history ??= []).push({
     id: crypto.randomUUID(),
     t: new Date().toISOString(),

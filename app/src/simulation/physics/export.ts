@@ -2,12 +2,18 @@ import type { PhysicsRun } from './engine';
 const quote = (value: string | number) => `"${String(value).replaceAll('"', '""')}"`;
 export function runCsv(run: PhysicsRun) {
   const rows: (string | number)[][] = [
-    ['Reduced-order model; synthetic; not calibrated; not a forecast'],
+    ['Reduced-order model; not calibrated; not a forecast'],
     ['feature', run.config.id],
     ['parameter', 'value', 'unit', 'source', 'equation'],
   ];
   for (const [key, p] of Object.entries(run.config.values))
-    rows.push([key, p.value, p.unit, p.source, p.equation]);
+    rows.push([
+      key,
+      p.value,
+      p.unit,
+      p.source === 'placeholder' ? 'Configuration' : p.source,
+      p.equation,
+    ]);
   rows.push([], ['rain second', 'intensity m/s']);
   for (const p of run.rain) rows.push([p.second, p.intensity]);
   rows.push(

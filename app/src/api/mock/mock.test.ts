@@ -1,9 +1,9 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { generateMock, config } from './seed';
 import { mockRequest, resetMock } from './index';
 import { evaluateRules, maturityReason } from './rules';
 import { statusShape } from '../../components/Status';
-import type { BatchDetail, TrialDetail } from '../types';
+import type { BatchDetail, TrialDetail, FaultRule, Fault } from '../types';
 describe('deterministic synthetic generator', () => {
   it('repeats the seed and matches the agreed storm and zone values', () => {
     const a = generateMock();
@@ -67,7 +67,7 @@ describe('allocation and measurement guardrails', () => {
       await mockRequest('/trials/T1/tests', 'POST', { ...test, pointId });
     expect(((await mockRequest('/trials/T1')) as TrialDetail).baselineDone).toBe(true);
   });
-  it('does not inflate n on a corrected same-point reading', async () => {
+  it('adds dated re-tests without changing the baseline sample count', async () => {
     const input = {
       phase: 'retest',
       metric: 'infiltration_mm_hr',
@@ -75,11 +75,15 @@ describe('allocation and measurement guardrails', () => {
       n: 2,
       pointId: 'S1-P1',
     };
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-10-15T10:00:00Z'));
     await mockRequest('/trials/S1/tests', 'POST', input);
+    vi.setSystemTime(new Date('2026-10-15T10:01:00Z'));
     await mockRequest('/trials/S1/tests', 'POST', { ...input, value: 26 });
+    vi.useRealTimers();
     const trial = (await mockRequest('/trials/S1')) as TrialDetail;
     expect(trial.tests.filter((t) => t.pointId === 'S1-P1' && t.phase === 'retest')).toHaveLength(
-      8,
+      10,
     );
     expect(trial.n).toBe(6);
   });
@@ -114,4 +118,16 @@ describe('human prompt rules', () => {
       }).some((r) => r.action === 'Turn pile'),
     ).toBe(false);
   });
+});
+
+it('keeps unresolved carry-over faults in a date window and exposes the ponding threshold', async () => {
+  resetMock();
+  const rules = (await mockRequest('/fault-rules')) as FaultRule[];
+  expect(rules.find((r) => r.id === 'RULE-PERSISTENT-PONDING-001')?.thresholdKeys).toContain(
+    'inspection.standingWaterH',
+  );
+  const path = '/faults?from=2026-10-15T00:00:00.000Z&to=2026-10-15T23:59:59.999Z';
+  expect(((await mockRequest(path)) as Fault[]).some((f) => f.id === 'F-001')).toBe(true);
+  await mockRequest('/faults/F-001/status', 'POST', { status: 'closed', user: 'Operator' });
+  expect(((await mockRequest(path)) as Fault[]).some((f) => f.id === 'F-001')).toBe(false);
 });

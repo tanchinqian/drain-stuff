@@ -1,4 +1,3 @@
-import { DEMO_NOW } from './api/mock/seed';
 import type { Arm, TestResult } from './api/types';
 export const armName: Record<Arm, string> = {
   control: 'Untreated (control)',
@@ -15,7 +14,9 @@ export const dateOnly = (t: string) =>
   new Intl.DateTimeFormat('en-MY', { dateStyle: 'medium', timeZone: 'Asia/Singapore' }).format(
     new Date(t),
   );
-export const overdue = (t: string) => t.slice(0, 10) < DEMO_NOW.slice(0, 10);
+export const overdue = (t: string) =>
+  t.slice(0, 10) <
+  new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Singapore' }).format(new Date());
 export function testMean(tests: TestResult[], phase: 'baseline' | 'retest') {
   const rows = tests.filter((t) => t.phase === phase && t.metric === 'infiltration_mm_hr');
   const latest = rows.at(-1)?.t;
@@ -77,7 +78,13 @@ export function timeLabel(t: string) {
     dateTime(t)
   );
 }
+const faultImpact = (type: string) =>
+  type.startsWith('sensor_')
+    ? 2
+    : ['standing_water', 'mulch_loss', 'sparse_planting'].includes(type)
+      ? 1
+      : 0;
 export const faultOrder = (a: import('./api/types').Fault, b: import('./api/types').Fault) =>
   b.severity - a.severity ||
-  Number(a.type.startsWith('sensor_')) - Number(b.type.startsWith('sensor_')) ||
+  faultImpact(a.type) - faultImpact(b.type) ||
   Date.parse(a.openedAt) - Date.parse(b.openedAt);

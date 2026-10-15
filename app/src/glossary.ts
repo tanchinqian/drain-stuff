@@ -1,4 +1,8 @@
 export const glossary: Record<string, string> = {
+  cm: 'Centimetres; one centimetre equals ten millimetres.',
+  h: 'Hours.',
+  'L/m²': 'Litres of compost applied per square metre of soil surface.',
+  kg: 'Kilograms of material.',
   'infiltration rate':
     'Millimetres of water depth that soak into the soil in one hour, like the height of a water layer disappearing per hour.',
   'mm/h':

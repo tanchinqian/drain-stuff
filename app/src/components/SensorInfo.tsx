@@ -1,7 +1,6 @@
-import type { ModelSensor } from '../simulation/physics/view';
 import { Link } from 'react-router-dom';
 import type { Sensor } from '../api/types';
-import { dateTime } from '../utils';
+import { dateTime, displayName } from '../utils';
 export function SensorTrust({ sensor }: { sensor: Sensor }) {
   return (
     <span className="status">
@@ -19,7 +18,7 @@ export function SensorValue({ sensor }: { sensor: Sensor }) {
     <>
       {sensor.status === 'offline'
         ? 'Unavailable — offline'
-        : (sensor.lastText ??
+        : (sensor.lastText?.split(' / ').map(displayName).join(' / ') ??
           (sensor.lastValue === null
             ? 'Not measured'
             : `${Math.round(sensor.lastValue * 100) / 100} ${sensor.unit}`))}
@@ -49,10 +48,7 @@ export default function SensorInfo({
           <strong>
             <SensorValue sensor={sensor} />
           </strong>{' '}
-          / {sensor.role} / {sensor.status}
-        </p>
-        <p className="small reading-source">
-          {(sensor as ModelSensor).modelSource ?? 'Seeded record / human input'}
+          / {displayName(sensor.role)} / {displayName(sensor.status)}
         </p>
         <details>
           <summary>Details</summary>
@@ -73,8 +69,7 @@ export default function SensorInfo({
       </p>
       <SensorTrust sensor={sensor} />
       <p className="small">
-        {(sensor as ModelSensor).modelSource ?? 'Seeded record / human input'} /{' '}
-        {dateTime(sensor.lastAt)} · Synthetic · {sensor.unit}
+        {dateTime(sensor.lastAt)} · {sensor.unit}
       </p>
       <p>
         <strong>{sensor.role === 'proxy' ? 'Proxy' : 'Reference'}</strong> · {sensor.proxyFor}

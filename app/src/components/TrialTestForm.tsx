@@ -11,7 +11,7 @@ export default function TrialTestForm({ trial }: { trial: TrialDetail }) {
   const [metric, setMetric] = useState<Metric>('infiltration_mm_hr'),
     [point, setPoint] = useState(trial.featureId + '-P1'),
     [value, setValue] = useState('13'),
-    [texture, setTexture] = useState(trial.soilTexture.replace(/ · synthetic/gi, '')),
+    [texture, setTexture] = useState(trial.soilTexture.split(' · ')[0]),
     [repeats, setRepeats] = useState(trial.repeatsPerPoint);
   const write = useWrite(
     () =>

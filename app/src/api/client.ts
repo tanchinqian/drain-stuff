@@ -1,6 +1,7 @@
 import { mockRequest } from './mock';
 import type {
   Sensor,
+  SensorReading,
   Part,
   FaultRule,
   AllocationInput,
@@ -29,9 +30,12 @@ export let isMock = !base || import.meta.env.VITE_DATA_SOURCE === 'mock';
 let selected: Promise<void> | undefined;
 async function selectSource() {
   if (isMock) return;
-  selected ??= fetch(base + '/config', { signal: AbortSignal.timeout(2500) })
+  selected ??= fetch(base + '/config', {
+    signal: AbortSignal.timeout(2500),
+    credentials: 'include',
+  })
     .then((response) => {
-      if (!response.ok) throw new Error('Connection unavailable');
+      if (response.status >= 500) throw new Error('Connection unavailable');
     })
     .catch(() => {
       isMock = true;
@@ -48,13 +52,20 @@ async function request<T>(path: string, body?: unknown): Promise<T> {
   await selectSource();
   if (isMock) return (await mockRequest(path, body === undefined ? 'GET' : 'POST', body)) as T;
   const response = await fetch(base + path, {
+    credentials: 'include',
     method: body === undefined ? 'GET' : 'POST',
     headers: body === undefined ? undefined : { 'Content-Type': 'application/json' },
     body: body === undefined ? undefined : JSON.stringify(body),
     signal: AbortSignal.timeout(15000),
   });
-  if (!response.ok)
-    throw new Error(`Request failed (${response.status}). Your change was not saved. Try again.`);
+  if (!response.ok) {
+    const payload = await response.json().catch(() => null);
+    throw new Error(
+      typeof payload?.error?.message === 'string'
+        ? payload.error.message
+        : `Request failed (${response.status}). Your change was not saved. Try again.`,
+    );
+  }
   return (await response.json()) as T;
 }
 const query = (params: Record<string, string | undefined>) => {
@@ -69,7 +80,7 @@ export const api = {
     request<Sensor[]>('/sensors' + query(filters)),
   sensor: (id: string) => request<Sensor>('/sensors/' + encodeURIComponent(id)),
   sensorReadings: (id: string) =>
-    request<Reading[]>('/sensors/' + encodeURIComponent(id) + '/readings'),
+    request<SensorReading[]>('/sensors/' + encodeURIComponent(id) + '/readings'),
   faultRule: (id: string) => request<FaultRule>('/fault-rules/' + encodeURIComponent(id)),
   faultStatus: (id: string, input: { status: Fault['status']; note?: string; user: string }) =>
     request<Fault>('/faults/' + encodeURIComponent(id) + '/status', input),

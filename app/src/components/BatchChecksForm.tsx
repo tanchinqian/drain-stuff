@@ -1,5 +1,5 @@
 import DataTable from './DataTable';
-import { timeLabel } from '../utils';
+import { timeLabel, displayName } from '../utils';
 import Term from './Term';
 import { useState, type FormEvent } from 'react';
 import type { BatchChecks, BatchDetail } from '../api/types';
@@ -165,7 +165,7 @@ export default function BatchChecksForm({ batch }: { batch: BatchDetail }) {
             key: 'checks',
             label: 'Results',
             value: (r) =>
-              `Squeeze: ${r.checks.squeeze}; smell: ${r.checks.smell}; cover: ${r.checks.bayCovered ? 'checked' : 'pending'}; sump ${r.checks.sumpLevelCm} cm`,
+              `Squeeze: ${displayName(r.checks.squeeze)}; smell: ${displayName(r.checks.smell)}; cover: ${r.checks.bayCovered ? 'checked' : 'pending'}; sump ${r.checks.sumpLevelCm} cm`,
           },
         ]}
       />

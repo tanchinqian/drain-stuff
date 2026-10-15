@@ -1,4 +1,5 @@
 import type { ModelPhysics } from '../three/PhysicsOverlay';
+import FlowStrip from './FlowStrip';
 import PhysicsControls from './PhysicsControls';
 import PhysicsSection from './PhysicsSection';
 import SearchableSelect from './SearchableSelect';
@@ -39,8 +40,8 @@ export default function ModelWorkspace({
     [sourceParts, sensors],
   );
   const [flat, setFlat] = useState(false),
-    [dimensionsVisible, setDimensionsVisible] = useState(true),
-    [exaggerate, setExaggerate] = useState(false);
+    [dimensionsVisible, setDimensionsVisible] = useState(true);
+
   const [params] = useSearchParams();
   const [showSensors, setShowSensors] = useState(false);
   const [partSearch, setPartSearch] = useState('');
@@ -122,9 +123,7 @@ export default function ModelWorkspace({
           ))}
         </div>
         <span className="small">
-          {physics
-            ? 'Dimensions from model parameters / simulated readings'
-            : 'Illustrative CAD-style assembly / synthetic readings'}
+          {physics ? 'Dimensions from model parameters / simulated readings' : 'CAD assembly'}
         </span>
       </div>
       <div className="field mobile-part-picker">
@@ -183,7 +182,7 @@ export default function ModelWorkspace({
             <PhysicsSection {...physics} />
           ) : (
             <DrainScene
-              physics={physics ? { ...physics, exaggerate } : undefined}
+              physics={physics}
               dimensionsVisible={dimensionsVisible}
               featureId={ownerId}
               kind={kind}
@@ -211,8 +210,8 @@ export default function ModelWorkspace({
           )}
           <p className="small">
             {physics
-              ? 'Illustrative section; dimensions and hydraulic properties are placeholders pending site measurements. Water is cyan. RL is a local datum.'
-              : config.schematic.label}
+              ? 'Water level follows the storm model. RL is the local level datum.'
+              : 'Select a part to inspect its readings and checks.'}
           </p>
           {physics && (
             <>
@@ -233,21 +232,9 @@ export default function ModelWorkspace({
                   />{' '}
                   Dimensions
                 </label>
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={exaggerate}
-                    onChange={(e) => setExaggerate(e.target.checked)}
-                  />{' '}
-                  3D water depth x5 (visual only)
-                </label>
               </div>
-              {exaggerate && !flat && (
-                <p className="notice">
-                  Water depth exaggerated x5; readings remain actual model depths.
-                </p>
-              )}
               <PhysicsControls ownerId={ownerId} />
+              <FlowStrip ownerId={ownerId} />
             </>
           )}
           {showSensors && (

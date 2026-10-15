@@ -1,5 +1,6 @@
 import type {
   Fault,
+  FaultRule,
   AuditEntry,
   AllocationInput,
   BatchDetail,
@@ -151,23 +152,41 @@ const audit = (action: string, note?: string, user = 'Local operator'): AuditEnt
   action,
   note,
 });
-const registry = faultRules.map((r) => ({
-  ...r,
-  id: `RULE-${r.id.replaceAll('_', '-').toUpperCase()}-001`,
-  title: r.label,
-  appliesTo: ['inlet', 'sock', 'media', 'outfall', 'bay', 'sump'],
-  sensorTypes: r.scope === 'sensor' ? ['All sensors'] : [r.diagnosingInput],
-  thresholdKeys: r.id.includes('standing')
-    ? ['drainDownLimitH']
-    : r.scope === 'compost'
-      ? ['temperature', 'moisture']
-      : ['inspection'],
-  severity: 2 as const,
-  steps: [r.check],
-  source: 'Practitioner review required',
-  version: '1.0.0',
-  legacyId: r.id,
-}));
+const ruleThresholds: Record<string, string[]> = {
+  persistent_ponding: ['inspection.standingWaterH'],
+  not_heating: ['inspection.compostNotHeatingC'],
+  too_wet: ['moisture.max'],
+  leachate_after_rain: ['inspection.sumpWatchCm'],
+  maturity: ['temperature.ambientToleranceC'],
+  infiltration_protocol: ['minTests'],
+};
+const ruleTriggers: Record<string, string> = {
+  persistent_ponding: 'Standing water persists beyond inspection.standingWaterH after rain.',
+  not_heating: 'Latest pile temperature is below inspection.compostNotHeatingC.',
+  too_wet: 'Moisture exceeds moisture.max, squeeze is Wet, or puddles are recorded.',
+  leachate_after_rain:
+    'Rain expected with incomplete cover or sump check, or sump exceeds inspection.sumpWatchCm.',
+  sensor_trust: 'Input is suspect, offline or has a drift flag.',
+  maturity: 'Ambient reached, no reheat and manual maturity checks must all pass.',
+};
+const registry: (FaultRule & { legacyId: string })[] = faultRules.map((r) => {
+  const inputs = db.sensors.filter((s) => s.usedByRules.includes(r.id));
+  return {
+    ...r,
+    id: `RULE-${r.id.replaceAll('_', '-').toUpperCase()}-001`,
+    legacyId: r.id,
+    title: r.label,
+    appliesTo: Array.from(new Set(inputs.flatMap((s) => s.linkedPartIds))),
+    diagnosingInputs: inputs.map((s) => s.sensorId),
+    sensorTypes: Array.from(new Set(inputs.map((s) => s.type))),
+    thresholdKeys: ruleThresholds[r.id] ?? [],
+    triggerCondition: ruleTriggers[r.id] ?? 'A positive manual inspection finding for this part.',
+    severity: r.id === 'inlet_debris' || r.id === 'leachate_after_rain' ? 3 : 2,
+    steps: [r.check],
+    source: 'Practitioner review required',
+    version: '1.0.0',
+  };
+});
 function normalizeFaults() {
   db.config.contractVersion = '3.0.0';
   db.config.dataThrough = DEMO_NOW;
@@ -298,8 +317,9 @@ export async function mockRequest(path: string, method = 'GET', body?: unknown):
         db.faults.filter(
           (f) =>
             (!url.searchParams.get('status') || f.status === url.searchParams.get('status')) &&
-            (!url.searchParams.get('from') || f.openedAt >= url.searchParams.get('from')!) &&
-            (!url.searchParams.get('to') || f.openedAt <= url.searchParams.get('to')!),
+            (f.status !== 'closed' ||
+              ((!url.searchParams.get('from') || f.openedAt >= url.searchParams.get('from')!) &&
+                (!url.searchParams.get('to') || f.openedAt <= url.searchParams.get('to')!))),
         ),
       );
     if (resource === 'trials')
@@ -323,7 +343,7 @@ export async function mockRequest(path: string, method = 'GET', body?: unknown):
     fault.status = input.status as Fault['status'];
     (fault.history ??= []).push(
       audit(
-        `${previous} → ${fault.status}`,
+        `${previous[0].toUpperCase() + previous.slice(1)} → ${fault.status[0].toUpperCase() + fault.status.slice(1)}`,
         typeof input.note === 'string' ? input.note : undefined,
         input.user,
       ),
@@ -386,12 +406,25 @@ export async function mockRequest(path: string, method = 'GET', body?: unknown):
     if (!['inspected', 'cleaned', 'work_order'].includes(a))
       throw new Error('Unknown fault action.');
     fault.status = a === 'cleaned' ? 'closed' : 'inspected';
-    db.actions.push({ faultId: id, action: a, t: DEMO_NOW });
+    db.actions.push({ faultId: id, action: a, t: new Date().toISOString() });
+    (fault.history ??= []).push(
+      audit(
+        a === 'inspected'
+          ? 'Inspected'
+          : a === 'cleaned'
+            ? 'Cleaned and closed'
+            : 'Work order raised',
+      ),
+    );
   } else if (resource === 'trials' && action === 'tests') {
     recordTrialTest(
       db,
       find(db.trials, (t) => t.featureId === id),
       input as unknown as TestInput,
+    );
+    const trial = find(db.trials, (t) => t.featureId === id);
+    (trial.history ??= []).push(
+      audit('Test saved', String(input.pointId) + ' / ' + String(input.value)),
     );
   } else if (resource === 'trials' && (action === 'guardrails' || action === 'checks')) {
     const trial = find(db.trials, (t) => t.featureId === id);

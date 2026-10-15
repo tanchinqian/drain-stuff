@@ -800,8 +800,7 @@ th {
   .neighbourhood-scene .road-label {
     display: none;
   }
-  .neighbourhood-scene .map-zone-button,
-  .neighbourhood-scene .secondary-pin {
+  .neighbourhood-scene .map-zone-button {
     display: none;
   }
 }
@@ -1643,4 +1642,147 @@ main {
   flex-wrap: wrap;
   gap: 14px;
   margin-bottom: 12px;
+}
+
+.flow-path {
+  margin: 16px 0;
+}
+.flow-strip {
+  display: flex;
+  overflow-x: auto;
+  list-style: none;
+  gap: 0;
+  padding: 0;
+  margin: 12px 0;
+  max-width: 100%;
+}
+.flow-strip li {
+  flex: 1 0 115px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-right: 0;
+}
+.flow-strip li:last-child {
+  border-right: 1px solid var(--border);
+}
+.flow-strip span,
+.flow-strip small {
+  display: block;
+  margin-top: 5px;
+}
+.model-group {
+  margin: 12px 0;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 12px;
+}
+.model-group summary {
+  font-weight: 600;
+  cursor: pointer;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.trial-trend svg {
+  width: 100%;
+  height: 45px;
+}
+progress {
+  width: 100%;
+  accent-color: var(--ink);
+}
+.trial-arm .takeaway span {
+  display: block;
+  margin-top: 7px;
+}
+.check-results {
+  padding-left: 18px;
+}
+.check-results li {
+  margin: 12px 0;
+}
+.compost-applied {
+  margin-bottom: 18px;
+}
+main {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: 20px;
+}
+main > * {
+  grid-column: 1/-1;
+}
+
+main > * {
+  min-width: 0;
+}
+
+.term-trigger {
+  display: inline-grid;
+  place-items: center;
+  margin-left: 5px;
+  padding: 0;
+  min-width: 18px;
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--ink3);
+  border-radius: 50%;
+  font-size: 12px;
+  line-height: 1;
+}
+.glossary-popover {
+  position: fixed;
+  inset: auto 12px 24px;
+  margin-inline: auto;
+  width: min(360px, calc(100vw - 24px));
+  padding: 16px;
+  color: var(--ink);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
+  white-space: normal;
+  max-height: 50vh;
+  overflow: auto;
+}
+.glossary-popover::backdrop {
+  background: transparent;
+}
+
+/* Keep native popovers closed even inside flex or flow layouts. */
+.glossary-popover:not(:popover-open) {
+  display: none !important;
+}
+.glossary-popover:popover-open {
+  display: block;
+}
+.term-trigger {
+  min-height: 18px;
+  flex: none;
+}
+.row-open {
+  white-space: nowrap;
+}
+progress {
+  appearance: none;
+  height: 8px;
+  border: 0;
+  background: var(--well);
+}
+progress::-webkit-progress-bar {
+  background: var(--well);
+}
+progress::-webkit-progress-value {
+  background: var(--ink);
+}
+progress::-moz-progress-bar {
+  background: var(--ink);
 }

@@ -86,7 +86,7 @@ export function createSwaleGeometry(c: PhysicsConfig): ModelGroups {
     m = v.mediaDepth.value,
     t = v.transitionDepth.value,
     g = v.gravelDepth.value,
-    bottom = -m - t - g,
+    bottom = -m - t - g - 0.05,
     crest = v.crest.value;
   const layer = (
     id: PartId,
@@ -101,10 +101,10 @@ export function createSwaleGeometry(c: PhysicsConfig): ModelGroups {
     face.material.map = mesh.material.map;
     face.userData.sectionFace = true;
   };
-  layer('media', m, -m / 2, 0xc9b28e, 'soil');
-  layer('transition', t, -m - t / 2, 0xe8dec6, 'sand');
+  layer('media', m, -m / 2 - 0.05, 0xc9b28e, 'soil');
+  layer('transition', t, -m - t / 2 - 0.05, 0xe8dec6, 'sand');
   layer('drainage', g, bottom + g / 2, 0xc5beaa, 'gravel');
-  layer('mulch', 0.05, 0.025, 0xbba07c, 'mulch');
+  layer('mulch', 0.05, -0.025, 0xbba07c, 'mulch');
   // Banks define the 1:z section around the actual bottom width.
   for (const sign of [-1, 1]) {
     const shape = new THREE.Shape();

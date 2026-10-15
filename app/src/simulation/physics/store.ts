@@ -10,6 +10,7 @@ import type { PhysicsFrame, PhysicsRun } from './engine';
 import type { Pattern, RainPoint } from './rainfall';
 export const featureIds = ['S1', 'S2', 'S3', 'I1', 'T1', 'T2'] as const;
 interface SimulationState {
+  manualKs: Record<string, boolean>;
   configs: Record<string, PhysicsConfig>;
   runs: Record<string, PhysicsRun>;
   revision: number;
@@ -38,6 +39,7 @@ interface SimulationState {
 }
 const restart = { second: 0, playing: false, busy: true, error: null, runs: {} };
 export const useSimulation = create<SimulationState>((set, get) => ({
+  manualKs: {},
   configs: Object.fromEntries(featureIds.map((id) => [id, featureConfig(id)])),
   runs: {},
   revision: 0,
@@ -78,7 +80,12 @@ export const useSimulation = create<SimulationState>((set, get) => ({
       for (const c of Object.values(configs)) c.values[key] = { ...c.values[key], value, source };
     else configs[id].values[key] = { ...configs[id].values[key], value, source };
     if (key === 'ks') configs[id].sampleCount = n;
-    set((s) => ({ ...restart, configs, revision: s.revision + 1 }));
+    set((s) => ({
+      ...restart,
+      configs,
+      manualKs: key === 'ks' ? { ...s.manualKs, [id]: source !== 'trial-record' } : s.manualKs,
+      revision: s.revision + 1,
+    }));
   },
   weather: (key, value) => {
     if (!Number.isFinite(value) || value < 0) return;

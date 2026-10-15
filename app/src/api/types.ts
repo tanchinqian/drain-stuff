@@ -36,6 +36,7 @@ export interface Sensor extends Synthetic {
   unit: string;
   role: 'proxy' | 'reference';
   proxyFor: string;
+  mountHeightM?: number;
   lastValue: number | null;
   lastText?: string;
   lastAt: string;
@@ -50,18 +51,20 @@ export interface FaultRule extends Synthetic {
   check: string;
   diagnosingInput: string;
   scope: 'drainage' | 'compost' | 'sensor';
-  title?: string;
-  appliesTo?: PartId[];
-  sensorTypes?: string[];
-  thresholdKeys?: string[];
-  severity?: 1 | 2 | 3;
-  steps?: string[];
-  source?: string;
-  version?: string;
+  title: string;
+  triggerCondition: string;
+  diagnosingInputs: string[];
+  appliesTo: PartId[];
+  sensorTypes: string[];
+  thresholdKeys: string[];
+  severity: 1 | 2 | 3;
+  steps: string[];
+  source: string;
+  version: string;
 }
 export type Metric = 'infiltration_mm_hr' | 'drain_down_h' | 'sediment_mm' | 'water_level_cm';
 export interface Synthetic {
-  synthetic: true;
+  synthetic?: true;
 }
 export interface Zone extends Synthetic {
   id: ZoneId;
@@ -99,6 +102,9 @@ export interface Reading extends Synthetic {
   unit: string;
   sensorId: string;
   n?: number;
+}
+export interface SensorReading extends Omit<Reading, 'metric'> {
+  metric: string;
 }
 export interface Part extends Synthetic {
   partId: PartId;
@@ -301,6 +307,7 @@ export interface AllocationInput {
   featureId: string;
   doseLabel: string;
   lPerM2: number;
+  amendedDepthM?: number;
   appliedBy: string;
 }
 export type FaultAction = 'inspected' | 'cleaned' | 'work_order';

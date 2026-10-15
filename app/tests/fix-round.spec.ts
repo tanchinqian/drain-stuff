@@ -6,9 +6,9 @@ test('attention order and operator controls', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Overview', exact: true })).toBeVisible();
   const faults = await page.locator('.attention-faults').boundingBox();
   const map = await page.locator('.overview-map').boundingBox();
-  expect(faults!.y).toBeLessThan(map!.y);
-  await expect(page.getByRole('combobox', { name: 'Select a house', exact: true })).toHaveCount(1);
-  await expect(page.locator('.map-zones button')).toHaveCount(4);
+  expect(map!.y).toBeLessThan(faults!.y);
+  await expect(page.getByRole('combobox', { name: 'Pilot house', exact: true })).toHaveCount(1);
+  await expect(page.locator('.zone-filter button')).toHaveCount(5);
   await page.goto('/feature/S1');
   await expect(page.locator('.cad-scene')).toBeVisible();
   expect(await page.locator('.storm-disclosure').getAttribute('open')).toBeNull();
@@ -63,10 +63,10 @@ test('compost tabs preserve unsaved form entries and support keyboard switching'
 
 test('approved rainfall palette and compost form accessibility are retained', async ({ page }) => {
   await page.goto('/');
-  await expect(page.locator('.heat-legend i')).toHaveCount(7);
+  await expect(page.locator('.heat-legend i')).toHaveCount(8);
   const swatches = await page
     .locator('.heat-legend i')
-    .evaluateAll((nodes) => nodes.map((n) => getComputedStyle(n).backgroundColor));
+    .evaluateAll((nodes) => nodes.slice(-7).map((n) => getComputedStyle(n).backgroundColor));
   expect(swatches).toEqual([
     'rgb(97, 204, 233)',
     'rgb(68, 191, 101)',

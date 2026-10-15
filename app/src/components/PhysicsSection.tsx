@@ -3,15 +3,17 @@ import type { PhysicsFrame } from '../simulation/physics/engine';
 export default function PhysicsSection({
   config,
   frame,
+  amendment,
 }: {
   config: PhysicsConfig;
   frame?: PhysicsFrame;
+  amendment?: { depth: number; dose: string; batch: string };
 }) {
   const v = config.values,
     inlet = config.kind === 'inlet',
     depth = inlet
       ? v.crest.value
-      : v.mediaDepth.value + v.transitionDepth.value + v.gravelDepth.value;
+      : 0.05 + v.mediaDepth.value + v.transitionDepth.value + v.gravelDepth.value;
   const water = frame?.ponding ?? 0,
     upper = Math.max(v.crest.value, water, 0.01);
   const scale = Math.min(
@@ -56,9 +58,14 @@ export default function PhysicsSection({
           </>
         ) : (
           <>
-            {layer(0, v.mediaDepth.value, '#c9b28e')}
-            {layer(v.mediaDepth.value, v.transitionDepth.value, '#e8dec6')}
-            {layer(v.mediaDepth.value + v.transitionDepth.value, v.gravelDepth.value, '#c5beaa')}
+            {layer(0, 0.05, '#bba07c')}
+            {layer(0.05, v.mediaDepth.value, '#c9b28e')}
+            {layer(0.05 + v.mediaDepth.value, v.transitionDepth.value, '#e8dec6')}
+            {layer(
+              0.05 + v.mediaDepth.value + v.transitionDepth.value,
+              v.gravelDepth.value,
+              '#c5beaa',
+            )}
             <path
               d={`M${center - w / 2 - v.sideSlope.value * v.crest.value * scale} ${y - v.crest.value * scale}L${center - w / 2} ${y}H${center + w / 2}L${center + w / 2 + v.sideSlope.value * v.crest.value * scale} ${y - v.crest.value * scale}`}
               fill="none"
@@ -77,6 +84,40 @@ export default function PhysicsSection({
             )}
           </>
         )}
+        {!inlet && frame && (
+          <rect
+            x={center - w / 2}
+            y={y + 0.05 * scale}
+            width={w}
+            height={
+              Math.min(
+                1,
+                Math.max(
+                  0,
+                  (frame.moisture - v.wilting.value) / (v.porosity.value - v.wilting.value),
+                ),
+              ) *
+              v.mediaDepth.value *
+              scale
+            }
+            fill="#79624a"
+            fillOpacity=".5"
+          />
+        )}
+        {!inlet && amendment && (
+          <rect
+            x={center - w / 2}
+            y={y + 0.05 * scale}
+            width={w}
+            height={Math.min(v.mediaDepth.value, amendment.depth) * scale}
+            fill="#b03a78"
+            fillOpacity=".4"
+          />
+        )}
+        {(frame?.rain ?? 0) > 0 &&
+          Array.from({ length: 12 }, (_, i) => (
+            <path key={i} d={`M${90 + i * 28} 22l3 10`} stroke="#5e564b" />
+          ))}
         {water > 0 && (
           <path
             d={`M${center - w / 2} ${y}H${center + w / 2}L${center + w / 2 + v.sideSlope.value * water * scale} ${y - water * scale}H${center - w / 2 - v.sideSlope.value * water * scale}Z`}
@@ -91,7 +132,12 @@ export default function PhysicsSection({
           ? `${depth.toFixed(2)} m chamber depth`
           : `${(v.mediaDepth.value * 1000).toFixed(0)} mm media, ${(v.transitionDepth.value * 1000).toFixed(0)} mm transition, ${(v.gravelDepth.value * 1000).toFixed(0)} mm gravel`}
         .<br />
-        Synthetic section / water {(water * 1000).toFixed(1)} mm.
+        {amendment && (
+          <>
+            Compost amended: {(amendment.depth * 1000).toFixed(0)} mm · {amendment.dose}.<br />
+          </>
+        )}
+        Section / water {(water * 1000).toFixed(1)} mm.
       </figcaption>
     </figure>
   );

@@ -38,7 +38,7 @@ test('rain, wetting and peak water are understandable without opening settings',
   }
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await expect(page.getByRole('button', { name: 'Play storm', exact: true })).toHaveCount(0);
-  await expect(page.locator('.physics-playback')).toContainText('Water particles stay still');
+  await expect(page.locator('.physics-playback')).toContainText('Reduced motion');
   await page.getByRole('button', { name: 'Reset storm', exact: true }).click();
   await expect(page.locator('.water-story')).toContainText('Ready to start');
   expect(errors).toEqual([]);

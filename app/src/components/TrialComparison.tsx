@@ -76,7 +76,9 @@ export default function TrialComparison({
                       tone={count < minimum ? 'watch' : 'ok'}
                     />
                     <span>
-                      Needs at least {minimum} re-tests to compare ({count} of {minimum} so far).
+                      {count < minimum
+                        ? `Needs at least ${minimum} re-tests to compare (${count} of ${minimum} so far).`
+                        : `Minimum of ${minimum} re-tests met · ${count} logged.`}
                     </span>
                     <progress
                       max={minimum}

@@ -1,6 +1,8 @@
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../api/client';
+import ModelDetails from '../components/ModelDetails';
+import { formatValue } from '../utils';
 import ModelWorkspace from '../components/ModelWorkspace';
 import Status from '../components/Status';
 import PhysicsPanel from '../components/PhysicsPanel';
@@ -32,7 +34,8 @@ export default function FeatureDetail() {
     data && physics.config
       ? modelFaults(physics.config, physics.frame, liveSensors, data.feature.zone)
       : [];
-  const liveParts = buildParts(id, liveSensors, liveFaults);
+  const activeFaults = [...liveFaults, ...(data?.faults ?? [])];
+  const liveParts = buildParts(id, liveSensors, activeFaults);
   const baseline = data?.trial && testMean(data.trial.tests, 'baseline'),
     after = data?.trial && testMean(data.trial.tests, 'retest');
   return (
@@ -45,10 +48,10 @@ export default function FeatureDetail() {
                 {id} · {data.feature.name}
               </h1>
               <p className="sub">
-                Zone {data.feature.zone} · Installed {dateOnly(data.feature.installedAt)} ·
-                synthetic
+                Zone {data.feature.zone} · Installed {dateOnly(data.feature.installedAt)}
               </p>
             </div>
+            <ModelDetails ownerId={id} />
             <Link className="button" to="/">
               Back to Overview
             </Link>
@@ -71,15 +74,47 @@ export default function FeatureDetail() {
               {data.trial?.owner?.name || data.feature.ownerOfRecord}
             </div>
           </div>
+          {data.trial?.batchId && (
+            <section className="compost-applied panel">
+              <h2>Compost applied</h2>
+              <p>
+                <Link to={'/batches?batch=' + data.trial.batchId}>{data.trial.batchId}</Link> ·{' '}
+                {data.trial.doseLabel ?? 'Dose not recorded'} ·{' '}
+                {data.config.pilotDoses.find((d) => d.label === data.trial?.doseLabel)?.lPerM2 ??
+                  '—'}{' '}
+                L/m² · Mixing depth{' '}
+                {data.trial.amendedDepthM
+                  ? formatValue(data.trial.amendedDepthM * 1000, 'mm')
+                  : 'not recorded'}{' '}
+                · {data.trial.appliedAt ? dateOnly(data.trial.appliedAt) : 'Date not recorded'}
+              </p>
+              <p className="small">Conductivity follows the test record or entered value.</p>
+            </section>
+          )}
           <div id="drain-assembly" />
           <ModelWorkspace
             ownerId={id}
             key={id}
-            physics={physics.config ? { config: physics.config, frame: physics.frame } : undefined}
+            physics={
+              physics.config
+                ? {
+                    config: physics.config,
+                    frame: physics.frame,
+                    amendment:
+                      data.trial?.amendedDepthM && data.trial.batchId
+                        ? {
+                            depth: data.trial.amendedDepthM,
+                            dose: data.trial.doseLabel ?? '',
+                            batch: data.trial.batchId,
+                          }
+                        : undefined,
+                  }
+                : undefined
+            }
             parts={liveParts}
             sensors={liveSensors}
             config={data.config}
-            faults={liveFaults}
+            faults={activeFaults}
           />
           <details className="storm-disclosure">
             <summary>Storm settings, charts and model parameters</summary>
@@ -88,16 +123,16 @@ export default function FeatureDetail() {
           <p className="small">
             Live model alerts above are temporary scenario outputs.{' '}
             <Link style={{ textDecoration: 'underline' }} to="/faults">
-              Open seeded fault history
+              Open fault history
             </Link>
             .
           </p>
           {data.trial && (
             <section className="panel" style={{ marginTop: 18 }}>
-              <h2>Seeded trial record</h2>
+              <h2>Trial record</h2>
               <p className="sub">
                 {baseline?.value ?? 'No baseline'} → {after?.value ?? 'No re-test'} mm/h · Same
-                marked points · n = {after?.n ?? baseline?.n ?? 0} · synthetic
+                marked points · n = {after?.n ?? baseline?.n ?? 0}
               </p>
               <p className="takeaway">
                 Pilot, small sample, not proof.{' '}

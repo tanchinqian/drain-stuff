@@ -77,7 +77,7 @@ export default function GuardrailForm({ trial, config }: { trial: TrialDetail; c
         </label>
         <div className="notice">
           Post-storm check after the first heavy rain following application. Rainfall reference:{' '}
-          {config.heavyRainMmHr} mm/h · placeholder, to confirm.
+          {config.heavyRainMmHr} mm/h.
         </div>
         <label className="check">
           <input
@@ -120,8 +120,7 @@ export default function GuardrailForm({ trial, config }: { trial: TrialDetail; c
         <hr className="divider" />
         <Status status={checks.drainDownFlag ? 'watch' : 'ok'} />
         <p className="small">
-          Standing-water watch if drain-down exceeds {config.drainDownLimitH} h · placeholder, to
-          confirm.
+          Standing-water watch if drain-down exceeds {config.drainDownLimitH} h.
         </p>
         <button
           type="submit"

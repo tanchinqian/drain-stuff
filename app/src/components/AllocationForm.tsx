@@ -16,7 +16,8 @@ export default function AllocationForm({
       batches.find((b) => b.maturityGate === 'passed')?.id || batches[0]?.id || '',
     ),
     [doseLabel, setDoseLabel] = useState(config.pilotDoses[0].label),
-    [appliedBy, setAppliedBy] = useState('Trial crew');
+    [appliedBy, setAppliedBy] = useState('Trial crew'),
+    [depth, setDepth] = useState(String((trial.amendedDepthM ?? 0.15) * 1000));
   const batch = batches.find((b) => b.id === batchId),
     dose = config.pilotDoses.find((d) => d.label === doseLabel)!;
   const reason = !trial.baselineDone
@@ -41,6 +42,7 @@ export default function AllocationForm({
         doseLabel,
         lPerM2: dose.lPerM2,
         appliedBy,
+        amendedDepthM: Number(depth) / 1000,
       }),
     'Saved compost allocation to trial record ' + trial.featureId,
   );
@@ -83,6 +85,17 @@ export default function AllocationForm({
           <label className="field">
             Labelled dose, L/m²
             <input readOnly type="number" value={dose.lPerM2} max={config.doseCapLPerM2} />
+          </label>
+          <label className="field">
+            Amended soil depth, mm
+            <input
+              required
+              type="number"
+              min="1"
+              max="1000"
+              value={depth}
+              onChange={(e) => setDepth(e.target.value)}
+            />
           </label>
           <label className="field">
             Applied by

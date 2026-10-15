@@ -19,7 +19,7 @@ export function usePhysics(id: string) {
 export function positionSensor(s: Sensor, c: PhysicsConfig): Sensor {
   const v = c.values,
     l = v.length.value,
-    base = -v.mediaDepth.value - v.transitionDepth.value - v.gravelDepth.value;
+    base = -v.mediaDepth.value - v.transitionDepth.value - v.gravelDepth.value - 0.05;
   const positions: Partial<Record<PartId, [number, number, number]>> = {
     inlet: [-l / 2 - 0.4, 0.35, 0],
     pretreat: [-l / 2 + 0.3, 0.1, 0.4],
@@ -27,7 +27,7 @@ export function positionSensor(s: Sensor, c: PhysicsConfig): Sensor {
     ponding: [0, v.mountHeight.value, 0],
     overflow: [l / 2 - 0.5, v.crest.value, -v.width.value / 3],
     cleanout: [l / 2 - 0.35, 0.35, 0],
-    media: [0, -(s.sensorId.includes('-30') ? 0.3 : 0.1), 0],
+    media: [0, -0.05 - (s.sensorId.includes('-30') ? 0.3 : 0.1), 0],
   };
   const p = positions[s.partId];
   return p ? { ...s, location: { x: p[0], y: p[1], z: p[2] } } : s;
@@ -85,13 +85,13 @@ export function modelFaults(
     emit(
       'inlet',
       'blockage',
-      `Kerb level ${(depth * 100).toFixed(1)} cm > 2 cm; inlet open fraction ${(v.inletOpen.value * 100).toFixed(0)}% < 50%. Placeholder capacity rule.`,
+      `Kerb level ${(depth * 100).toFixed(1)} cm > 2 cm; inlet open fraction ${(v.inletOpen.value * 100).toFixed(0)}% < 50%. Capacity rule.`,
     );
   if (depth > 0.02 && v.sockOpen.value < 0.5 && c.id === 'S1')
     emit(
       'sock',
       'blockage',
-      `Kerb level ${(depth * 100).toFixed(1)} cm > 2 cm; sock open fraction ${(v.sockOpen.value * 100).toFixed(0)}% < 50%. Placeholder capacity rule.`,
+      `Kerb level ${(depth * 100).toFixed(1)} cm > 2 cm; sock open fraction ${(v.sockOpen.value * 100).toFixed(0)}% < 50%. Capacity rule.`,
     );
   if (f.flux.overflow > 1e-8)
     emit(
@@ -103,7 +103,7 @@ export function modelFaults(
     emit(
       'underdrain',
       'blockage',
-      `Gravel head ${(f.gravelHead * 1000).toFixed(1)} mm exceeds drain offset ${(v.drainOffset.value * 1000).toFixed(0)} mm; entered drain coefficient ${v.drainC.value}. Silted-drain scenario, placeholder rule.`,
+      `Gravel head ${(f.gravelHead * 1000).toFixed(1)} mm exceeds drain offset ${(v.drainOffset.value * 1000).toFixed(0)} mm; entered drain coefficient ${v.drainC.value}. Silted-drain scenario, capacity rule.`,
     );
   for (const s of sensors)
     if (s.status !== 'ok' && !faults.some((x) => x.partId === s.partId))

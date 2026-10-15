@@ -1,11 +1,48 @@
 import { useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { api } from '../../api/client';
+import { testMean } from '../../utils';
 import { featureIds, runConfig, useSimulation } from './store';
 import type { PhysicsRun } from './engine';
 export default function SimulationDriver() {
+  const trials = useQuery({ queryKey: ['simulation-trials'], queryFn: api.trials });
+  const ready = !trials.isPending;
+  useEffect(() => {
+    if (!trials.data) return;
+    const state = useSimulation.getState(),
+      configs = structuredClone(state.configs);
+    let changed = false;
+    trials.data.forEach((t) => {
+      const mean = testMean(t.tests, 'retest') ?? testMean(t.tests, 'baseline'),
+        c = configs[t.featureId];
+      if (
+        mean &&
+        c &&
+        !state.manualKs[t.featureId] &&
+        (Math.abs(c.values.ks.value - mean.value / 3.6e6) > 1e-12 ||
+          c.sampleCount !== mean.n ||
+          c.values.ks.source !== 'trial-record')
+      ) {
+        c.values.ks = { ...c.values.ks, value: mean.value / 3.6e6, source: 'trial-record' };
+        c.sampleCount = mean.n;
+        changed = true;
+      }
+    });
+    if (changed)
+      useSimulation.setState({
+        configs,
+        revision: state.revision + 1,
+        runs: {},
+        busy: true,
+        playing: false,
+        error: null,
+      });
+  }, [trials.data]);
   const revision = useSimulation((s) => s.revision),
     playing = useSimulation((s) => s.playing),
     speed = useSimulation((s) => s.speed);
   useEffect(() => {
+    if (!ready) return;
     const state = useSimulation.getState(),
       results: Record<string, PhysicsRun> = {};
     const worker = new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' });
@@ -49,7 +86,7 @@ export default function SimulationDriver() {
       clearTimeout(timeout);
       worker.terminate();
     };
-  }, [revision]);
+  }, [revision, ready]);
   useEffect(() => {
     if (!playing) return;
     const motion = window.matchMedia('(prefers-reduced-motion: reduce)');

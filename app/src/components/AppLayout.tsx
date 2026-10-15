@@ -1,7 +1,6 @@
 import { Suspense, useState } from 'react';
 import { Link, NavLink, Outlet } from 'react-router-dom';
 import { Waves } from 'lucide-react';
-import DemoWalkthrough from './DemoWalkthrough';
 import Toast from './Toast';
 import Activity from './Activity';
 import SimulationDriver from '../simulation/physics/SimulationDriver';
@@ -39,7 +38,6 @@ export default function AppLayout() {
           </NavLink>
         ))}
       </nav>
-      {demo && <DemoWalkthrough />}
       <main id="main">
         <Suspense
           fallback={

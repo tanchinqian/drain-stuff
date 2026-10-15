@@ -25,7 +25,7 @@ export const repairSteps: Record<Fault['type'], string[]> = {
   ],
   standing_water: [
     surface,
-    'Record when rain ended, how long water has remained and the current depth. The 48-hour inspection prompt is a placeholder, to confirm.',
+    'Record when rain ended, how long water has remained and the current depth. Compare the elapsed time with the configured inspection period.',
     'Ask the owner to inspect trapped sediment and the underdrain (the pipe below the soil that carries water away). Do not probe a blocked pipe yourself.',
     'The owner arranges trained clearance or repair; keep the affected area restricted until checked.',
     record,

@@ -93,8 +93,8 @@ export default function PhysicsControls({ ownerId }: { ownerId: string }) {
       )}
       <p className="small">
         {reduced
-          ? 'Reduced motion: use the timeline or minute buttons. Water particles stay still. '
-          : 'Cyan drops show rain; moving dots show water entering and soaking into the soil. '}
+          ? 'Reduced motion: use the timeline or minute buttons. '
+          : 'Short strokes show rain; soil shading shows moisture; pipe fill and arrows show drainage. '}
         Arrows are static; width shows flow. Playback is shared across the six feature pages. Speed
         is simulated seconds per real second.
       </p>
@@ -123,8 +123,8 @@ export default function PhysicsControls({ ownerId }: { ownerId: string }) {
             {frame.flux.overflow > 1e-9 ? 'Water is spilling over the overflow.' : ''}
           </p>
           <small>
-            Cyan surface tint shows wetting above the mulch; droplets illustrate flow. The depth
-            reading is the calculated water level.
+            The waterline shows surface depth. Soil shading follows moisture; arrow width follows
+            flow.
           </small>
         </div>
       )}

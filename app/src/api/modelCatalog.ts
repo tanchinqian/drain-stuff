@@ -161,7 +161,10 @@ export const bayParts: (PartDefinition & { partId: BayPartId })[] = [
 ];
 export const partName = (id: PartId) =>
   [...drainParts, ...bayParts].find((p) => p.partId === id)?.name ?? id;
-export const faultRules: FaultRule[] = [
+export const faultRules: Pick<
+  FaultRule,
+  'synthetic' | 'id' | 'label' | 'check' | 'diagnosingInput' | 'scope'
+>[] = [
   [
     'inlet_debris',
     'Inlet sediment or debris',

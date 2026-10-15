@@ -1,10 +1,9 @@
+import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip } from 'recharts';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useSearchParams } from 'react-router-dom';
 import { api } from '../api/client';
 import type { Sensor } from '../api/types';
-import { useLiveSensors } from '../simulation/physics/view';
-import { usePhysics } from '../simulation/physics/view';
 import DataTable from '../components/DataTable';
 import Drawer from '../components/Drawer';
 import Chip from '../components/Chip';
@@ -18,9 +17,7 @@ function SensorDetail({ id, onClose }: { id: string; onClose: () => void }) {
   const result = useQuery({ queryKey: ['sensor', id], queryFn: () => api.sensor(id) }),
     history = useQuery({ queryKey: ['sensor-history', id], queryFn: () => api.sensorReadings(id) }),
     rules = useQuery({ queryKey: ['fault-rules'], queryFn: api.faultRules });
-  const live = useLiveSensors(result.data ? [result.data] : empty),
-    s = live[0],
-    physics = usePhysics(s?.ownerId ?? '');
+  const s = result.data;
   return (
     <Drawer title={id} onClose={onClose}>
       <QueryState loading={result.isPending} error={result.error}>
@@ -47,10 +44,7 @@ function SensorDetail({ id, onClose }: { id: string; onClose: () => void }) {
               Installed position: {formatValue(s.location.x, 'm', 2)},{' '}
               {formatValue(s.location.y, 'm', 2)}, {formatValue(s.location.z, 'm', 2)}
             </p>
-            <p>
-              Mount height:{' '}
-              {formatValue(physics.config?.values.mountHeight.value ?? s.location.y, 'm', 2)}
-            </p>
+            <p>Mount height: {formatValue(s.mountHeightM, 'm', 2)}</p>
             <Link className="button" to={partLink(s.ownerId, s.partId, s.scope)}>
               Show installed part
             </Link>
@@ -66,19 +60,36 @@ function SensorDetail({ id, onClose }: { id: string; onClose: () => void }) {
               ))}
             <ChartFrame
               title="Reading history"
-              subtitle={s.metric}
+              subtitle={displayName(s.metric)}
               headers={['Time', 'Value', 'Unit']}
               rows={(history.data ?? []).map((r) => [dateTime(r.t), r.value, r.unit])}
               takeaway="Readings remain unavailable while the input is not reporting."
             >
-              <div className="sensor-history-bars">
-                {history.data?.slice(-30).map((r, i) => (
-                  <div key={i} title={dateTime(r.t) + ' · ' + formatValue(r.value, r.unit)}>
-                    <span style={{ height: Math.max(3, Math.min(140, r.value * 2)) }} />
-                    <small>{formatValue(r.value)}</small>
-                  </div>
-                ))}
-              </div>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart
+                  data={history.data ?? []}
+                  margin={{ top: 15, right: 15, left: 0, bottom: 20 }}
+                  accessibilityLayer
+                >
+                  <XAxis
+                    dataKey="t"
+                    tickFormatter={(v) => dateTime(String(v)).split(',')[0]}
+                    minTickGap={45}
+                  />
+                  <YAxis width={45} />
+                  <Tooltip
+                    formatter={(value) => formatValue(Number(value), s.unit)}
+                    labelFormatter={(v) => dateTime(String(v))}
+                  />
+                  <Line
+                    dataKey="value"
+                    name={displayName(s.metric)}
+                    stroke="#5e564b"
+                    dot={{ r: 3 }}
+                    isAnimationActive={false}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
             </ChartFrame>
             <h3>Notes</h3>
             <p>{s.proxyFor}. Check an indirect measurement against its reference before acting.</p>
@@ -92,7 +103,7 @@ export default function Sensors() {
   const [params, setParams] = useSearchParams(),
     [asset, setAsset] = useState(params.get('asset') ?? '');
   const result = useQuery({ queryKey: ['sensors'], queryFn: () => api.sensors() }),
-    live = useLiveSensors(result.data ?? empty);
+    live = result.data ?? empty;
   const selected = params.get('sensor');
   return (
     <QueryState loading={result.isPending} error={result.error}>

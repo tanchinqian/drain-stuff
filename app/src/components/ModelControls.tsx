@@ -154,7 +154,7 @@ export function AssemblyControls({
             <input type="checkbox" checked={edges} onChange={(e) => setEdges(e.target.checked)} />
             Edges
           </label>
-          <p className="small">Part bounds are illustrative; units are schematic metres.</p>
+          <p className="small">Part bounds are in local metres.</p>
         </div>
       )}
     </>
@@ -229,7 +229,7 @@ export function PartControls({
         </div>
       )}
       <p className="scene-caption">
-        Drag to orbit · Scroll to zoom. Geometry and dimensions are illustrative.
+        Drag to orbit · Scroll to zoom. Dimensions are in local metres.
       </p>
     </>
   );

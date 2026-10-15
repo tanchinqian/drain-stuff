@@ -1,5 +1,10 @@
 import { test, expect } from '@playwright/test';
 test('fault status saves, persists and has an audit trail', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('.attention-summary')).toContainText('faults open');
+  const originalCount = Number(
+    (await page.locator('.attention-summary').innerText()).match(/^(\d+)/)![1],
+  );
   await page.goto('/faults');
   await expect(page.getByRole('heading', { name: 'Faults', exact: true })).toBeVisible();
   const control = page.locator('select[aria-label^="Status for"]').first();
@@ -15,6 +20,10 @@ test('fault status saves, persists and has an audit trail', async ({ page }) => 
   await page.getByRole('button', { name: id, exact: true }).click();
   await expect(page.getByRole('dialog')).toContainText('Audit trail');
   await expect(page.getByRole('dialog')).toContainText('Local operator');
+  await page.goto('/');
+  await expect(page.locator('.attention-summary')).toContainText(
+    `${originalCount + (next === 'closed' ? -1 : 1)} faults open`,
+  );
 });
 test('sensor table uses row details, filters and wide layout', async ({ page }) => {
   await page.goto('/sensors');
@@ -90,5 +99,72 @@ test('compost prompts follow readings and human checks have buttons and history'
   await expect(
     page.getByRole('status').filter({ hasText: 'Saved to batch B-01 check log' }),
   ).toBeVisible();
-  await expect(page.getByRole('table', { name: 'batch checks B 01' })).toContainText('sour');
+  await expect(page.getByRole('table', { name: 'batch checks B 01' })).toContainText('Sour');
+});
+test('feature water path, model drawer and recorded compost are visible', async ({ page }) => {
+  await page.goto('/feature/S1');
+  await expect(page.getByRole('slider', { name: 'Storm timeline', exact: true })).toBeEnabled({
+    timeout: 45000,
+  });
+  await expect(page.getByRole('heading', { name: 'Compost applied', exact: true })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Water path', exact: true })).toContainText(
+    'Outfall',
+  );
+  await page.getByRole('button', { name: 'Jump to peak water', exact: true }).click();
+  await page.getByRole('button', { name: 'Model details', exact: true }).click();
+  await expect(page.getByRole('dialog')).toContainText('Rainfall');
+  await page.getByRole('dialog').getByText('Soil', { exact: true }).click();
+  await expect(
+    page.getByRole('dialog').getByLabel('Infiltration rate', { exact: true }),
+  ).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+});
+test('operational pages omit environment labels and keep mobile content contained', async ({
+  page,
+}) => {
+  test.setTimeout(120000);
+  for (const path of [
+    '/',
+    '/trials',
+    '/batches',
+    '/batches/B-01',
+    '/faults',
+    '/sensors',
+    '/feature/S1',
+    '/feature/I1',
+    '/feature/T1',
+  ]) {
+    await page.goto(path);
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    await expect(page.locator('body')).not.toContainText(/synthetic|demo data|seeded|placeholder/i);
+    await page.setViewportSize({ width: 360, height: 1000 });
+    await page.waitForTimeout(150);
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+      path,
+    ).toBe(true);
+  }
+});
+
+test('standing-water guidance and help popovers stay readable', async ({ page }) => {
+  await page.goto('/feature/A04-D?part=outfall');
+  await page.locator('.detail-readings').getByText('Inspection steps', { exact: true }).click();
+  await expect(page.locator('.detail-readings')).not.toContainText(
+    /synthetic|placeholder|seeded|demo data|to confirm/i,
+  );
+  await page.screenshot({
+    path: '../.impeccable/review/round3/standing-water-review-1440.png',
+    fullPage: true,
+  });
+  await page.goto('/feature/S1');
+  await expect(page.locator('.glossary-popover:visible')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Explain L/min', exact: true }).first().click();
+  await expect(page.locator('.glossary-popover:visible')).toHaveCount(1);
+  await page.keyboard.press('Escape');
+  await expect(page.locator('.glossary-popover:visible')).toHaveCount(0);
+  await page.screenshot({
+    path: '../.impeccable/review/round3/glossary-review-1440.png',
+    fullPage: true,
+  });
 });

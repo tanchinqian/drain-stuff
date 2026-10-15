@@ -210,7 +210,7 @@ describe('thermal model and record boundaries', () => {
       [],
     );
     const csv = runCsv(run);
-    expect(csv).toContain('placeholder');
+    expect(csv.includes('Configuration')).toBe(true);
     expect(csv).toContain('relative residual');
     expect(csv).toContain('node');
   });

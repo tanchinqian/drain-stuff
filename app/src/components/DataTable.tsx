@@ -12,6 +12,18 @@ export interface TableFilter<T> {
   label: string;
   value: (row: T) => string;
 }
+function ValueText({ value }: { value: string | number | null }) {
+  if (value === null) return <>No reading</>;
+  if (typeof value === 'number') return <>{formatValue(value)}</>;
+  const match = value.match(/^(.*) (mm\/h|L\/min|mm|cm|m|h|°C|%|kg|L\/m²)$/);
+  return match ? (
+    <>
+      {match[1]} <Term text={match[2]} />
+    </>
+  ) : (
+    <>{value}</>
+  );
+}
 export default function DataTable<T>({
   id,
   rows,
@@ -204,7 +216,6 @@ export default function DataTable<T>({
                           : 'none'
                       }
                     >
-                      <Term text={c.label} />
                       <button
                         aria-label={'Sort by ' + c.label}
                         onClick={() =>
@@ -214,8 +225,10 @@ export default function DataTable<T>({
                           })
                         }
                       >
-                        Sort{sort.key === c.key ? (sort.direction === 1 ? ' ↑' : ' ↓') : ''}
+                        {c.label}
+                        {sort.key === c.key ? (sort.direction === 1 ? ' ↑' : ' ↓') : ''}
                       </button>
+                      <Term text={c.label} helpOnly />
                     </th>
                   ))}
                   {actions && <th>Actions</th>}
@@ -246,10 +259,8 @@ export default function DataTable<T>({
                           </button>
                         ) : c.render ? (
                           c.render(row)
-                        ) : typeof c.value(row) === 'number' ? (
-                          formatValue(Number(c.value(row)))
                         ) : (
-                          (c.value(row) ?? 'No reading')
+                          <ValueText value={c.value(row)} />
                         )}
                       </td>
                     ))}
