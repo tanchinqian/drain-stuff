@@ -170,6 +170,7 @@ const registry = faultRules.map((r) => ({
 }));
 function normalizeFaults() {
   db.config.contractVersion = '3.0.0';
+  db.config.dataThrough = DEMO_NOW;
   db.config.minTests ??= db.config.minimumN;
   db.faults.forEach((f, i) => {
     f.ruleKey ??= f.id;

@@ -90,7 +90,7 @@ function SensorDetail({ id, onClose }: { id: string; onClose: () => void }) {
 }
 export default function Sensors() {
   const [params, setParams] = useSearchParams(),
-    [asset, setAsset] = useState('');
+    [asset, setAsset] = useState(params.get('asset') ?? '');
   const result = useQuery({ queryKey: ['sensors'], queryFn: () => api.sensors() }),
     live = useLiveSensors(result.data ?? empty);
   const selected = params.get('sensor');

@@ -32,3 +32,23 @@ test('sensor table uses row details, filters and wide layout', async ({ page }) 
     expect(main!.width).toBeGreaterThan(width === 1440 ? 1300 : 1700);
   }
 });
+test('fixed pilot map, non-modal selection, range and zone scoping', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: 'Overview', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Move houses', exact: true })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Plan', exact: true }).click();
+  await expect(page.locator('.plan-svg [role=button][aria-label^="Mapped house"]')).toHaveCount(0);
+  await page.locator('.plan-svg [data-house-id="A01"]').click();
+  await expect(page.getByRole('dialog')).toContainText('A01');
+  await expect(page.getByRole('dialog')).toHaveAttribute('aria-modal', 'false');
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await page.locator('.plan-svg [data-house-id="A01"]').click();
+  await page.locator('.plan-svg').click({ position: { x: 10, y: 10 } });
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await page.getByRole('button', { name: '7 days', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Rainfall · 7 days', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Zone B', exact: true }).click();
+  await expect(page.locator('.feature-jumps')).not.toContainText('S1');
+  await expect(page.locator('.map-zones')).toContainText('Zone B');
+});

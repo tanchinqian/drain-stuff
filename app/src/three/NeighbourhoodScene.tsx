@@ -1,15 +1,7 @@
-import { useMemo, useRef, type ComponentRef } from 'react';
+import { useMemo, useRef, useState, type ComponentRef } from 'react';
 import { Canvas } from '@react-three/fiber';
-import {
-  DragControls,
-  Html,
-  Instance,
-  Instances,
-  OrbitControls,
-  Edges,
-  Line,
-} from '@react-three/drei';
-import { Matrix4, Shape, Vector2, Vector3 } from 'three';
+import { Html, Instance, Instances, OrbitControls, Edges, Line } from '@react-three/drei';
+import { Shape, Vector2 } from 'three';
 import type { Feature, House, Sensor, Zone, ZoneRain } from '../api/types';
 import { useSelection } from '../state';
 import { palette, roofGeometry } from './geometry';
@@ -18,7 +10,7 @@ import FitCamera from './FitCamera';
 import SensorMarkers from './SensorMarkers';
 import RainCloud from './RainCloud';
 import { sensorMarkers } from '../api/sensorViews';
-import { featureCallouts, mapBounds, pilotByBuilding, roadLabels, site } from '../site/layout';
+import { featureCallouts, pilotByBuilding, roadLabels, site } from '../site/layout';
 
 type Props = {
   sensors: Sensor[];
@@ -29,10 +21,7 @@ type Props = {
   rain: ZoneRain[];
   layer: 'water' | 'rain';
   cloudOpacity: number;
-  move: boolean;
   reset: number;
-  mappedHouseId: string | null;
-  onSelectMapped: (id: string | null) => void;
 };
 
 function SceneContent({
@@ -41,16 +30,13 @@ function SceneContent({
   rain,
   layer,
   cloudOpacity,
-  move,
   sensors,
   showSensors,
-  mappedHouseId,
-  onSelectMapped,
 }: Props) {
-  const positions = useSelection((s) => s.housePositions),
-    selected = useSelection((s) => s.houseId),
+  const selected = useSelection((s) => s.houseId),
     select = useSelection((s) => s.selectHouse),
-    moveHouse = useSelection((s) => s.moveHouse);
+    zoneId = useSelection((s) => s.zoneId);
+  const [hover, setHover] = useState<string | null>(null);
   const navigate = useNavigate();
   const controls = useRef<ComponentRef<typeof OrbitControls>>(null);
   const roof = useMemo(() => roofGeometry(), []);
@@ -71,12 +57,11 @@ function SceneContent({
     const pilotId = pilotByBuilding.get(h.id),
       pilot = houses.find((p) => p.id === pilotId);
     const id = pilotId || h.id;
-    const p = positions[id] || (pilot ? [pilot.x, pilot.y] : [h.x, h.z]);
-    return { ...h, id, x: p[0], z: p[1], pilot, selected: id === selected || id === mappedHouseId };
+    const p = pilot ? [pilot.x, pilot.y] : [h.x, h.z];
+    return { ...h, id, x: p[0], z: p[1], pilot, selected: id === selected };
   });
   const choose = (id: string, pilot?: House) => {
-    select(pilot ? id : null);
-    onSelectMapped(pilot ? null : id);
+    if (pilot) select(id);
   };
   return (
     <>
@@ -84,7 +69,7 @@ function SceneContent({
         width={73}
         height={44}
         controlsRef={controls}
-        enabled={!move}
+        enabled={true}
         target={[0, 0.2, 0]}
       />
       <color attach="background" args={['#E2DCCB']} />
@@ -125,16 +110,24 @@ function SceneContent({
             color={
               h.selected
                 ? palette.heat2
-                : layer === 'water' && h.pilot?.holdsWater6h
+                : h.id === hover
                   ? palette.heat1
-                  : h.pilot
-                    ? palette.panel
-                    : 0xc8beaa
+                  : layer === 'water' && h.pilot?.holdsWater6h
+                    ? palette.heat1
+                    : h.pilot
+                      ? palette.panel
+                      : 0xc8beaa
             }
-            onClick={(e) => {
-              e.stopPropagation();
-              choose(h.id, h.pilot);
-            }}
+            onClick={
+              h.pilot
+                ? (e) => {
+                    e.stopPropagation();
+                    choose(h.id, h.pilot);
+                  }
+                : undefined
+            }
+            onPointerOver={h.pilot ? () => setHover(h.id) : undefined}
+            onPointerOut={h.pilot ? () => setHover(null) : undefined}
           />
         ))}
       </Instances>
@@ -146,11 +139,25 @@ function SceneContent({
             position={[h.x, 0.43, h.z]}
             rotation={[0, h.rotation, 0]}
             scale={[h.width / 2.18, 0.2, h.depth / 1.93]}
-            color={h.selected ? palette.heat2 : h.pilot ? palette.ink2 : 0xa89b82}
-            onClick={(e) => {
-              e.stopPropagation();
-              choose(h.id, h.pilot);
-            }}
+            color={
+              h.selected
+                ? palette.heat2
+                : h.id === hover
+                  ? palette.heat1
+                  : h.pilot
+                    ? palette.ink2
+                    : 0xa89b82
+            }
+            onClick={
+              h.pilot
+                ? (e) => {
+                    e.stopPropagation();
+                    choose(h.id, h.pilot);
+                  }
+                : undefined
+            }
+            onPointerOver={h.pilot ? () => setHover(h.id) : undefined}
+            onPointerOut={h.pilot ? () => setHover(null) : undefined}
           />
         ))}
       </Instances>
@@ -158,39 +165,11 @@ function SceneContent({
         .filter((h) => h.selected)
         .map((h) => (
           <group key={h.id}>
-            {move ? (
-              <DragControls
-                axisLock="y"
-                matrix={new Matrix4().makeTranslation(h.x, 0, h.z)}
-                autoTransform={false}
-                dragLimits={[
-                  [-mapBounds.x, mapBounds.x],
-                  [0, 0],
-                  [-mapBounds.z, mapBounds.z],
-                ]}
-                onDrag={(matrix) => {
-                  const p = new Vector3().setFromMatrixPosition(matrix);
-                  moveHouse(h.id, [p.x, p.z]);
-                }}
-              >
-                <mesh position={[0, 0.38, 0]} rotation={[0, h.rotation, 0]}>
-                  <boxGeometry args={[h.width + 0.2, 0.8, h.depth + 0.2]} />
-                  <meshBasicMaterial
-                    transparent
-                    opacity={0.15}
-                    color={palette.heat2}
-                    depthWrite={false}
-                  />
-                  <Edges color={palette.ink} />
-                </mesh>
-              </DragControls>
-            ) : (
-              <mesh position={[h.x, 0.38, h.z]} rotation={[0, h.rotation, 0]}>
-                <boxGeometry args={[h.width + 0.12, 0.8, h.depth + 0.12]} />
-                <meshBasicMaterial transparent opacity={0} depthWrite={false} />
-                <Edges color={palette.ink} />
-              </mesh>
-            )}
+            <mesh position={[h.x, 0.38, h.z]} rotation={[0, h.rotation, 0]}>
+              <boxGeometry args={[h.width + 0.12, 0.8, h.depth + 0.12]} />
+              <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+              <Edges color={palette.ink} />
+            </mesh>
             <Html
               center
               position={[h.x + 1.4, 1.6, h.z]}
@@ -217,6 +196,28 @@ function SceneContent({
           </Html>
         );
       })}
+      {zoneId &&
+        (() => {
+          const rows = houses.filter((h) => h.zone === zoneId);
+          if (!rows.length) return null;
+          const minX = Math.min(...rows.map((h) => h.x)) - 2,
+            maxX = Math.max(...rows.map((h) => h.x)) + 2,
+            minZ = Math.min(...rows.map((h) => h.y)) - 2,
+            maxZ = Math.max(...rows.map((h) => h.y)) + 2;
+          return (
+            <Line
+              points={[
+                [minX, 0.1, minZ],
+                [maxX, 0.1, minZ],
+                [maxX, 0.1, maxZ],
+                [minX, 0.1, maxZ],
+                [minX, 0.1, minZ],
+              ]}
+              color={palette.ink}
+              lineWidth={2}
+            />
+          );
+        })()}
       {features.map((f) => {
         const [x, z] = featureCallouts[f.id] || [f.x, f.y];
         return (
@@ -256,47 +257,20 @@ function SceneContent({
         );
       })}
       {layer === 'rain' && cloudOpacity > 0 && <RainCloud samples={rain} opacity={cloudOpacity} />}
-      {showSensors && (
-        <SensorMarkers
-          site
-          sensors={sensorMarkers(sensors).map((s) => {
-            const house = houses.find((h) => h.drainId === s.ownerId),
-              moved = house && positions[house.id];
-            return house && moved
-              ? {
-                  ...s,
-                  siteLocation: {
-                    ...s.siteLocation,
-                    x: s.siteLocation.x - house.x + moved[0],
-                    z: s.siteLocation.z - house.y + moved[1],
-                  },
-                }
-              : s;
-          })}
-        />
-      )}
+      {showSensors && <SensorMarkers site sensors={sensorMarkers(sensors)} />}
     </>
   );
 }
 export default function NeighbourhoodScene(props: Props) {
-  const selectZone = useSelection((s) => s.selectZone);
-  const zoneId = useSelection((s) => s.zoneId);
   return (
     <>
-      <nav className="map-zones" aria-label="Map zones">
-        {props.zones.map((z) => (
-          <button key={z.id} aria-pressed={zoneId === z.id} onClick={() => selectZone(z.id)}>
-            Zone {z.id}  /  {props.rain.find((r) => r.zone === z.id)?.peakMmPerHr ?? z.peakMmPerHr}{' '}
-            mm/h
-          </button>
-        ))}
-      </nav>
       <div
         className="scene neighbourhood-scene"
-        aria-label="Interactive 3D map of 589 mapped houses and 24 synthetic pilot households"
+        aria-label="Interactive 3D map of 589 mapped houses and 24 pilot households"
         data-cloud-opacity={props.layer === 'rain' ? props.cloudOpacity : 0}
       >
         <Canvas
+          onPointerMissed={() => useSelection.getState().selectHouse(null)}
           key={props.reset}
           orthographic
           camera={{ position: [32, 46, 35], zoom: 12, near: 0.1, far: 200 }}

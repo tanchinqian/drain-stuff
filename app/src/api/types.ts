@@ -258,6 +258,7 @@ export interface BatchDetail extends Batch {
 }
 export interface Config extends Synthetic {
   contractVersion: string;
+  dataThrough?: string;
   placeholderLabel: string;
   doseCapLPerM2: number;
   pilotDoses: { label: string; lPerM2: number }[];

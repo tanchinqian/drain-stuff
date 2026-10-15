@@ -1597,3 +1597,50 @@ main {
     align-items: stretch;
   }
 }
+
+.fault-card {
+  border: 1px solid var(--border);
+  padding: 14px;
+  margin: 12px 0;
+}
+.fault-card h3 {
+  margin-top: 10px;
+}
+.zone-filter {
+  margin-bottom: 16px;
+}
+.compact-readings {
+  padding: 0;
+  list-style: none;
+}
+.compact-readings li {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 5px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.compact-readings small {
+  grid-column: 1/-1;
+}
+.sensor-history-bars {
+  display: flex;
+  align-items: end;
+  gap: 8px;
+  height: 180px;
+  overflow: auto;
+}
+.sensor-history-bars span {
+  display: block;
+  background: var(--heat-2);
+  min-width: 15px;
+}
+.plan-svg [role='button']:hover polygon {
+  fill: var(--heat-1);
+}
+.map-zones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 12px;
+}

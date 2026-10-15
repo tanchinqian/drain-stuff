@@ -12,14 +12,6 @@ export const radarStops = [
 ];
 export type RainSample = { zone: ZoneId; peakMmPerHr: number };
 
-function noise(x: number, z: number) {
-  return (
-    (Math.sin(x * 0.69 + Math.sin(z * 0.62)) +
-      Math.cos(z * 0.91 + x * 0.17) +
-      Math.sin(x * 1.37 - z * 1.21)) /
-    3
-  );
-}
 export function weatherAt(x: number, z: number, samples: RainSample[]) {
   let total = 0,
     weighted = 0,
@@ -33,9 +25,8 @@ export function weatherAt(x: number, z: number, samples: RainSample[]) {
     density += Math.exp(-distance / 110);
   }
   const edge = Math.min((33 - Math.abs(x)) / 6, (14 - Math.abs(z)) / 3, 1);
-  const coverage =
-    Math.max(0, Math.min(1, (density * (1 + noise(x, z) * 0.32) - 0.19) * 1.5)) * Math.max(0, edge);
-  return { rain: total ? Math.max(0, weighted / total + noise(x, z) * 7) : 0, coverage };
+  const coverage = samples.length ? Math.max(0, Math.min(1, density) * Math.max(0, edge)) : 0;
+  return { rain: total ? Math.max(0, weighted / total) : 0, coverage };
 }
 export function weatherPixels(samples: RainSample[], width = 512, height = 256) {
   const pixels = new Uint8ClampedArray(width * height * 4);

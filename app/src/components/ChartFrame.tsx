@@ -8,6 +8,7 @@ export default function ChartFrame({
   rows,
   children,
   takeaway,
+  legend,
   hasData = rows.some((row) => row.slice(1).some((value) => typeof value === 'number')),
 }: {
   title: string;
@@ -16,6 +17,7 @@ export default function ChartFrame({
   rows: (string | number | null)[][];
   children: ReactNode;
   takeaway: string;
+  legend?: ReactNode;
   hasData?: boolean;
 }) {
   const [table, setTable] = useState(false);
@@ -61,6 +63,7 @@ export default function ChartFrame({
           {children}
         </div>
       )}
+      {legend}
       <p className="takeaway">{takeaway}</p>
     </section>
   );

@@ -12,7 +12,7 @@ import { QueryState } from '../components/QueryState';
 import { drainParts, partName, partLink } from '../api/modelCatalog';
 export default function Faults() {
   const [params, setParams] = useSearchParams();
-  const [asset, setAsset] = useState(''),
+  const [asset, setAsset] = useState(params.get('asset') ?? ''),
     [selected, setSelected] = useState<Fault | null>(null),
     [rule, setRule] = useState<FaultRule | null>(null),
     [report, setReport] = useState(false),

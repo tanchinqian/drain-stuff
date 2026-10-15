@@ -14,8 +14,6 @@ export default function PlanMap({
   sensors,
   showSensors,
   cloudOpacity,
-  mappedHouseId,
-  onSelectMapped,
 }: {
   houses: House[];
   zones: Zone[];
@@ -25,13 +23,10 @@ export default function PlanMap({
   sensors: Sensor[];
   showSensors: boolean;
   cloudOpacity: number;
-  mappedHouseId: string | null;
-  onSelectMapped: (id: string | null) => void;
 }) {
   const selectHouse = useSelection((s) => s.selectHouse),
-    selectZone = useSelection((s) => s.selectZone),
     selected = useSelection((s) => s.houseId),
-    positions = useSelection((s) => s.housePositions);
+    zoneId = useSelection((s) => s.zoneId);
   const navigate = useNavigate();
   const cloud = useMemo(() => weatherCanvas(rain).toDataURL(), [rain]);
   return (
@@ -40,7 +35,8 @@ export default function PlanMap({
         className="plan-svg"
         viewBox="0 0 850 480"
         role="group"
-        aria-label="Mapped landed-house plan with simulated rainfall"
+        aria-label="Landed-house plan with rainfall"
+        onClick={() => selectHouse(null)}
       >
         <rect width="850" height="480" fill="var(--well2)" />
         {site.areas.map((a) => (
@@ -66,19 +62,25 @@ export default function PlanMap({
           const pilotId = pilotByBuilding.get(h.id),
             pilot = houses.find((p) => p.id === pilotId),
             id = pilotId || h.id;
-          const p = positions[id] || (pilot ? [pilot.x, pilot.y] : [h.x, h.z]);
+          const p = pilot ? [pilot.x, pilot.y] : [h.x, h.z];
           const choose = () => {
-            selectHouse(pilot ? id : null);
-            onSelectMapped(pilot ? null : id);
+            if (pilot) selectHouse(id);
           };
           return (
             <g
               key={id}
-              role="button"
-              tabIndex={pilot ? 0 : -1}
+              role={pilot ? 'button' : undefined}
+              tabIndex={pilot ? 0 : undefined}
               aria-label={pilot ? 'House ' + id : 'Mapped house ' + id}
               data-house-id={id}
-              onClick={choose}
+              onClick={
+                pilot
+                  ? (e) => {
+                      e.stopPropagation();
+                      choose();
+                    }
+                  : undefined
+              }
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
@@ -91,7 +93,7 @@ export default function PlanMap({
                   .map(([x, z]) => planPoint(x - h.x + p[0], z - h.z + p[1]).join(','))
                   .join(' ')}
                 fill={
-                  id === selected || id === mappedHouseId
+                  id === selected
                     ? 'var(--heat-2)'
                     : layer === 'water' && pilot?.holdsWater6h
                       ? 'var(--heat-1)'
@@ -102,9 +104,7 @@ export default function PlanMap({
                 stroke="var(--ink2)"
                 strokeWidth=".7"
               />
-              <title>
-                {pilot ? id + ' · Synthetic pilot household' : id + ' · Map footprint only'}
-              </title>
+              <title>{pilot ? id + ' · Pilot household' : id + ' · Map footprint only'}</title>
             </g>
           );
         })}
@@ -119,6 +119,31 @@ export default function PlanMap({
             pointerEvents="none"
           />
         )}
+        {zoneId &&
+          (() => {
+            const rows = houses.filter((h) => h.zone === zoneId);
+            if (!rows.length) return null;
+            const [x, y] = planPoint(
+                Math.min(...rows.map((h) => h.x)) - 2,
+                Math.min(...rows.map((h) => h.y)) - 2,
+              ),
+              [right, bottom] = planPoint(
+                Math.max(...rows.map((h) => h.x)) + 2,
+                Math.max(...rows.map((h) => h.y)) + 2,
+              );
+            return (
+              <rect
+                x={Math.min(x, right)}
+                y={Math.min(y, bottom)}
+                width={Math.abs(right - x)}
+                height={Math.abs(bottom - y)}
+                fill="none"
+                stroke="var(--ink)"
+                strokeWidth="3"
+                pointerEvents="none"
+              />
+            );
+          })()}
         {features.map((f) => {
           const [x1, y1] = planPoint(f.x, f.y),
             [x2, y2] = planPoint(...(featureCallouts[f.id] || [f.x, f.y]));
@@ -144,7 +169,11 @@ export default function PlanMap({
               tabIndex={0}
               aria-label={'Open feature ' + f.id}
               transform={`translate(${x},${y})`}
-              onClick={() => navigate('/feature/' + f.id)}
+              onClick={(e) => {
+                e.stopPropagation();
+                selectHouse(null);
+                navigate('/feature/' + f.id);
+              }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
@@ -161,12 +190,7 @@ export default function PlanMap({
         })}
         {showSensors &&
           sensors.map((s) => {
-            const house = houses.find((h) => h.drainId === s.ownerId),
-              moved = house && positions[house.id];
-            const [x, y] = planPoint(
-              s.siteLocation.x + (house && moved ? moved[0] - house.x : 0),
-              s.siteLocation.z + (house && moved ? moved[1] - house.y : 0),
-            );
+            const [x, y] = planPoint(s.siteLocation.x, s.siteLocation.z);
             return (
               <g key={s.sensorId} transform={`translate(${x},${y})`} pointerEvents="none">
                 <title>
@@ -189,43 +213,30 @@ export default function PlanMap({
         </text>
       </svg>
       <div className="plan-grid">
-        {zones.map((z) => (
-          <section key={z.id} className="plan-zone">
-            <button onClick={() => selectZone(z.id)}>
-              Zone {z.id} · {rain.find((r) => r.zone === z.id)?.peakMmPerHr ?? z.peakMmPerHr} mm/h
-            </button>
-            <div className="plan-houses">
-              {houses
-                .filter((h) => h.zone === z.id)
-                .map((h) => (
-                  <button
-                    key={h.id}
-                    onClick={() => {
-                      onSelectMapped(null);
-                      selectHouse(h.id);
-                    }}
-                    aria-label={
-                      h.id + (h.holdsWater6h ? ' holds water after six hours' : ' no water held')
-                    }
-                    style={{
-                      background:
-                        layer === 'water' && h.holdsWater6h ? 'var(--heat-1)' : 'var(--ground)',
-                    }}
-                  >
-                    <span className={'status-mark ' + (h.holdsWater6h ? 'watch' : 'ok')} />
-                    {h.id}
-                  </button>
-                ))}
-            </div>
-          </section>
-        ))}
-        <div className="inline full-span">
-          {features.map((f) => (
-            <button key={f.id} onClick={() => navigate('/feature/' + f.id)}>
-              {f.id} · {f.name}
-            </button>
+        {zones
+          .filter((z) => !zoneId || z.id === zoneId)
+          .map((z) => (
+            <section key={z.id} className="plan-zone">
+              <h3>
+                Zone {z.id} · {(rain.find((r) => r.zone === z.id)?.peakMmPerHr ?? 0).toFixed(1)}{' '}
+                mm/h
+              </h3>
+              <div className="plan-houses">
+                {houses
+                  .filter((h) => h.zone === z.id)
+                  .map((h) => (
+                    <button
+                      key={h.id}
+                      aria-label={'House ' + h.id}
+                      aria-pressed={selected === h.id}
+                      onClick={() => selectHouse(h.id)}
+                    >
+                      {h.id}
+                    </button>
+                  ))}
+              </div>
+            </section>
           ))}
-        </div>
       </div>
     </>
   );
