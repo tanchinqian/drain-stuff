@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { api } from '../api/client';
-import { armName, dateOnly, overdue, testMean, formatValue } from '../utils';
+import { armName, dateOnly, trialStatus, testMean, formatValue } from '../utils';
 import { QueryState } from '../components/QueryState';
 import TrialComparison from '../components/TrialComparison';
 import TrialTestForm from '../components/TrialTestForm';
@@ -12,9 +12,10 @@ import DataTable from '../components/DataTable';
 import Drawer from '../components/Drawer';
 import Chip from '../components/Chip';
 import Term from '../components/Term';
+import RecordHistory from '../components/RecordHistory';
 export default function Trials() {
   const [params, setParams] = useSearchParams(),
-    [drawer, setDrawer] = useState<'test' | 'checks' | null>(null);
+    [drawer, setDrawer] = useState<'test' | 'checks' | 'allocation' | null>(null);
   const query = useQuery({
     queryKey: ['trial-register'],
     queryFn: async () => {
@@ -30,8 +31,7 @@ export default function Trials() {
   const d = query.data,
     selected =
       d?.trials.find((t) => t.featureId === (params.get('feature') ?? 'S1')) ?? d?.trials[0];
-  const state = (t: NonNullable<typeof selected>) =>
-    !t.baselineDone ? 'Needs baseline' : overdue(t.nextRetestDue) ? 'Overdue' : 'On track';
+  const state=trialStatus;
   return (
     <QueryState loading={query.isPending} error={query.error}>
       <div className="page-heading">
@@ -45,25 +45,7 @@ export default function Trials() {
       {d && selected && (
         <>
           <TrialComparison trials={d.trials} config={d.config} />
-          <div className="master-detail">
-            <aside className="master-list" aria-label="Trial sites">
-              {d.trials.map((t) => (
-                <button
-                  key={t.featureId}
-                  aria-pressed={selected.featureId === t.featureId}
-                  onClick={() => setParams({ feature: t.featureId })}
-                >
-                  <strong>
-                    {t.featureId} ·{' '}
-                    {d.features.find((f) => f.id === t.featureId)?.kind === 'tree_pit'
-                      ? 'Tree pit'
-                      : 'Swale'}
-                  </strong>
-                  <small>{armName[t.arm]}</small>
-                  <Chip value={state(t)} />
-                </button>
-              ))}
-            </aside>
+          <div className="trial-workspace">
             <div className="master-content stack">
               <section className="panel">
                 <h2>Trial register</h2>
@@ -155,15 +137,12 @@ export default function Trials() {
                     {selected.owner?.name ?? 'Unassigned'}
                   </div>
                 </div>
-                <p>
-                  Source: field test log {selected.featureId}
-                  {selected.batchId ? ' and batch record ' + selected.batchId : ''}.
-                </p>
+                <dl className="record-source"><dt>Data source</dt><dd>Field test log {selected.featureId}{selected.batchId?' · Batch record '+selected.batchId:''}</dd></dl>
                 <div className="actions">
                   <button onClick={() => setDrawer('test')}>
                     {selected.baselineDone ? 'Log a re-test' : 'Record baseline'}
                   </button>
-                  <button onClick={() => setDrawer('checks')}>Update safety checks</button>
+                  <button onClick={() => setDrawer('checks')}>Update safety checks</button><button onClick={()=>setDrawer('allocation')}>Allocate mature compost</button>
                 </div>
                 <h3>Safety checks</h3>
                 <ul className="check-results">
@@ -198,27 +177,9 @@ export default function Trials() {
                     First heavy rain: washout, clogging, photo and result.
                   </li>
                 </ul>
-                {selected.history?.length ? (
-                  <DataTable
-                    id={'trial-check-history-' + selected.featureId}
-                    rows={selected.history}
-                    rowId={(r) => r.id}
-                    columns={[
-                      { key: 'action', label: 'Entry', value: (r) => r.action },
-                      { key: 'date', label: 'Date', value: (r) => dateOnly(r.t) },
-                      { key: 'who', label: 'Who', value: (r) => r.user },
-                    ]}
-                  />
-                ) : (
-                  <p className="small">No additional safety checks saved yet.</p>
-                )}
+                <RecordHistory entries={selected.history??[]} title={'Trial history · '+selected.featureId}/>
               </section>
-              <AllocationForm
-                key={selected.featureId}
-                trial={selected}
-                batches={d.batches}
-                config={d.config}
-              />
+
             </div>
           </div>
           {drawer && (
@@ -226,7 +187,7 @@ export default function Trials() {
               title={
                 drawer === 'test'
                   ? 'Log a test · ' + selected.featureId
-                  : 'Safety checks · ' + selected.featureId
+                  : drawer==='checks'?'Safety checks · ' + selected.featureId:'Allocate mature compost · '+selected.featureId
               }
               onClose={() => setDrawer(null)}
             >
@@ -235,9 +196,9 @@ export default function Trials() {
                   key={selected.featureId + '-' + selected.baselineDone}
                   trial={selected}
                 />
-              ) : (
+              ) : drawer==='checks' ? (
                 <GuardrailForm key={selected.featureId} trial={selected} config={d.config} />
-              )}
+              ) : <AllocationForm key={selected.featureId} trial={selected} batches={d.batches} config={d.config}/>}
             </Drawer>
           )}
         </>

@@ -2075,3 +2075,17 @@ main > .about {
 .charts-grid .chart-area {height:240px;flex:none;}
 .chart-empty {align-self:start;padding:12px 0;border-block:1px solid var(--border);font-size:14px;}
 @media (max-width:760px) {.charts-grid {grid-template-columns:1fr;}.overview-map .neighbourhood-scene,.overview-map .plan-svg {height:400px;}}
+
+.trial-workspace {margin-top:18px;}
+.trial-comparison {gap:16px;}
+.trial-arm h2 {display:flex;gap:8px;align-items:center;font-size:19px;}
+.trial-arm {display:grid;gap:12px;}
+.before-after {display:grid;gap:10px;margin-block:8px;}
+.before-after > div {display:grid;grid-template-columns:45px 1fr 100px;gap:10px;align-items:center;font-size:14px;}
+.before-after strong {text-align:right;}
+.bar-track {height:18px;background:var(--well);}
+.bar-track i {display:block;height:18px;}
+.trial-progress p {display:flex;gap:6px;align-items:center;font-size:13px;margin-bottom:6px;}
+.record-source {display:flex;gap:12px;margin:16px 0;font-size:14px;}
+.record-source dt {font-weight:600;}
+.record-source dd {margin:0;}
