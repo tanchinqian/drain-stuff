@@ -1,6 +1,6 @@
 # S1 illustrative storm simulation
 
-The S1 detail page (`/feature/S1`) adds **Try a storm at S1** above its existing drainage assembly. It demonstrates how rain, finite storage and outlet blockage affect ponding. It is not a flood forecast, calibrated hydraulic model or evidence of compost treatment performance. S2 and S3 retain their existing detail views.
+The S1 detail page (`/feature/S1`) adds **Try a storm at S1** inside a collapsed section below its existing drainage assembly. It demonstrates how rain, finite storage and outlet blockage affect ponding. It is not a flood forecast, calibrated hydraulic model or evidence of compost treatment performance. S2 and S3 retain their existing detail views.
 
 ## Use the controls
 
@@ -14,7 +14,7 @@ The S1 detail page (`/feature/S1`) adds **Try a storm at S1** above its existing
 2. Select **Play storm**. Each 150 ms of playback advances one simulated minute. **Pause storm** holds that frame; **Reset storm** returns to minute zero while keeping your settings.
 3. Drag the **Storm timeline** to inspect a minute directly; scrubbing pauses playback. The timeline ends 180 minutes after the selected rain duration, even if water remains. At the end, **Replay storm** starts the same scenario again.
 4. Compare clear and blocked outlets at the same elapsed minute. For example, keep 60 mm/h and 45 minutes, then inspect minute 180 with 0% and 100% blockage. Changing blockage resets time, so scrub back to minute 180 for each comparison.
-5. Select **Inspect drainage parts** to jump to the detailed assembly below. Its part selection, exploded/assembled/cross-section views, sensor records and inspection actions remain available.
+5. Select **Inspect drainage parts** to jump to the detailed assembly above. Its part selection, exploded/assembled/cross-section views, sensor records and inspection actions remain available.
 
 Water beads identify active runoff, infiltration and outlet paths; their positions follow the selected minute. Cyan surface volume depicts ponding with visually exaggerated depth. Read the numerical values for quantities: runoff, infiltration and outlet are L/min, ponding is mm, and **Total overflow** is cumulative litres. The initial frame is dry and marked Ready. Rain continues through the selected final rain minute; the next minute begins the draining interval.
 

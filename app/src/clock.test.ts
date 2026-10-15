@@ -1,0 +1,43 @@
+import { expect, test } from 'vitest';
+import { loadedAt, rebaseDates } from './clock';
+import { generateMock, DEMO_NOW } from './api/mock/seed';
+import { trialStatus, trialDue } from './utils';
+test('new observations are anchored to the real load clock', () => {
+  const db = generateMock();
+  expect(db.clockAnchor).toBe(loadedAt);
+  expect(db.rainfall.at(-1)?.t).toBe(DEMO_NOW);
+  expect(Math.abs(Date.now() - Date.parse(DEMO_NOW))).toBeLessThan(60000);
+  expect(db.batches[0].startedAt).not.toBe('2026-07-10');
+});
+test('legacy date migration preserves audit history and newer manual observations', () => {
+  const v = {
+    t: '2026-10-12T01:40:00.000Z',
+    history: [{ t: '2026-10-15T10:00:00.000Z' }],
+    manual: { t: '2026-10-15T10:00:00.000Z' },
+  };
+  const moved = rebaseDates(v, '2026-10-12T01:40:00.000Z', '2026-10-20T01:40:00.000Z', true);
+  expect(moved.t).toBe('2026-10-20T01:40:00.000Z');
+  expect(moved.history).toEqual(v.history);
+  expect(moved.manual).toEqual(v.manual);
+});
+test('trial readiness uses the latest test as well as the recorded due date', () => {
+  const trials = generateMock().trials;
+  expect(trialStatus(trials.find((t) => t.featureId === 'T1')!)).toBe('Needs baseline');
+  const t2 = trials.find((t) => t.featureId === 'T2')!;
+  expect(trialStatus(t2)).toBe('Overdue');
+  expect(Date.parse(trialDue(t2))).toBeLessThan(Date.now());
+  expect(
+    trialStatus(
+      trials.find((t) => t.featureId === 'S1')!,
+      new Date(DEMO_NOW),
+    ),
+  ).toBe('On track');
+});
+
+test('trial stays on track throughout its displayed Singapore due day', () => {
+  const trial = generateMock().trials.find((t) => t.featureId === 'S1')!;
+  trial.nextRetestDue = '2026-10-30';
+  trial.tests = [{ ...trial.tests.at(-1)!, t: '2026-10-15T01:00:00.000Z' }];
+  expect(trialStatus(trial, new Date('2026-10-22T15:59:00Z'))).toBe('On track');
+  expect(trialStatus(trial, new Date('2026-10-22T16:00:00Z'))).toBe('Overdue');
+});

@@ -1,4 +1,6 @@
-import SearchableSelect from './SearchableSelect';
+import RecordHistory from './RecordHistory';
+import { displayName } from '../utils';
+import Term from './Term';
 import { useState, type FormEvent } from 'react';
 import type { BatchChecks, BatchDetail } from '../api/types';
 import { api } from '../api/client';
@@ -8,7 +10,7 @@ export default function BatchChecksForm({ batch }: { batch: BatchDetail }) {
   const [checks, setChecks] = useState<BatchChecks>(batch.checks);
   const write = useWrite(
     () => api.batchChecks(batch.id, checks),
-    'Intake, maturity and leachate checks recorded.',
+    'Saved to batch ' + batch.id + ' check log',
   );
   function submit(event: FormEvent) {
     event.preventDefault();
@@ -41,6 +43,7 @@ export default function BatchChecksForm({ batch }: { batch: BatchDetail }) {
   return (
     <section className="panel">
       <h2>Intake, maturity and leachate checks</h2>
+      <p className="small">Saves to batch {batch.id} check log.</p>
       <form onSubmit={submit}>
         <h3 style={{ marginTop: 20 }}>Intake check</h3>
         <PhotoSlot
@@ -56,34 +59,42 @@ export default function BatchChecksForm({ batch }: { batch: BatchDetail }) {
         </p>
         <hr className="divider" />
         <h3>Human reference checks</h3>
-        <div className="field">
-          <span>Squeeze test</span>
-          <SearchableSelect
-            label="Squeeze test"
-            value={checks.squeeze}
-            onChange={(e) =>
-              setChecks({ ...checks, squeeze: e.target.value as BatchChecks['squeeze'] })
-            }
-          >
-            {['wet', 'ok', 'dry'].map((v) => (
-              <option key={v}>{v}</option>
+        <fieldset>
+          <legend>Squeeze test</legend>
+          <div className="segments">
+            {(['dry', 'ok', 'wet'] as const).map((v) => (
+              <button
+                type="button"
+                aria-pressed={checks.squeeze === v}
+                key={v}
+                onClick={() => setChecks({ ...checks, squeeze: v })}
+              >
+                {v === 'ok' ? 'OK' : v === 'dry' ? 'Dry' : 'Wet'}
+              </button>
             ))}
-          </SearchableSelect>
-        </div>
-        <div className="field">
-          <span>Smell log</span>
-          <SearchableSelect
-            label="Smell log"
-            value={checks.smell}
-            onChange={(e) =>
-              setChecks({ ...checks, smell: e.target.value as BatchChecks['smell'] })
-            }
-          >
-            <option value="normal">Normal</option>
-            <option value="putrid">Putrid / rotten egg</option>
-            <option value="ammonia">Ammonia smell</option>
-          </SearchableSelect>
-        </div>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>Smell log</legend>
+          <div className="segments">
+            {(['normal', 'ammonia', 'putrid', 'sour'] as const).map((v) => (
+              <button
+                type="button"
+                aria-pressed={checks.smell === v}
+                key={v}
+                onClick={() => setChecks({ ...checks, smell: v })}
+              >
+                {v === 'normal'
+                  ? 'Normal'
+                  : v === 'ammonia'
+                    ? 'Ammonia'
+                    : v === 'putrid'
+                      ? 'Putrid or rotten egg'
+                      : 'Sour'}
+              </button>
+            ))}
+          </div>
+        </fieldset>
         {checkbox('puddles', 'Puddles observed on the base')}
         {checkbox('pests', 'Pests observed  -  visual only')}
         <label className="field">
@@ -98,7 +109,9 @@ export default function BatchChecksForm({ batch }: { batch: BatchDetail }) {
           />
         </label>
         <hr className="divider" />
-        <h3>Maturity gate</h3>
+        <h3>
+          <Term text="Maturity gate" />
+        </h3>
         <label className="field">
           Measured ambient temperature, °C
           <input
@@ -110,9 +123,7 @@ export default function BatchChecksForm({ batch }: { batch: BatchDetail }) {
             value={checks.ambientTempC}
             onChange={(e) => setChecks({ ...checks, ambientTempC: Number(e.target.value) })}
           />
-          <span className="field-note">
-            Ambient comparison tolerance is a config placeholder, to confirm with a practitioner.
-          </span>
+          <span className="field-note">Compare this value with the measured pile temperature.</span>
         </label>
         {checkbox('ambientReached', 'Temperature fell to measured ambient')}
         {checkbox('didNotReheat', 'Temperature did not reheat after turning')}
@@ -141,6 +152,14 @@ export default function BatchChecksForm({ batch }: { batch: BatchDetail }) {
           </p>
         )}
       </form>
+      <RecordHistory
+        entries={(batch.checkHistory ?? []).map((r) => ({
+          ...r,
+          action: batch.id + ' checks saved',
+          note: `Squeeze: ${displayName(r.checks.squeeze)}; smell: ${displayName(r.checks.smell)}; cover: ${r.checks.bayCovered ? 'checked' : 'pending'}; sump ${r.checks.sumpLevelCm} cm`,
+        }))}
+        title="Check history"
+      />
     </section>
   );
 }

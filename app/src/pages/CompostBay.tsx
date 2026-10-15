@@ -2,12 +2,10 @@ import { useQuery } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router-dom';
 import { api } from '../api/client';
 import { QueryState } from '../components/QueryState';
-import ModelWorkspace from '../components/ModelWorkspace';
-import BatchChecksForm from '../components/BatchChecksForm';
-import BatchReadingForm from '../components/BatchReadingForm';
+import BatchWorkspace from '../components/BatchWorkspace';
 export default function CompostBay() {
   const { bay = 'B-01' } = useParams();
-  const result = useQuery({
+  const query = useQuery({
     queryKey: ['compost-bay', bay],
     queryFn: async () => {
       const [batches, config, faults] = await Promise.all([
@@ -16,60 +14,49 @@ export default function CompostBay() {
         api.faults(),
       ]);
       const batch = batches.find((b) => b.id === bay || b.bay === bay);
-      if (!batch) throw new Error('Compost bay not found. Open the batch ledger and choose a bay.');
+      if (!batch) throw new Error('Choose an existing compost bay.');
       const [parts, sensors] = await Promise.all([
         api.batchParts(batch.id),
         api.sensors({ ownerId: batch.id }),
       ]);
-      return { batch, config, faults, parts, sensors };
+      return { batch, batches, config, faults, parts, sensors };
     },
   });
-  const data = result.data;
+  const d = query.data;
   return (
-    <QueryState loading={result.isPending} error={result.error}>
-      {data && (
+    <QueryState loading={query.isPending} error={query.error}>
+      {d && (
         <>
           <div className="page-heading">
-            <div>
-              <h1>
-                {data.batch.bay} · {data.batch.id}
-              </h1>
-              <p className="sub">Compost bay schematic · Synthetic inputs and readings</p>
-            </div>
-            <Link className="button" to={`/batches?batch=${data.batch.id}`}>
-              Back to batch ledger
+            <h1>{d.batch.bay}</h1>
+            <Link className="button" to={'/batches?batch=' + d.batch.id}>
+              Batch ledger
             </Link>
           </div>
-          <div className="summary-strip">
-            <div>
-              <small>Batch status</small>
-              {data.batch.status}
+          <div className="master-detail">
+            <aside className="master-list" aria-label="Compost bays">
+              {d.batches.map((b) => (
+                <Link
+                  className="button"
+                  key={b.id}
+                  to={'/batches/' + b.id}
+                  aria-current={b.id === d.batch.id ? 'page' : undefined}
+                >
+                  {b.bay}
+                  <small>{b.id}</small>
+                </Link>
+              ))}
+            </aside>
+            <div className="master-content">
+              <BatchWorkspace
+                key={d.batch.id}
+                batch={d.batch}
+                config={d.config}
+                parts={d.parts}
+                sensors={d.sensors}
+                faults={d.faults}
+              />
             </div>
-            <div>
-              <small>Maturity gate</small>
-              {data.batch.maturityGate}
-            </div>
-            <div>
-              <small>Sensor / human inputs</small>
-              {data.sensors.length}
-            </div>
-          </div>
-          <ModelWorkspace
-            key={data.batch.id}
-            ownerId={data.batch.id}
-            parts={data.parts}
-            sensors={data.sensors}
-            config={data.config}
-            faults={data.faults}
-            kind="compost"
-          />
-          <div className="trial-layout" style={{ marginTop: 24 }}>
-            <BatchReadingForm
-              key={`readings-${data.batch.id}`}
-              batch={data.batch}
-              config={data.config}
-            />
-            <BatchChecksForm key={`checks-${data.batch.id}`} batch={data.batch} />
           </div>
         </>
       )}

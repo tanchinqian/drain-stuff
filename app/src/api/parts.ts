@@ -1,8 +1,10 @@
+import { repairSteps } from './repairSteps';
 import { bayParts, drainParts } from './modelCatalog';
 import type { Fault, Part, Sensor, Status } from './types';
 
 export function installedPart(ownerId: string, partId: string) {
-  if (partId === 'liner') return false;
+  if (partId === 'liner') return ownerId.startsWith('T');
+  if (partId === 'sock' && ownerId === 'I1') return true;
   if (partId === 'sock' || partId === 'checkdam') return ownerId === 'S1';
   if (partId === 'energy') return ownerId === 'S1' || ownerId === 'S2';
   return true;
@@ -13,7 +15,40 @@ export function buildParts(
   faults: Fault[],
   compost = false,
 ): Part[] {
-  return (compost ? bayParts : drainParts).map((definition) => {
+  const definitions = compost
+    ? bayParts
+    : ownerId === 'I1'
+      ? drainParts
+          .filter((p) =>
+            ['inlet', 'pretreat', 'sock', 'outfall', 'overflow', 'ponding'].includes(p.partId),
+          )
+          .map((p) => ({
+            ...p,
+            name: (
+              {
+                inlet: 'Inlet chamber and grate',
+                pretreat: 'Sediment sump',
+                sock: 'Trash screen',
+                outfall: 'Outlet pipe',
+                overflow: 'Bypass weir',
+                ponding: 'Chamber water',
+              } as Record<string, string>
+            )[p.partId],
+          }))
+      : ownerId.startsWith('T')
+        ? drainParts
+            .filter((p) => !['energy', 'sock', 'checkdam'].includes(p.partId))
+            .map((p) => ({
+              ...p,
+              name:
+                p.partId === 'planting'
+                  ? 'Tree and root zone'
+                  : p.partId === 'liner'
+                    ? 'Root barrier'
+                    : p.name,
+            }))
+        : drainParts;
+  return definitions.map((definition) => {
     const installed = compost || installedPart(ownerId, definition.partId);
     const linked = sensors.filter(
       (s) => s.ownerId === ownerId && s.linkedPartIds.includes(definition.partId),
@@ -42,13 +77,7 @@ export function buildParts(
         : fault
           ? `${fault.type.replaceAll('_', ' ')}. Diagnosing input: ${fault.diagnosingInput}.`
           : 'No open fault recorded for this part.',
-      steps: fault
-        ? [
-            'Inspect the diagnosing input and its trust state before relying on the alert.',
-            definition.typicalFailure + ': confirm by a trained visual inspection.',
-            'Record the inspection and arrange a post-rain re-test.',
-          ]
-        : undefined,
+      steps: fault ? repairSteps[fault.type] : undefined,
     };
   });
 }

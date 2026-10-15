@@ -2,182 +2,223 @@ import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { api } from '../api/client';
-import { armName, dateOnly, exportCsv, overdue } from '../utils';
+import { armName, dateOnly, trialStatus, trialDue, testMean, formatValue } from '../utils';
 import { QueryState } from '../components/QueryState';
 import TrialComparison from '../components/TrialComparison';
 import TrialTestForm from '../components/TrialTestForm';
 import GuardrailForm from '../components/GuardrailForm';
 import AllocationForm from '../components/AllocationForm';
+import DataTable from '../components/DataTable';
+import Drawer from '../components/Drawer';
+import Chip from '../components/Chip';
+import Term from '../components/Term';
+import RecordHistory from '../components/RecordHistory';
 export default function Trials() {
-  const [params, setParams] = useSearchParams();
-  const [search, setSearch] = useState('');
+  const [params, setParams] = useSearchParams(),
+    [drawer, setDrawer] = useState<'test' | 'checks' | 'allocation' | null>(null);
   const query = useQuery({
     queryKey: ['trial-register'],
     queryFn: async () => {
-      const [trials, batches, config] = await Promise.all([
+      const [trials, batches, config, features] = await Promise.all([
         api.trials(),
         api.batches(),
         api.config(),
+        api.features(),
       ]);
-      return { trials, batches, config };
+      return { trials, batches, config, features };
     },
   });
-  const data = query.data,
+  const d = query.data,
     selected =
-      data?.trials.find((t) => t.featureId === (params.get('feature') || 'S1')) || data?.trials[0];
-  const rows =
-    data?.trials.filter((t) =>
-      [t.featureId, armName[t.arm], t.soilTexture, t.owner?.name, t.batchId, t.doseLabel]
-        .join(' ')
-        .toLowerCase()
-        .includes(search.trim().toLowerCase()),
-    ) ?? [];
+      d?.trials.find((t) => t.featureId === (params.get('feature') ?? 'S1')) ?? d?.trials[0];
+  const state = trialStatus;
   return (
     <QueryState loading={query.isPending} error={query.error}>
       <div className="page-heading">
-        <div>
-          <h1>One trial. Three arms.</h1>
-          <p className="sub">Measured difference · synthetic · Pilot, small sample, not proof</p>
-        </div>
-        <button
-          onClick={() =>
-            data &&
-            exportCsv(
-              'trial-register',
-              ['Feature', 'Arm', 'Soil', 'Baseline', 'n', 'Dose', 'Batch', 'Next re-test'],
-              data.trials.map((t) => [
-                t.featureId,
-                t.arm,
-                t.soilTexture,
-                t.baselineDone ? 'Complete' : 'Missing',
-                t.n,
-                t.doseLabel || 'None',
-                t.batchId || 'None',
-                t.nextRetestDue,
-              ]),
-            )
-          }
-        >
-          Export register
-        </button>
+        <h1>Trials</h1>
       </div>
-      {data && selected && (
+      <p>
+        A trial compares three ways of treating the soil at the same marked spots: untreated,
+        loosened only, and loosened plus compost. Each treated site is re-tested to see how fast
+        water soaks in.
+      </p>
+      {d && selected && (
         <>
-          <TrialComparison trials={data.trials} config={data.config} />
-          <section className="panel">
-            <h2>Trial register</h2>
-            <label className="field register-search">
-              Search trials
-              <input
-                type="search"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Feature, arm, soil, owner or batch"
-              />
-            </label>
-            {!rows.length && <p role="status">No matching trials. Clear search to see all.</p>}
-            <div className="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Feature / arm</th>
-                    <th>Soil / baseline</th>
-                    <th>Owner of record</th>
-                    <th>Lineage</th>
-                    <th>Next re-test</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.map((t) => (
-                    <tr key={t.featureId}>
-                      <td>
-                        <button
-                          aria-pressed={selected.featureId === t.featureId}
-                          onClick={() => setParams({ feature: t.featureId })}
-                        >
-                          {t.featureId}
-                        </button>
-                        <p className="small">{armName[t.arm]}</p>
-                      </td>
-                      <td>
-                        {t.soilTexture}
-                        <p className={t.baselineDone ? 'small' : 'error'}>
-                          {t.baselineDone
-                            ? 'Baseline complete'
-                            : 'Baseline missing — allocation blocked'}
-                        </p>
-                      </td>
-                      <td>
-                        {t.owner ? (
-                          <>
-                            {t.owner.name}
-                            <p className="small">
-                              {t.owner.role} · handover {dateOnly(t.owner.since)}
-                            </p>
-                          </>
-                        ) : (
-                          <span className="error">No owner recorded</span>
-                        )}
-                      </td>
-                      <td>
-                        {t.batchId ? (
-                          <Link to={'/batches?batch=' + t.batchId}>{t.batchId}</Link>
-                        ) : (
-                          'No compost'
-                        )}
-                        <p className="small">{t.doseLabel}</p>
-                      </td>
-                      <td>
-                        {dateOnly(t.nextRetestDue)}
-                        {overdue(t.nextRetestDue) && <p className="error">Overdue</p>}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          <TrialComparison trials={d.trials} config={d.config} />
+          <div className="trial-workspace">
+            <div className="master-content stack">
+              <section className="panel">
+                <h2>Trial register</h2>
+                <DataTable
+                  id="trials"
+                  rows={d.trials}
+                  rowId={(t) => t.featureId}
+                  onSelect={(t) => setParams({ feature: t.featureId })}
+                  filters={[
+                    { key: 'arm', label: 'Treatment', value: (t) => armName[t.arm] },
+                    {
+                      key: 'zone',
+                      label: 'Zone',
+                      value: (t) => d.features.find((f) => f.id === t.featureId)?.zone ?? '',
+                    },
+                    { key: 'status', label: 'Status', value: state },
+                    { key: 'owner', label: 'Owner', value: (t) => t.owner?.name ?? 'Unassigned' },
+                  ]}
+                  columns={[
+                    { key: 'id', label: 'Site', value: (t) => t.featureId },
+                    {
+                      key: 'type',
+                      label: 'Type',
+                      value: (t) =>
+                        d.features.find((f) => f.id === t.featureId)?.kind === 'tree_pit'
+                          ? 'Tree pit'
+                          : 'Swale',
+                    },
+                    {
+                      key: 'location',
+                      label: 'Location',
+                      value: (t) => 'Zone ' + d.features.find((f) => f.id === t.featureId)?.zone,
+                    },
+                    { key: 'arm', label: 'Treatment', value: (t) => armName[t.arm] },
+                    {
+                      key: 'last',
+                      label: 'Last test',
+                      value: (t) => t.tests.at(-1)?.t ?? 'No test',
+                      render: (t) => (t.tests.length ? dateOnly(t.tests.at(-1)!.t) : 'No test'),
+                    },
+                    { key: 'next', label: 'Next re-test', value: (t) => dateOnly(trialDue(t)) },
+                    {
+                      key: 'state',
+                      label: 'Status',
+                      value: state,
+                      render: (t) => <Chip value={state(t)} />,
+                    },
+                  ]}
+                  actions={(t) => (
+                    <button
+                      onClick={() => {
+                        setParams({ feature: t.featureId });
+                        setDrawer('test');
+                      }}
+                    >
+                      {!t.baselineDone ? 'Record baseline' : 'Log a re-test'}
+                    </button>
+                  )}
+                />
+              </section>
+              <section className="panel">
+                <div className="panel-heading">
+                  <h2>{selected.featureId} · Trial record</h2>
+                  <Link className="button" to={'/feature/' + selected.featureId}>
+                    Inspect feature
+                  </Link>
+                </div>
+                <div className="summary-strip">
+                  <div>
+                    <small>Treatment</small>
+                    {armName[selected.arm]}
+                  </div>
+                  <div>
+                    <small>
+                      <Term text="Baseline" />
+                    </small>
+                    {formatValue(testMean(selected.tests, 'baseline')?.value, 'mm/h')}
+                  </div>
+                  <div>
+                    <small>
+                      <Term text="Re-test" />
+                    </small>
+                    {formatValue(testMean(selected.tests, 'retest')?.value, 'mm/h')}
+                  </div>
+                  <div>
+                    <small>
+                      <Term text="Owner of record" />
+                    </small>
+                    {selected.owner?.name ?? 'Unassigned'}
+                  </div>
+                </div>
+                <dl className="record-source">
+                  <dt>Data source</dt>
+                  <dd>
+                    Field test log {selected.featureId}
+                    {selected.batchId ? ' · Batch record ' + selected.batchId : ''}
+                  </dd>
+                </dl>
+                <div className="actions">
+                  <button onClick={() => setDrawer('test')}>
+                    {selected.baselineDone ? 'Log a re-test' : 'Record baseline'}
+                  </button>
+                  <button onClick={() => setDrawer('checks')}>Update safety checks</button>
+                  <button onClick={() => setDrawer('allocation')}>Allocate mature compost</button>
+                </div>
+                <h3>Safety checks</h3>
+                <ul className="check-results">
+                  <li>
+                    <Chip
+                      value={
+                        selected.guardrails.nutrientExport === 'pass'
+                          ? 'Passed'
+                          : selected.guardrails.nutrientExport === 'fail'
+                            ? 'Failed'
+                            : 'Needs nutrient sample'
+                      }
+                    />{' '}
+                    Did water leaving the soil carry extra nutrients?{' '}
+                    {selected.guardrails.outletSample &&
+                      dateOnly(selected.guardrails.outletSample.t)}
+                  </li>
+                  <li>
+                    <Chip
+                      value={
+                        selected.guardrails.noOpenDrainContact ? 'Passed' : 'Needs confirmation'
+                      }
+                    />{' '}
+                    Compost has no contact with open drains.
+                  </li>
+                  <li>
+                    <Chip
+                      value={
+                        selected.guardrails.postStormCheck === 'ok' ? 'Passed' : 'Needs storm check'
+                      }
+                    />{' '}
+                    First heavy rain: washout, clogging, photo and result.
+                  </li>
+                </ul>
+                <RecordHistory
+                  entries={selected.history ?? []}
+                  title={'Trial history · ' + selected.featureId}
+                />
+              </section>
             </div>
-          </section>
-          <div className="page-heading" style={{ marginTop: 26 }}>
-            <h2>{selected.featureId} · Trial record</h2>
-            <Link to={'/feature/' + selected.featureId} className="button">
-              Inspect feature
-            </Link>
           </div>
-          {selected.appliedAt && (
-            <div className="summary-strip">
-              <div>
-                <small>Batch applied</small>
-                <Link to={'/batches?batch=' + selected.batchId}>{selected.batchId}</Link>
-              </div>
-              <div>
-                <small>Applied date</small>
-                {dateOnly(selected.appliedAt)}
-              </div>
-              <div>
-                <small>Applied by</small>
-                {selected.appliedBy}
-              </div>
-              <div>
-                <small>Owner of record</small>
-                {selected.owner?.name || 'No owner recorded'}
-              </div>
-            </div>
+          {drawer && (
+            <Drawer
+              title={
+                drawer === 'test'
+                  ? 'Log a test · ' + selected.featureId
+                  : drawer === 'checks'
+                    ? 'Safety checks · ' + selected.featureId
+                    : 'Allocate mature compost · ' + selected.featureId
+              }
+              onClose={() => setDrawer(null)}
+            >
+              {drawer === 'test' ? (
+                <TrialTestForm
+                  key={selected.featureId + '-' + selected.baselineDone}
+                  trial={selected}
+                />
+              ) : drawer === 'checks' ? (
+                <GuardrailForm key={selected.featureId} trial={selected} config={d.config} />
+              ) : (
+                <AllocationForm
+                  key={selected.featureId}
+                  trial={selected}
+                  batches={d.batches}
+                  config={d.config}
+                />
+              )}
+            </Drawer>
           )}
-          <div className="trial-layout">
-            <div className="stack">
-              <TrialTestForm
-                key={selected.featureId + '-' + selected.baselineDone}
-                trial={selected}
-              />
-              <AllocationForm
-                key={selected.featureId}
-                trial={selected}
-                batches={data.batches}
-                config={data.config}
-              />
-            </div>
-            <GuardrailForm key={selected.featureId} trial={selected} config={data.config} />
-          </div>
         </>
       )}
     </QueryState>

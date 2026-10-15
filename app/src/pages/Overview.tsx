@@ -1,99 +1,159 @@
-import SearchableSelect from '../components/SearchableSelect';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { api } from '../api/client';
-import { DEMO_NOW } from '../api/mock/seed';
 import { useSelection } from '../state';
+import { useSimulation } from '../simulation/physics/store';
 import NeighbourhoodScene from '../three/NeighbourhoodScene';
 import PlanMap from '../components/PlanMap';
 import HouseRecord from '../components/HouseRecord';
-import Status from '../components/Status';
 import { QueryState } from '../components/QueryState';
-import { dateTime } from '../utils';
 import OverviewCharts from '../components/OverviewCharts';
-import SensorPositions from '../components/SensorPositions';
-import { sensorMarkers } from '../api/sensorViews';
-import { partLink } from '../api/modelCatalog';
-import { mappedHouses, pilotByBuilding, site } from '../site/layout';
+import Chip from '../components/Chip';
+import PhysicsControls from '../components/PhysicsControls';
 import { radarStops } from '../site/weather';
-import MappedHouseRecord from '../components/MappedHouseRecord';
+import { site } from '../site/layout';
+import { partName } from '../api/modelCatalog';
+import { dateTime, dateOnly, displayName, timeLabel, faultOrder } from '../utils';
 export default function Overview() {
+  const [now] = useState(() => new Date().toISOString());
   const [view, setView] = useState<'3d' | 'plan'>('3d'),
-    [layer, setLayer] = useState<'rain' | 'water'>('rain'),
     [range, setRange] = useState('Last storm'),
-    [move, setMove] = useState(false),
-    [reset, setReset] = useState(0),
+    [layer, setLayer] = useState<'rain' | 'water'>('rain'),
     [cloudOpacity, setCloudOpacity] = useState(55),
-    [mappedHouseId, setMappedHouseId] = useState<string | null>(null),
-    [showSensors, setShowSensors] = useState(
-      new URLSearchParams(location.search).get('sensors') === '1',
-    );
+    [reset, setReset] = useState(0),
+    [showSensors, setShowSensors] = useState(false);
   const houseId = useSelection((s) => s.houseId),
-    zoneId = useSelection((s) => s.zoneId),
     selectHouse = useSelection((s) => s.selectHouse),
+    zoneId = useSelection((s) => s.zoneId),
     selectZone = useSelection((s) => s.selectZone),
-    resetHouses = useSelection((s) => s.resetHouses);
-  const from = new Date(
-    Date.parse(DEMO_NOW) -
-      (range === 'Last storm' ? 2 * 3600000 : range === '7 days' ? 7 * 86400000 : 56 * 86400000),
-  ).toISOString();
-  const result = useQuery({
-    queryKey: ['overview', range],
+    second = useSimulation((s) => s.second);
+  useEffect(() => {
+    selectZone(null);
+    selectHouse(null);
+  }, [selectZone, selectHouse]);
+  const config = useQuery({ queryKey: ['config'], queryFn: api.config });
+  const to = config.data?.dataThrough ?? now,
+    from = new Date(
+      Date.parse(to) -
+        (range === 'Last storm' ? 2 * 3600000 : range === '7 days' ? 7 : 56) *
+          (range === 'Last storm' ? 1 : 86400000),
+    ).toISOString();
+  const query = useQuery({
+    queryKey: ['overview', from, to],
+    enabled: !!config.data,
     queryFn: async () => {
-      const [zones, houses, features, faults, rain, rainfall, config, sensors] = await Promise.all([
+      const [zones, houses, features, faults, rain, rainfall, sensors] = await Promise.all([
         api.zones(),
         api.houses(),
         api.features(),
-        api.faults(),
-        api.zoneRain(from, DEMO_NOW),
-        api.rainfall(from, DEMO_NOW),
-        api.config(),
+        api.faults(from, to),
+        api.zoneRain(from, to),
+        api.rainfall(from, to),
         api.sensors(),
       ]);
-      return { zones, houses, features, faults, rain, rainfall, config, sensors };
+      return { zones, houses, features, faults, rain, rainfall, sensors };
     },
   });
-  const data = result.data;
-  const house = data?.houses.find((h) => h.id === houseId);
-  const mappedHouse = mappedHouseId ? mappedHouses.get(mappedHouseId) : undefined;
+  const available = useQuery({
+    queryKey: ['rainfall-availability', to],
+    enabled: !!config.data,
+    queryFn: () =>
+      Promise.all(
+        [2 * 3600000, 7 * 86400000, 56 * 86400000].map(
+          async (span) =>
+            (await api.rainfall(new Date(Date.parse(to) - span).toISOString(), to)).length > 0,
+        ),
+      ),
+  });
+  const data = query.data,
+    house = data?.houses.find((h) => h.id === houseId),
+    features = data?.features.filter((f) => !zoneId || f.zone === zoneId) ?? [],
+    faults = data?.faults.filter((f) => !zoneId || f.zone === zoneId) ?? [];
+  const start = data?.rainfall[0]?.t ?? from,
+    end = data?.rainfall.at(-1)?.t ?? to;
+  const duration = useSimulation(
+    (s) => s.configs.S1.values.duration.value + s.configs.S1.values.recovery.value,
+  );
+  const clock = Date.parse(start) + ((Date.parse(end) - Date.parse(start)) * second) / duration;
+  const samples = (data?.zones ?? []).map((z) => {
+    const series = (data?.rain ?? []).filter((r) => r.zone === z.id);
+    const point = series.filter((r) => !r.t || Date.parse(r.t) <= clock).at(-1);
+    return {
+      synthetic: true as const,
+      zone: z.id,
+      t: point?.t ?? start,
+      peakMmPerHr: point?.mmPerHr ?? point?.peakMmPerHr ?? 0,
+      totalMm: point?.totalMm ?? 0,
+    };
+  });
+  const weatherTimes = Array.from(
+    new Set(
+      (data?.rain ?? []).filter((r) => !zoneId || r.zone === zoneId).map((r) => r.t ?? start),
+    ),
+  ).sort();
+  const chartRain = weatherTimes.map((t) => {
+    const rows = (data?.rain ?? []).filter(
+      (r) => (r.t ?? start) === t && (!zoneId || r.zone === zoneId),
+    );
+    return {
+      t,
+      mmPerHr:
+        rows.reduce((n, r) => n + (r.mmPerHr ?? r.peakMmPerHr), 0) / Math.max(1, rows.length),
+      cumulativeMm: rows.reduce((n, r) => n + r.totalMm, 0) / Math.max(1, rows.length),
+    };
+  });
+  const sampleAt = samples[0]?.t ?? start;
   return (
-    <QueryState loading={result.isPending} error={result.error}>
+    <QueryState loading={config.isPending || query.isPending} error={query.error ?? config.error}>
       <div className="page-heading">
-        <div>
-          <h1>Follow the water. Find the fault.</h1>
-          <p className="sub">Last reading: {dateTime(DEMO_NOW)} · Synthetic</p>
-        </div>
-        <div className="segments">
-          {['Last storm', '7 days', '8 weeks'].map((r) => (
-            <button key={r} aria-pressed={range === r} onClick={() => setRange(r)}>
+        <h1>Overview</h1>
+        <div className="segments" aria-label="Time range">
+          {['Last storm', '7 days', '8 weeks'].map((r, i) => (
+            <button
+              disabled={available.data?.[i] === false}
+              title={
+                available.data?.[i] === false ? 'No rainfall records for this period' : undefined
+              }
+              key={r}
+              aria-pressed={range === r}
+              onClick={() => {
+                setRange(r);
+                selectHouse(null);
+              }}
+            >
               {r}
             </button>
           ))}
         </div>
       </div>
-      {data && (
+      {data && config.data && (
         <>
-          <div className="summary-strip">
-            <div>
-              <small>Sensor / human inputs</small>
-              <Link to="/sensors">{data.sensors.length} registered</Link>
-            </div>
-            <div>
-              <small>Suspect inputs</small>
-              {data.sensors.filter((s) => s.status === 'suspect').length}
-            </div>
-            <div>
-              <small>Offline inputs</small>
-              {data.sensors.filter((s) => s.status === 'offline').length}
-            </div>
+          <p className="attention-summary">
+            {faults.filter((f) => f.status !== 'closed').length} faults open ·{' '}
+            {data.sensors.filter((s) => (!zoneId || s.zone === zoneId) && s.status !== 'ok').length}{' '}
+            sensors need attention
+          </p>
+          <div className="zone-filter segments" aria-label="Zone filter">
+            {[null, 'A', 'B', 'C', 'D'].map((z) => (
+              <button
+                key={z ?? 'all'}
+                aria-pressed={zoneId === z}
+                onClick={() => {
+                  selectZone(z as 'A' | 'B' | 'C' | 'D' | null);
+                  selectHouse(null);
+                }}
+              >
+                {z ? 'Zone ' + z : 'All zones'}
+              </button>
+            ))}
           </div>
           <div className="overview-grid">
-            <section className="panel">
+            <section className="panel overview-map">
               <div className="panel-heading">
                 <div>
-                  <h2>Every house, and where water remains</h2>
-                  <p className="sub">Bandar Bukit Raja Phase 1 · Gamelan / Rodat housing window</p>
+                  <h2>Homes and drainage</h2>
+                  <p className="sub">Bandar Bukit Raja Phase 1 · {range}</p>
                 </div>
                 <div className="segments">
                   <button aria-pressed={view === '3d'} onClick={() => setView('3d')}>
@@ -104,264 +164,146 @@ export default function Overview() {
                   </button>
                 </div>
               </div>
-              <nav className="feature-jumps" aria-label="Open a drainage trial">
-                {data.features
-                  .filter((f) => f.kind === 'swale')
-                  .map((f) => (
-                    <Link key={f.id} className="feature-jump" to={'/feature/' + f.id}>
-                      <strong>
-                        <i
-                          style={{
-                            background: `var(--arm-${f.arm === 'decompaction' ? 'decompact' : f.arm})`,
-                          }}
-                        />
-                        {f.id} · {f.name}
-                      </strong>
-                      <span>
-                        Zone {f.zone} ·{' '}
-                        {f.arm === 'compost'
-                          ? 'Compost trial'
-                          : f.arm === 'decompaction'
-                            ? 'Decompaction trial'
-                            : 'Control trial'}
-                      </span>
-                    </Link>
-                  ))}
-              </nav>
               <div className="scene-toolbar">
                 <button aria-pressed={showSensors} onClick={() => setShowSensors(!showSensors)}>
                   Sensors
                 </button>
-                <button aria-pressed={layer === 'water'} onClick={() => setLayer('water')}>
-                  Water after 6 h
-                </button>
                 <button aria-pressed={layer === 'rain'} onClick={() => setLayer('rain')}>
                   Rainfall
                 </button>
-                {layer === 'rain' && (
-                  <label className="cloud-control">
-                    Cloud opacity
-                    <input
-                      aria-label="Cloud opacity"
-                      type="range"
-                      min="0"
-                      max="75"
-                      step="5"
-                      value={cloudOpacity}
-                      onChange={(e) => setCloudOpacity(Number(e.target.value))}
-                    />
-                    <output>{cloudOpacity}%</output>
-                  </label>
-                )}
-                {view === '3d' && (
-                  <>
-                    <button aria-pressed={!move} onClick={() => setMove(false)}>
-                      Orbit
-                    </button>
-                    <button aria-pressed={move} onClick={() => setMove(true)}>
-                      Move houses
-                    </button>
-                    <button
-                      onClick={() => {
-                        resetHouses();
-                        setReset((r) => r + 1);
-                      }}
-                    >
-                      Reset layout
-                    </button>
-                    <button onClick={() => setReset((r) => r + 1)}>Reset view</button>
-                  </>
-                )}
-                <div>
-                  <span>House</span>
-                  <SearchableSelect
-                    label="House"
-                    aria-label="Select a house"
-                    value={houseId || ''}
-                    onChange={(e) => {
-                      setMappedHouseId(null);
-                      selectHouse(e.target.value || null);
-                    }}
-                  >
-                    <option value="">Select a house</option>
-                    {data.houses.map((h) => (
-                      <option key={h.id}>{h.id}</option>
-                    ))}
-                  </SearchableSelect>
-                </div>
-                <div>
-                  <span>Map house</span>
-                  <SearchableSelect
-                    label="Map house"
-                    aria-label="Select a mapped house"
-                    value={mappedHouseId || ''}
-                    onChange={(e) => {
-                      selectHouse(null);
-                      setMappedHouseId(e.target.value || null);
-                    }}
-                  >
-                    <option value="">Select a mapped house</option>
-                    {site.houses
-                      .filter((h) => !pilotByBuilding.has(h.id))
-                      .map((h) => (
-                        <option key={h.id}>{h.id}</option>
-                      ))}
-                  </SearchableSelect>
-                </div>
+                <button aria-pressed={layer === 'water'} onClick={() => setLayer('water')}>
+                  Water after 6 h
+                </button>
+                <button onClick={() => setReset(reset + 1)}>Reset view</button>
+                <label className="cloud-control">
+                  Rainfall layer opacity
+                  <input
+                    aria-label="Rainfall layer opacity"
+                    type="range"
+                    min="0"
+                    max="75"
+                    step="5"
+                    value={cloudOpacity}
+                    onChange={(e) => setCloudOpacity(Number(e.target.value))}
+                  />
+                  <output>{cloudOpacity}%</output>
+                </label>
+              </div>
+              <p className="small rainfall-instant">
+                Current rainfall sample · {dateTime(sampleAt)}. Chart shows the full selected
+                period.
+              </p>
+              <div className="map-zones" aria-label="Zone rainfall" data-sample-time={sampleAt}>
+                {samples
+                  .filter((s) => !zoneId || s.zone === zoneId)
+                  .map((s) => (
+                    <span key={s.zone}>
+                      Zone {s.zone} · {s.peakMmPerHr.toFixed(1)} mm/h
+                    </span>
+                  ))}
               </div>
               {view === '3d' ? (
                 <NeighbourhoodScene
                   houses={data.houses}
                   zones={data.zones}
-                  features={data.features}
-                  rain={data.rain}
+                  features={features}
+                  rain={samples}
                   layer={layer}
                   cloudOpacity={cloudOpacity}
-                  mappedHouseId={mappedHouseId}
-                  onSelectMapped={setMappedHouseId}
-                  move={move}
                   reset={reset}
                   sensors={data.sensors}
                   showSensors={showSensors}
                 />
               ) : (
                 <PlanMap
-                  {...data}
+                  houses={data.houses}
+                  zones={data.zones}
+                  features={features}
+                  rain={samples}
                   layer={layer}
+                  sensors={data.sensors}
                   showSensors={showSensors}
                   cloudOpacity={cloudOpacity}
-                  mappedHouseId={mappedHouseId}
-                  onSelectMapped={setMappedHouseId}
                 />
               )}
-              {showSensors && <SensorPositions sensors={sensorMarkers(data.sensors)} />}
               <p className="scene-caption">
-                Drag to orbit · Scroll to zoom · In Move houses, select a house, then drag it.
+                Click a pilot house or pin. Drag to orbit · Scroll to zoom. Use Plan for keyboard
+                access.
               </p>
-              {view === '3d' && (
-                <div className="inline secondary-features">
-                  {data.features
-                    .filter((f) => f.kind !== 'swale')
-                    .map((f) => (
-                      <Link key={f.id} className="button" to={'/feature/' + f.id}>
-                        {f.id} · {f.name}
-                      </Link>
-                    ))}
-                </div>
-              )}
               <div className="heat-legend">
-                {layer === 'rain' ? (
+                <span>
+                  <i style={{ background: 'var(--panel)', border: '1px solid var(--ink)' }} />
+                  Pilot house
+                </span>
+                {layer === 'rain' &&
                   radarStops.map((stop) => (
                     <span key={stop.value}>
                       <i style={{ background: stop.color }} />
                       {stop.label}
                     </span>
-                  ))
-                ) : (
-                  <span>
-                    <i style={{ background: 'var(--heat-1)' }} />
-                    Pilot house holding water after 6 h
-                  </span>
-                )}
+                  ))}
               </div>
+              <p className="small">
+                Rainfall layer · {dateTime(new Date(clock).toISOString())} · {range}
+              </p>
+              <details>
+                <summary>Storm playback</summary>
+                <PhysicsControls ownerId="S1" />
+              </details>
+              {!data.rainfall.length && (
+                <p role="status">No rainfall records in this range. Select another period.</p>
+              )}
               <p className="small map-evidence">
-                {site.houses.length} mapped footprints · 24 synthetic pilot assignments. Heights,
-                drainage locations and weather are illustrative; not a survey or live radar.
-                <br />
                 <a href={site.googleMapsUrl} target="_blank" rel="noreferrer">
                   Compare on Google Maps
                 </a>{' '}
                 ·{' '}
                 <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">
                   © OpenStreetMap contributors · ODbL
-                </a>{' '}
-                · Map extract {site.fetchedAt}
+                </a>
               </p>
-              {zoneId && (
-                <div className="notice" role="status">
-                  Zone {zoneId}: {data.zones.find((z) => z.id === zoneId)?.housesHoldingWater6h} of
-                  6 houses hold water after 6 h.{' '}
-                  <button onClick={() => selectZone(null)}>Clear zone</button>
-                </div>
-              )}
-              {house && <HouseRecord house={house} faults={data.faults} inline={move} />}
-              {mappedHouse && (
-                <MappedHouseRecord house={mappedHouse} onClose={() => setMappedHouseId(null)} />
-              )}
+              {house && <HouseRecord house={house} faults={data.faults} />}
             </section>
-            <aside className="right-rail">
-              <section className="panel">
-                <h2>Zones, worst first</h2>
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Zone</th>
-                      <th>Peak mm/h</th>
-                      <th>Held / 6</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {[...data.zones]
-                      .sort((a, b) => b.housesHoldingWater6h - a.housesHoldingWater6h)
-                      .map((z) => (
-                        <tr key={z.id}>
-                          <td>
-                            <button onClick={() => selectZone(z.id)}>{z.id}</button>
-                          </td>
-                          <td className="numeric">{z.peakMmPerHr}</td>
-                          <td className="numeric">{z.housesHoldingWater6h} / 6</td>
-                        </tr>
-                      ))}
-                  </tbody>
-                </table>
-                <p className="takeaway">Zone A needs the first check.</p>
-              </section>
-              <section className="panel">
-                <h2>Open faults</h2>
-                {data.faults
-                  .filter((f) => f.status !== 'closed')
-                  .slice(0, 5)
-                  .map((f) => (
-                    <Link
-                      className="fault-link"
-                      key={f.id}
-                      to={partLink(
-                        f.featureId,
-                        f.partId,
-                        data.sensors.find((s) => s.ownerId === f.featureId)?.scope ?? 'drainage',
-                      )}
-                    >
-                      <Status
-                        status={
-                          f.type === 'sensor_offline'
-                            ? 'offline'
-                            : f.type === 'standing_water'
-                              ? 'watch'
-                              : 'fault'
-                        }
-                      />
-                      <span>
-                        {f.type.replaceAll('_', ' ')}
-                        <p className="small">
-                          {f.featureId} · Zone {f.zone}
-                        </p>
-                      </span>
+            <section className="panel attention-faults" aria-label="Open faults">
+              <h2>Open faults</h2>
+              <p className="small" title="Sorted by severity, then impact, then age">
+                Priority order
+              </p>
+              {faults
+                .filter((f) => f.status !== 'closed')
+                .sort(faultOrder)
+                .slice(0, 5)
+                .map((f) => (
+                  <article key={f.id} className="fault-card">
+                    <Chip value={f.severity === 3 ? 'High' : f.severity === 2 ? 'Medium' : 'Low'} />
+                    <h3>{displayName(f.type)}</h3>
+                    <p>
+                      {f.featureId} · {partName(f.partId)} · Zone {f.zone}
+                    </p>
+                    <p className="small">{timeLabel(f.openedAt)}</p>
+                    <Link className="button" to={'/faults?asset=' + f.featureId}>
+                      Open
                     </Link>
-                  ))}
-                <Link className="button" to="/faults">
-                  View all {data.faults.filter((f) => f.status !== 'closed').length} open faults
-                </Link>
-                {data.faults.every((f) => f.status === 'closed') && (
-                  <p className="empty">No open faults.</p>
-                )}
-              </section>
-            </aside>
+                  </article>
+                ))}
+              {!faults.some((f) => f.status !== 'closed') && (
+                <p>No open faults for this period and zone.</p>
+              )}
+              <Link className="button" to="/faults">
+                View all faults
+              </Link>
+            </section>
           </div>
           <OverviewCharts
-            rainfall={data.rainfall}
-            features={data.features}
-            faults={data.faults}
-            config={data.config}
+            rainfall={chartRain}
+            features={features}
+            faults={faults}
+            config={config.data}
+            from={from}
+            to={to}
+            range={range}
+            observationDate={dateOnly(to)}
+            sampleAt={sampleAt}
           />
         </>
       )}

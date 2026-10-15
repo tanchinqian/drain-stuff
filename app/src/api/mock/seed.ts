@@ -1,3 +1,4 @@
+import { loadedAt, rebaseDates } from '../../clock';
 import type {
   BatchDetail,
   Config,
@@ -15,7 +16,8 @@ import type {
 } from '../types';
 import { seedSensors, sensorSnapshot } from './sensors';
 import { featurePosition, mappedHouses, pilotBuildings } from '../../site/layout';
-export const DEMO_NOW = '2026-10-12T01:40:00.000Z';
+export const SEED_REFERENCE = '2026-10-12T01:40:00.000Z';
+export const DEMO_NOW = loadedAt;
 export const config: Config = {
   synthetic: true,
   contractVersion: '2.0.0',
@@ -63,6 +65,7 @@ export function seededRandom(seed: number) {
 }
 export interface Database {
   version: 2;
+  clockAnchor?: string;
   sensors: Sensor[];
   zones: Zone[];
   houses: House[];
@@ -101,7 +104,7 @@ export function generateMock(seed = 2026): Database {
       drainId: zone.id + String(j + 1).padStart(2, '0') + '-D',
       holdsWater6h: j < zone.housesHoldingWater6h,
       ownerOfRecord: 'Zone ' + zone.id + ' maintenance lead',
-      lastReadingAt: DEMO_NOW,
+      lastReadingAt: SEED_REFERENCE,
       nearestFeature: ['S1', 'S2', 'S3', 'I1'][i],
     })),
   );
@@ -192,8 +195,8 @@ export function generateMock(seed = 2026): Database {
   ].map((f) => ({
     ...f,
     synthetic: true,
-    openedAt: DEMO_NOW,
-    status: 'open',
+    openedAt: SEED_REFERENCE,
+    status: f.id === 'F-002' ? 'inspected' : 'open',
     ruleId:
       f.type === 'sensor_offline'
         ? 'sensor_trust'
@@ -212,14 +215,14 @@ export function generateMock(seed = 2026): Database {
       total += mmPerHr / 6;
       rainfall.push({
         synthetic: true,
-        t: new Date(Date.parse(DEMO_NOW) - day * 86400000 - (9 - i) * 600000).toISOString(),
+        t: new Date(Date.parse(SEED_REFERENCE) - day * 86400000 - (9 - i) * 600000).toISOString(),
         mmPerHr,
         cumulativeMm: Math.round(total * 10) / 10,
       });
     });
   }
   const readings: Record<string, Reading[]> = {};
-  const reading = (metric: Metric, value: number, t = DEMO_NOW, n?: number): Reading => ({
+  const reading = (metric: Metric, value: number, t = SEED_REFERENCE, n?: number): Reading => ({
     synthetic: true,
     t,
     metric,
@@ -239,7 +242,7 @@ export function generateMock(seed = 2026): Database {
           reading(
             'infiltration_mm_hr',
             value,
-            new Date(Date.parse(DEMO_NOW) - (7 - i) * 7 * 86400000).toISOString(),
+            new Date(Date.parse(SEED_REFERENCE) - (7 - i) * 7 * 86400000).toISOString(),
             6,
           ),
         )
@@ -255,7 +258,7 @@ export function generateMock(seed = 2026): Database {
       reading(
         'drain_down_h',
         Math.round((h.holdsWater6h ? 6.1 : 2.1) * 10 + random() * 7) / 10,
-        new Date(Date.parse(DEMO_NOW) - (4 - i) * 86400000).toISOString(),
+        new Date(Date.parse(SEED_REFERENCE) - (4 - i) * 86400000).toISOString(),
       ),
     );
   });
@@ -280,7 +283,7 @@ export function generateMock(seed = 2026): Database {
           for (let point = 0; point < 3; point++)
             tests.push({
               synthetic: true,
-              t: new Date(Date.parse(DEMO_NOW) - (7 - week) * 7 * 86400000).toISOString(),
+              t: new Date(Date.parse(SEED_REFERENCE) - (7 - week) * 7 * 86400000).toISOString(),
               phase: 'retest',
               metric: 'infiltration_mm_hr',
               value: armValues[f.arm!][week],
@@ -312,6 +315,7 @@ export function generateMock(seed = 2026): Database {
         batchId: f.id === 'S1' ? 'B-03' : undefined,
         appliedAt: f.id === 'S1' ? '2026-08-17' : undefined,
         appliedBy: f.id === 'S1' ? 'Trial crew' : undefined,
+        amendedDepthM: f.id === 'S1' ? 0.15 : undefined,
         tests,
         guardrails: {
           nutrientExport: 'not_tested',
@@ -328,16 +332,21 @@ export function generateMock(seed = 2026): Database {
     id: 'B-0' + (i + 1),
     bay: 'Bay ' + (i + 1),
     inputs: [
-      { kind: 'food_bokashi', kg: 35 },
-      { kind: 'trimmings', kg: 65 },
+      { kind: 'food_bokashi', kg: [28, 42, 35][i] },
+      { kind: 'trimmings', kg: [72, 58, 80][i] },
     ],
-    startedAt: '2026-07-' + String(10 + i).padStart(2, '0'),
+    startedAt: new Date(Date.parse(SEED_REFERENCE) - [18, 35, 63][i] * 86400000).toISOString(),
     status: i === 0 ? 'active' : i === 1 ? 'curing' : 'released',
     maturityGate: i === 2 ? 'passed' : 'blocked',
     gateReason:
       i === 0 ? 'Temperature has not returned to ambient.' : 'Manual maturity checks are pending.',
     readings: [
-      { synthetic: true, t: DEMO_NOW, tempC: i === 0 ? 47 : 29, moisturePct: i === 0 ? 68 : 48 },
+      {
+        synthetic: true,
+        t: SEED_REFERENCE,
+        tempC: i === 0 ? 47 : 29,
+        moisturePct: i === 0 ? 68 : 48,
+      },
     ],
     rules: [],
     checks: {
@@ -372,7 +381,7 @@ export function generateMock(seed = 2026): Database {
     actions: [],
     config: structuredClone(config),
   };
-  database.sensors = seedSensors(database, DEMO_NOW);
+  database.sensors = seedSensors(database, SEED_REFERENCE);
   for (const [ownerId, rows] of Object.entries(database.readings))
     for (const row of rows)
       row.sensorId = `${ownerId}-${row.metric === 'infiltration_mm_hr' ? 'INF-P1' : row.metric === 'sediment_mm' ? 'SEDIMENT' : 'OUTLET'}`;
@@ -389,14 +398,16 @@ export function generateMock(seed = 2026): Database {
     featureId: 'S3',
     partId: 'media',
     type: 'sensor_suspect',
-    severity: 2,
+    severity: 1,
     zone: 'C',
-    openedAt: DEMO_NOW,
-    status: 'open',
+    openedAt: SEED_REFERENCE,
+    status: 'closed',
     ruleId: 'sensor_trust',
     sensorIds: ['S3-MOIST-30'],
     sensorStatusesAtAlert: { 'S3-MOIST-30': 'suspect' },
     diagnosingInput: 'Possible drift in the 30 cm soil-moisture probe',
   });
-  return database;
+  const current = rebaseDates(database, SEED_REFERENCE, DEMO_NOW);
+  current.clockAnchor = DEMO_NOW;
+  return current;
 }

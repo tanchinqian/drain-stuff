@@ -1,151 +1,143 @@
 import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { api } from '../api/client';
-import { dateOnly, exportCsv } from '../utils';
 import { QueryState } from '../components/QueryState';
-import BatchChecksForm from '../components/BatchChecksForm';
-import BatchReadingForm from '../components/BatchReadingForm';
+import BatchWorkspace from '../components/BatchWorkspace';
+import DataTable from '../components/DataTable';
+import Chip from '../components/Chip';
+import { dateOnly } from '../utils';
 export default function Batches() {
   const [params, setParams] = useSearchParams();
-  const [search, setSearch] = useState('');
   const query = useQuery({
     queryKey: ['batch-ledger'],
     queryFn: async () => {
-      const [batches, config, trials] = await Promise.all([
+      const [batches, config, trials, faults] = await Promise.all([
         api.batches(),
         api.config(),
         api.trials(),
+        api.faults(),
       ]);
-      return { batches, config, trials };
+      return { batches, config, trials, faults };
     },
   });
-  const data = query.data,
-    selected = data?.batches.find((b) => b.id === params.get('batch')) || data?.batches[0];
-  const rows =
-    data?.batches.filter((b) =>
-      [b.id, b.bay, b.status, b.maturityGate, b.gateReason]
-        .join(' ')
-        .toLowerCase()
-        .includes(search.trim().toLowerCase()),
-    ) ?? [];
+  const d = query.data,
+    selected = d?.batches.find((b) => b.id === params.get('batch')) ?? d?.batches[0];
+  const model = useQuery({
+    queryKey: ['batch-model', selected?.id],
+    enabled: !!selected,
+    queryFn: async () => {
+      const [parts, sensors] = await Promise.all([
+        api.batchParts(selected!.id),
+        api.sensors({ ownerId: selected!.id }),
+      ]);
+      return { parts, sensors };
+    },
+  });
   return (
     <QueryState loading={query.isPending} error={query.error}>
       <div className="page-heading">
-        <div>
-          <h1>Trace each batch to its feature</h1>
-          <p className="sub">Synthetic batch ledger · Mature compost only</p>
-        </div>
-        <button
-          onClick={() =>
-            data &&
-            exportCsv(
-              'compost-batches',
-              ['Batch', 'Bay', 'Started', 'Status', 'Maturity gate'],
-              data.batches.map((b) => [b.id, b.bay, b.startedAt, b.status, b.maturityGate]),
-            )
-          }
-        >
-          Export ledger
-        </button>
+        <h1>Batches</h1>
+        <Link className="button" to="/trials">
+          Trial allocation
+        </Link>
       </div>
-      {data && selected && (
-        <>
-          <section className="panel">
-            <h2>Batch ledger</h2>
-            <label className="field register-search">
-              Search batches
-              <input
-                type="search"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Batch, bay, status or maturity"
+      {d && selected && (
+        <div className="master-detail">
+          <aside className="master-list" aria-label="Batch and bay list">
+            {d.batches.map((b) => (
+              <button
+                key={b.id}
+                aria-pressed={selected.id === b.id}
+                onClick={() => setParams({ batch: b.id })}
+              >
+                <strong>
+                  {b.id} · {b.bay}
+                </strong>
+                <small>
+                  <Chip value={b.status} />
+                </small>
+                <small>
+                  <Chip value={b.maturityGate === 'passed' ? 'Mature' : 'Checks needed'} />
+                </small>
+              </button>
+            ))}
+          </aside>
+          <div className="master-content stack">
+            {model.data ? (
+              <BatchWorkspace
+                batch={selected}
+                config={d.config}
+                parts={model.data.parts}
+                sensors={model.data.sensors}
+                faults={d.faults}
               />
-            </label>
-            {!rows.length && <p role="status">No matching batches. Clear search to see all.</p>}
-            <div className="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Batch / bay</th>
-                    <th>Inputs, rough kg</th>
-                    <th>Started</th>
-                    <th>Status</th>
-                    <th>Maturity gate</th>
-                    <th>Allocated feature</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.map((batch) => (
-                    <tr key={batch.id}>
-                      <td>
-                        <button
-                          aria-pressed={selected.id === batch.id}
-                          onClick={() => setParams({ batch: batch.id })}
-                        >
-                          {batch.id}
-                        </button>
-                        <p className="small">{batch.bay}</p>
-                      </td>
-                      <td>
-                        {batch.inputs.map((input) => (
-                          <p className="small" key={input.kind}>
-                            {input.kind === 'food_bokashi' ? 'Food / bokashi' : 'Trimmings'}:{' '}
-                            {input.kg} kg
-                          </p>
-                        ))}
-                      </td>
-                      <td>{dateOnly(batch.startedAt)}</td>
-                      <td>{batch.status}</td>
-                      <td>
-                        {batch.maturityGate === 'passed' ? (
-                          'Passed'
-                        ) : (
-                          <>
-                            <span className="error">Blocked</span>
-                            <p className="small">{batch.gateReason}</p>
-                          </>
-                        )}
-                      </td>
-                      <td>
-                        {data.trials
-                          .filter((t) => t.batchId === batch.id)
-                          .map((t) => (
-                            <p key={t.featureId}>
-                              <Link to={'/trials?feature=' + t.featureId}>
-                                {t.featureId} · {t.doseLabel}
-                              </Link>
-                            </p>
-                          ))}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
-          <div className="page-heading" style={{ marginTop: 26 }}>
-            <h2>
-              {selected.id} · {selected.bay}
-            </h2>
-            <Link to={'/batches/' + selected.id} className="button">
-              Open compost bay model
-            </Link>
-            <Link to="/trials" className="button">
-              Open trial allocation
-            </Link>
-          </div>
-          {selected.checks.rainExpected &&
-            (!selected.checks.bayCovered || !selected.checks.sumpChecked) && (
-              <div className="notice" role="status">
-                Rain expected · Cover the bay, hold turning and check the sump before continuing.
-              </div>
+            ) : (
+              <p role="status">Loading bay model...</p>
             )}
-          <div className="trial-layout">
-            <BatchReadingForm key={selected.id} batch={selected} config={data.config} />
-            <BatchChecksForm key={selected.id} batch={selected} />
+            <section className="panel">
+              <h2>Batch ledger</h2>
+              <DataTable
+                id="batches"
+                rows={d.batches}
+                rowId={(b) => b.id}
+                onSelect={(b) => setParams({ batch: b.id })}
+                filters={[
+                  { key: 'status', label: 'Status', value: (b) => b.status },
+                  { key: 'bay', label: 'Bay', value: (b) => b.bay },
+                  { key: 'maturity', label: 'Maturity', value: (b) => b.maturityGate },
+                  { key: 'date', label: 'Start date', value: (b) => b.startedAt.slice(0, 10) },
+                ]}
+                columns={[
+                  { key: 'id', label: 'Batch', value: (b) => b.id },
+                  { key: 'bay', label: 'Bay', value: (b) => b.bay },
+                  {
+                    key: 'input',
+                    label: 'Inputs',
+                    value: (b) =>
+                      b.inputs
+                        .map(
+                          (i) =>
+                            (i.kind === 'food_bokashi' ? 'Food/bokashi' : 'Trimmings') +
+                            ' ' +
+                            i.kg +
+                            ' kg',
+                        )
+                        .join(' · '),
+                  },
+                  { key: 'date', label: 'Started', value: (b) => dateOnly(b.startedAt) },
+                  {
+                    key: 'status',
+                    label: 'Status',
+                    value: (b) => b.status,
+                    render: (b) => <Chip value={b.status} />,
+                  },
+                  {
+                    key: 'maturity',
+                    label: 'Maturity gate',
+                    value: (b) => b.maturityGate,
+                    render: (b) => (
+                      <Chip value={b.maturityGate === 'passed' ? 'Passed' : 'Blocked'} />
+                    ),
+                  },
+                  {
+                    key: 'allocated',
+                    label: 'Allocated feature',
+                    value: (b) =>
+                      d.trials
+                        .filter((t) => t.batchId === b.id)
+                        .map((t) => t.featureId)
+                        .join(', ') || 'Not allocated',
+                  },
+                ]}
+                actions={(b) => (
+                  <Link className="button" to={'/batches/' + b.id}>
+                    Open bay
+                  </Link>
+                )}
+              />
+            </section>
           </div>
-        </>
+        </div>
       )}
     </QueryState>
   );

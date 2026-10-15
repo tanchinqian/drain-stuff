@@ -37,9 +37,7 @@ export default function SensorMarkers({
                 navigate(`/sensors?sensor=${encodeURIComponent(sensor.sensorId)}`);
               }}
             >
-              {sensor.status === 'suspect' ? (
-                <coneGeometry args={[0.09, 0.18, 3]} />
-              ) : sensor.status === 'offline' ? (
+              {sensor.status === 'suspect' || sensor.status === 'offline' ? (
                 <octahedronGeometry args={[0.105, 0]} />
               ) : (
                 <boxGeometry args={[0.13, 0.13, 0.13]} />

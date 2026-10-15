@@ -1,0 +1,2788 @@
+[
+  {
+    "name": "overview",
+    "w": 1440,
+    "documentWidth": 1440,
+    "main": {
+      "x": 24,
+      "y": 153.1875,
+      "w": 1392,
+      "h": 1991.828125,
+      "right": 1416,
+      "bottom": 2145.015625
+    },
+    "header": {
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 89,
+      "right": 1440,
+      "bottom": 89
+    },
+    "nav": {
+      "x": 0,
+      "y": 89,
+      "w": 1440,
+      "h": 64.1875,
+      "right": 1440,
+      "bottom": 153.1875
+    },
+    "toolbars": [],
+    "tables": [],
+    "masters": [],
+    "text": "Overview\nLast storm\n7 days\n8 weeks\n\n11 faults open · 2 sensors need attention\n\nAll zones\nZone A\nZone B\nZone C\nZone D\nHomes and drainage\n\nBandar Bukit Raja Phase 1 · Last storm\n\n3D\nPlan\nS1 · Pilot swale\nZone A\nS2 · Bioretention strip\nZone B\nS3 · Control swale\nZone C\nI1 · Inlet chamber\nZone B\nT1 · Tree pit 1\nZone D\nT2 · Tree pit 2\nZone D\nSensors\nRainfall\nWater after 6 h\nReset view\nRainfall layer opacity\n55%\nZone A · 4.1 mm/h\nZone B · 5.4 mm/h\nZone C · 2.7 mm/h\nZone D · 1.4 mm/h\nJalan Gamelan 4\nJalan Gamelan 1E\nJalan Rodat 17/KU6\nPersiaran Sungai Keramat\nS1\nS2\nS3\nI1\nT1\nT2\n\nPilot houses can be selected. Drag to orbit · Scroll to zoom.\n\nPilot house\nUnder 10\n10–20\n20–40\n40–50\n50–60\n60–80\nOver 80 mm/h\n\nRainfall layer · 12 Oct 2026, 8:10 am · Last storm\n\nStorm playback\n\nCompare on Google Maps · © OpenStreetMap contributors · ODbL\n\nOpen faults\n\nPriority order\n\nHigh\nInlet blocked\n\nS1 · Compost filter sock · Zone A\n\n3 d ago · 12 Oct 2026, 6:40 am\n\nOpen\nMedium\nLeachate\n\nB-02 · Leachate sump · Zone D\n\n4 d ago · 11 Oct 2026, 12:40 am\n\nOpen\nMedium\nLeachate\n\nB-01 · Leachate sump · Zone D\n\n4 d ago · 11 Oct 2026, 3:40 am\n\nOpen\nMedium\nToo wet\n\nB-01 · Compost bay / pile · Zone D\n\n4 d ago · 11 Oct 2026, 6:40 am\n\nOpen\nMedium\nMissing cap\n\nT2 · Cleanout / observation well · Zone D\n\n4 d ago · 11 Oct 2026, 9:40 am\n\nOpen\nView all faults\nRainfall · Last storm\n\nRain rate and cumulative depth for this period\n\nView as table\nExport\n12 Oct 2026, 8:20 am\n12 Oct 2026, 9:00 am\n12 Oct 2026, 9:40 am\n0\n20\n40\n60\n80\n0\n15\n30\n45\n60\nRain rate (mm/h)Cumulative depth (mm)\n\nBars: rain rate in mm/h, left axis. Line: cumulative depth in mm, right axis.\n\nHow long water stays after rain · Last storm\n\nHours for standing water to clear after the last storm. Target: clear within 6 h.\n\nView as table\nExport\n0 h\n2 h\n4 h\n6 h\n8 h\nS1\nS2\nS3\nS3 \nOver target\n\nI1, T1, T2: No reading.\n\nMore charts\nSave history (0)"
+  },
+  {
+    "name": "trials",
+    "w": 1440,
+    "documentWidth": 1440,
+    "main": {
+      "x": 24,
+      "y": 153.1875,
+      "w": 1392,
+      "h": 2397.546875,
+      "right": 1416,
+      "bottom": 2550.734375
+    },
+    "header": {
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 89,
+      "right": 1440,
+      "bottom": 89
+    },
+    "nav": {
+      "x": 0,
+      "y": 89,
+      "w": 1440,
+      "h": 64.1875,
+      "right": 1440,
+      "bottom": 153.1875
+    },
+    "toolbars": [
+      {
+        "rect": {
+          "x": 311,
+          "y": 789.421875,
+          "w": 1058,
+          "h": 122.296875,
+          "right": 1369,
+          "bottom": 911.71875
+        },
+        "controls": [
+          {
+            "text": "",
+            "rect": {
+              "x": 311,
+              "y": 815.71875,
+              "w": 311.84375,
+              "h": 44,
+              "right": 622.84375,
+              "bottom": 859.71875
+            }
+          },
+          {
+            "text": "Treatment",
+            "rect": {
+              "x": 630.84375,
+              "y": 802.5625,
+              "w": 109.203125,
+              "h": 44,
+              "right": 740.046875,
+              "bottom": 846.5625
+            }
+          },
+          {
+            "text": "Zone",
+            "rect": {
+              "x": 748.046875,
+              "y": 802.5625,
+              "w": 74,
+              "h": 44,
+              "right": 822.046875,
+              "bottom": 846.5625
+            }
+          },
+          {
+            "text": "Status",
+            "rect": {
+              "x": 830.046875,
+              "y": 802.5625,
+              "w": 83.09375,
+              "h": 44,
+              "right": 913.140625,
+              "bottom": 846.5625
+            }
+          },
+          {
+            "text": "Owner",
+            "rect": {
+              "x": 921.140625,
+              "y": 802.5625,
+              "w": 84.203125,
+              "h": 44,
+              "right": 1005.34375,
+              "bottom": 846.5625
+            }
+          },
+          {
+            "text": "Columns",
+            "rect": {
+              "x": 1013.34375,
+              "y": 802.5625,
+              "w": 101.234375,
+              "h": 44,
+              "right": 1114.578125,
+              "bottom": 846.5625
+            }
+          },
+          {
+            "text": "Compact rows",
+            "rect": {
+              "x": 1122.578125,
+              "y": 802.5625,
+              "w": 130.65625,
+              "h": 44,
+              "right": 1253.234375,
+              "bottom": 846.5625
+            }
+          },
+          {
+            "text": "Clear filters",
+            "rect": {
+              "x": 1261.234375,
+              "y": 802.5625,
+              "w": 107.765625,
+              "h": 44,
+              "right": 1369,
+              "bottom": 846.5625
+            }
+          },
+          {
+            "text": "Export CSV",
+            "rect": {
+              "x": 311,
+              "y": 867.71875,
+              "w": 111.4375,
+              "h": 44,
+              "right": 422.4375,
+              "bottom": 911.71875
+            }
+          }
+        ]
+      }
+    ],
+    "tables": [
+      {
+        "rows": 6,
+        "heights": [
+          79
+        ],
+        "wrap": {
+          "x": 311,
+          "y": 923.71875,
+          "w": 1058,
+          "h": 464,
+          "right": 1369,
+          "bottom": 1387.71875
+        },
+        "scrollHeight": 464,
+        "clientHeight": 464,
+        "clipped": []
+      }
+    ],
+    "masters": [
+      {
+        "rect": {
+          "x": 48,
+          "y": 727.125,
+          "w": 220,
+          "h": 529.890625,
+          "right": 268,
+          "bottom": 1257.015625
+        },
+        "scrollHeight": 530,
+        "clientHeight": 530,
+        "position": "sticky",
+        "text": "S1 · Swale\nSoil loosened + compost\nOn track\nS2 · Swale\nSoil loosened only\nOn track\nS3 · Swale\nUntreated (control)\nOverdue\nT1 · Tree pit\nSoil loosened + compost\nNeeds baseline\nT2 · Tree pit\nSoil loosened + compost\nOn track"
+      }
+    ],
+    "text": "Trials\n\nA trial compares three ways of treating the soil at the same marked spots: untreated, loosened only, and loosened plus compost. Each treated site is re-tested to see how fast water soaks in.\n\nS3 · n = 6\nUntreated (control)\n\n13.0 → 14.0 mm/h? (water absorbed per hour)\n\nBefore / latest re-test\n\nSame marked points · No compost\n\nRe-test minimum met\nMinimum of 12 re-tests met · 24 logged.\n\nInspect S3\nS2 · n = 6\nSoil loosened only\n\n13.0 → 19.0 mm/h? (water absorbed per hour)\n\nBefore / latest re-test\n\nSame marked points · No compost\n\nRe-test minimum met\nMinimum of 12 re-tests met · 24 logged.\n\nInspect S2\nS1 · n = 6\nSoil loosened + compost\n\n13.0 → 22.0 mm/h? (water absorbed per hour)\n\nBefore / latest re-test\n\nSame marked points · Pilot dose B\n\nRe-test minimum met\nMinimum of 12 re-tests met · 24 logged.\n\nInspect S1\nS1 · Swale\nSoil loosened + compost\nOn track\nS2 · Swale\nSoil loosened only\nOn track\nS3 · Swale\nUntreated (control)\nOverdue\nT1 · Tree pit\nSoil loosened + compost\nNeeds baseline\nT2 · Tree pit\nSoil loosened + compost\nOn track\nTrial register\nSearch trials\nTreatment\nZone\nStatus\nOwner\nColumns\nCompact rows\nClear filters\nExport CSV\n\tSite\tType\tLocation\tTreatment\tLast test\tNext re-test\tStatus\tActions\n\tS1\tSwale\tZone A\tSoil loosened + compost\t12 Oct 2026\t19 Oct 2026\t\nOn track\t\nLog a re-test\n\n\tS2\tSwale\tZone B\tSoil loosened only\t12 Oct 2026\t19 Oct 2026\t\nOn track\t\nLog a re-test\n\n\tS3\tSwale\tZone C\tUntreated (control)\t12 Oct 2026\t10 Oct 2026\t\nOverdue\t\nLog a re-test\n\n\tT1\tTree pit\tZone D\tSoil loosened + compost\tNo test\t19 Oct 2026\t\nNeeds baseline\t\nRecord baseline\n\n\tT2\tTree pit\tZone D\tSoil loosened + compost\t10 Aug 2026\t19 Oct 2026\t\nOn track\t\nLog a re-test\n5 records · 0 selected\nPrevious page\nPage 1 of 1\nNext page\nS1 · Trial record\nInspect feature\nTreatment\nSoil loosened + compost\nBaseline?\n13 mm/h\nRe-test?\n22 mm/h\nOwner of record?\nZone A maintenance lead\n\nSource: field test log S1 and batch record B-03.\n\nLog a re-test\nUpdate safety checks\nSafety checks\nNeeds nutrient sample Did water leaving the soil carry extra nutrients?\nPassed Compost has no contact with open drains.\nNeeds storm check First heavy rain: washout, clogging, photo and result.\n\nNo additional safety checks saved yet.\n\nAllocate mature compost\n\nLabelled pilot doses; no fixed target\n\nBatch\nB-01 · Temperature has not returned to ambient.\nB-02 · Temperature has not returned to ambient.\nB-03 · Mature\nPilot dose\nPilot dose A\nPilot dose B\nPilot dose C\nLabelled dose, L/m²\nAmended soil depth, mm\nApplied by\nDose cap: 25 L/m². This is a guardrail, not a treatment target.\nAllocate to S1\nSave history (0)"
+  },
+  {
+    "name": "batches",
+    "w": 1440,
+    "documentWidth": 1440,
+    "main": {
+      "x": 24,
+      "y": 153.1875,
+      "w": 1392,
+      "h": 2674.09375,
+      "right": 1416,
+      "bottom": 2827.28125
+    },
+    "header": {
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 89,
+      "right": 1440,
+      "bottom": 89
+    },
+    "nav": {
+      "x": 0,
+      "y": 89,
+      "w": 1440,
+      "h": 64.1875,
+      "right": 1440,
+      "bottom": 153.1875
+    },
+    "toolbars": [
+      {
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "right": 0,
+          "bottom": 0
+        },
+        "controls": [
+          {
+            "text": "",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0,
+              "right": 0,
+              "bottom": 0
+            }
+          },
+          {
+            "text": "Columns",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0,
+              "right": 0,
+              "bottom": 0
+            }
+          },
+          {
+            "text": "Compact rows",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0,
+              "right": 0,
+              "bottom": 0
+            }
+          },
+          {
+            "text": "Clear filters",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0,
+              "right": 0,
+              "bottom": 0
+            }
+          },
+          {
+            "text": "Export CSV",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0,
+              "right": 0,
+              "bottom": 0
+            }
+          }
+        ]
+      },
+      {
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "right": 0,
+          "bottom": 0
+        },
+        "controls": [
+          {
+            "text": "",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0,
+              "right": 0,
+              "bottom": 0
+            }
+          },
+          {
+            "text": "Columns",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0,
+              "right": 0,
+              "bottom": 0
+            }
+          },
+          {
+            "text": "Compact rows",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0,
+              "right": 0,
+              "bottom": 0
+            }
+          },
+          {
+            "text": "Clear filters",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0,
+              "right": 0,
+              "bottom": 0
+            }
+          },
+          {
+            "text": "Export CSV",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0,
+              "right": 0,
+              "bottom": 0
+            }
+          }
+        ]
+      },
+      {
+        "rect": {
+          "x": 311,
+          "y": 2171.984375,
+          "w": 1058,
+          "h": 122.296875,
+          "right": 1369,
+          "bottom": 2294.28125
+        },
+        "controls": [
+          {
+            "text": "",
+            "rect": {
+              "x": 311,
+              "y": 2198.28125,
+              "w": 313.765625,
+              "h": 44,
+              "right": 624.765625,
+              "bottom": 2242.28125
+            }
+          },
+          {
+            "text": "Status",
+            "rect": {
+              "x": 632.765625,
+              "y": 2185.125,
+              "w": 83.09375,
+              "h": 44,
+              "right": 715.859375,
+              "bottom": 2229.125
+            }
+          },
+          {
+            "text": "Bay",
+            "rect": {
+              "x": 723.859375,
+              "y": 2185.125,
+              "w": 64.890625,
+              "h": 44,
+              "right": 788.75,
+              "bottom": 2229.125
+            }
+          },
+          {
+            "text": "Maturity",
+            "rect": {
+              "x": 796.75,
+              "y": 2185.125,
+              "w": 94.6875,
+              "h": 44,
+              "right": 891.4375,
+              "bottom": 2229.125
+            }
+          },
+          {
+            "text": "Start date",
+            "rect": {
+              "x": 899.4375,
+              "y": 2185.125,
+              "w": 105.90625,
+              "h": 44,
+              "right": 1005.34375,
+              "bottom": 2229.125
+            }
+          },
+          {
+            "text": "Columns",
+            "rect": {
+              "x": 1013.34375,
+              "y": 2185.125,
+              "w": 101.234375,
+              "h": 44,
+              "right": 1114.578125,
+              "bottom": 2229.125
+            }
+          },
+          {
+            "text": "Compact rows",
+            "rect": {
+              "x": 1122.578125,
+              "y": 2185.125,
+              "w": 130.65625,
+              "h": 44,
+              "right": 1253.234375,
+              "bottom": 2229.125
+            }
+          },
+          {
+            "text": "Clear filters",
+            "rect": {
+              "x": 1261.234375,
+              "y": 2185.125,
+              "w": 107.765625,
+              "h": 44,
+              "right": 1369,
+              "bottom": 2229.125
+            }
+          },
+          {
+            "text": "Export CSV",
+            "rect": {
+              "x": 311,
+              "y": 2250.28125,
+              "w": 111.4375,
+              "h": 44,
+              "right": 422.4375,
+              "bottom": 2294.28125
+            }
+          }
+        ]
+      }
+    ],
+    "tables": [
+      {
+        "rows": 2,
+        "heights": [
+          0
+        ],
+        "wrap": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "right": 0,
+          "bottom": 0
+        },
+        "scrollHeight": 0,
+        "clientHeight": 0,
+        "clipped": []
+      },
+      {
+        "rows": 1,
+        "heights": [],
+        "wrap": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "right": 0,
+          "bottom": 0
+        },
+        "scrollHeight": 0,
+        "clientHeight": 0,
+        "clipped": []
+      },
+      {
+        "rows": 4,
+        "heights": [
+          79
+        ],
+        "wrap": {
+          "x": 311,
+          "y": 2306.28125,
+          "w": 1058,
+          "h": 306,
+          "right": 1369,
+          "bottom": 2612.28125
+        },
+        "scrollHeight": 306,
+        "clientHeight": 306,
+        "clipped": []
+      }
+    ],
+    "masters": [
+      {
+        "rect": {
+          "x": 48,
+          "y": 243.1875,
+          "w": 220,
+          "h": 354.625,
+          "right": 268,
+          "bottom": 597.8125
+        },
+        "scrollHeight": 355,
+        "clientHeight": 355,
+        "position": "sticky",
+        "text": "B-01 · Bay 1\nActive\nChecks needed\nB-02 · Bay 2\nCuring\nChecks needed\nB-03 · Bay 3\nReleased\nMature"
+      }
+    ],
+    "text": "Batches\nTrial allocation\nB-01 · Bay 1\nActive\nChecks needed\nB-02 · Bay 2\nCuring\nChecks needed\nB-03 · Bay 3\nReleased\nMature\nB-01 · Bay 1\nActive\n\nMaturity gate?: \nBlocked\n\nTemperature has not returned to ambient. Complete the missing check, then save the check log.\n\nModel\nReadings\nChecks\nOperator\nDebug\nTroubleshoot\nCAD assembly\nIntake: scale and checklist\nCompost bay / pile\nDry carbon store\nRain cover\nBase and slope\nLeachate sump\nCuring area\nRain gauge\n1\nFault\n2\nFault\n\nSelect a part to inspect its readings and checks.\n\nExploded\nAssembled\nCross-section\nExplode 65%\nSensors\nIsolate part\nHide part\nShow all\nReset parts\nReset view\n\nDrag to orbit · Scroll to zoom. Dimensions are in local metres.\n\nCompost bay / pile\nFault\n\nActive composting with two probe depths\n\nTypical failure: Not heating, wet pile, smell or pests\n\nSensors on this part\n\nB-01-TEMP-10 / Pile temperature, 10 cm / 47 °C / Reference / OK\n\nDetails\n\nB-01-TEMP-50 / Pile temperature, 50 cm / 48 °C / Reference / OK\n\nDetails\n\nB-01-MOIST / Relative pile moisture / 68 relative % What is this? Relative moisture only; needs calibration against the squeeze test. / Proxy / OK\n\nDetails\n\nB-01-MANUAL / Squeeze / smell / Wet / Normal / Reference / OK\n\nDetails\n\nB-01-VIS-bay / Compost bay / pile inspection / No pests observed / Reference / OK\n\nDetails\nWhy is this highlighted?\n\nInput: B-01-MOIST, B-01-MANUAL, B-01-VIS-base\n\nRule: Wet pile or puddles\n\nThreshold: moisture above 60% or a wet squeeze check / puddles\n\nRecorded 11 Oct 2026, 6:40 am\n\nDiagnosing input\n\nCapacitive moisture proxy + manual squeeze + visual inspection\n\nWhat looks wrong\n\nToo wet.\n\nDraft. Check against the local authority's procedure before use.\nInspection steps\nMark inspected\nLog a clean\nRaise a work order\nBatch ledger\nSearch batches\nStatus\nBay\nMaturity\nStart date\nColumns\nCompact rows\nClear filters\nExport CSV\n\tBatch\tBay\tInputs\tStarted\tStatus\tMaturity gate?\tAllocated feature\tActions\n\tB-01\tBay 1\tFood and bokashi: 35 kg, Trimmings: 65 kg?\t10 Jul 2026\t\nActive\t\nBlocked\tNot allocated\t\nOpen bay\n\n\tB-02\tBay 2\tFood and bokashi: 35 kg, Trimmings: 65 kg?\t11 Jul 2026\t\nCuring\t\nBlocked\tNot allocated\t\nOpen bay\n\n\tB-03\tBay 3\tFood and bokashi: 35 kg, Trimmings: 65 kg?\t12 Jul 2026\t\nReleased\t\nPassed\tS1\t\nOpen bay\n3 records · 0 selected\nPrevious page\nPage 1 of 1\nNext page\nSave history (0)"
+  },
+  {
+    "name": "compost",
+    "w": 1440,
+    "documentWidth": 1440,
+    "main": {
+      "x": 24,
+      "y": 153.1875,
+      "w": 1392,
+      "h": 2014.5,
+      "right": 1416,
+      "bottom": 2167.6875
+    },
+    "header": {
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 89,
+      "right": 1440,
+      "bottom": 89
+    },
+    "nav": {
+      "x": 0,
+      "y": 89,
+      "w": 1440,
+      "h": 64.1875,
+      "right": 1440,
+      "bottom": 153.1875
+    },
+    "toolbars": [
+      {
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "right": 0,
+          "bottom": 0
+        },
+        "controls": [
+          {
+            "text": "",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0,
+              "right": 0,
+              "bottom": 0
+            }
+          },
+          {
+            "text": "Columns",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0,
+              "right": 0,
+              "bottom": 0
+            }
+          },
+          {
+            "text": "Compact rows",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0,
+              "right": 0,
+              "bottom": 0
+            }
+          },
+          {
+            "text": "Clear filters",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0,
+              "right": 0,
+              "bottom": 0
+            }
+          },
+          {
+            "text": "Export CSV",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0,
+              "right": 0,
+              "bottom": 0
+            }
+          }
+        ]
+      },
+      {
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "right": 0,
+          "bottom": 0
+        },
+        "controls": [
+          {
+            "text": "",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0,
+              "right": 0,
+              "bottom": 0
+            }
+          },
+          {
+            "text": "Columns",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0,
+              "right": 0,
+              "bottom": 0
+            }
+          },
+          {
+            "text": "Compact rows",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0,
+              "right": 0,
+              "bottom": 0
+            }
+          },
+          {
+            "text": "Clear filters",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0,
+              "right": 0,
+              "bottom": 0
+            }
+          },
+          {
+            "text": "Export CSV",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0,
+              "right": 0,
+              "bottom": 0
+            }
+          }
+        ]
+      }
+    ],
+    "tables": [
+      {
+        "rows": 2,
+        "heights": [
+          0
+        ],
+        "wrap": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "right": 0,
+          "bottom": 0
+        },
+        "scrollHeight": 0,
+        "clientHeight": 0,
+        "clipped": []
+      },
+      {
+        "rows": 1,
+        "heights": [],
+        "wrap": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "right": 0,
+          "bottom": 0
+        },
+        "scrollHeight": 0,
+        "clientHeight": 0,
+        "clipped": []
+      }
+    ],
+    "masters": [
+      {
+        "rect": {
+          "x": 48,
+          "y": 243.1875,
+          "w": 220,
+          "h": 234.203125,
+          "right": 268,
+          "bottom": 477.390625
+        },
+        "scrollHeight": 234,
+        "clientHeight": 234,
+        "position": "sticky",
+        "text": "Bay 1\nB-01\nBay 2\nB-02\nBay 3\nB-03"
+      }
+    ],
+    "text": "Bay 1\nBatch ledger\nBay 1\nB-01\nBay 2\nB-02\nBay 3\nB-03\nB-01 · Bay 1\nActive\n\nMaturity gate?: \nBlocked\n\nTemperature has not returned to ambient. Complete the missing check, then save the check log.\n\nModel\nReadings\nChecks\nOperator\nDebug\nTroubleshoot\nCAD assembly\nIntake: scale and checklist\nCompost bay / pile\nDry carbon store\nRain cover\nBase and slope\nLeachate sump\nCuring area\nRain gauge\n1\nFault\n2\nFault\n\nSelect a part to inspect its readings and checks.\n\nExploded\nAssembled\nCross-section\nExplode 65%\nSensors\nIsolate part\nHide part\nShow all\nReset parts\nReset view\n\nDrag to orbit · Scroll to zoom. Dimensions are in local metres.\n\nCompost bay / pile\nFault\n\nActive composting with two probe depths\n\nTypical failure: Not heating, wet pile, smell or pests\n\nSensors on this part\n\nB-01-TEMP-10 / Pile temperature, 10 cm / 47 °C / Reference / OK\n\nDetails\n\nB-01-TEMP-50 / Pile temperature, 50 cm / 48 °C / Reference / OK\n\nDetails\n\nB-01-MOIST / Relative pile moisture / 68 relative % What is this? Relative moisture only; needs calibration against the squeeze test. / Proxy / OK\n\nDetails\n\nB-01-MANUAL / Squeeze / smell / Wet / Normal / Reference / OK\n\nDetails\n\nB-01-VIS-bay / Compost bay / pile inspection / No pests observed / Reference / OK\n\nDetails\nWhy is this highlighted?\n\nInput: B-01-MOIST, B-01-MANUAL, B-01-VIS-base\n\nRule: Wet pile or puddles\n\nThreshold: moisture above 60% or a wet squeeze check / puddles\n\nRecorded 11 Oct 2026, 6:40 am\n\nDiagnosing input\n\nCapacitive moisture proxy + manual squeeze + visual inspection\n\nWhat looks wrong\n\nToo wet.\n\nDraft. Check against the local authority's procedure before use.\nInspection steps\nMark inspected\nLog a clean\nRaise a work order\nSave history (0)"
+  },
+  {
+    "name": "sensors",
+    "w": 1440,
+    "documentWidth": 1440,
+    "main": {
+      "x": 24,
+      "y": 153.1875,
+      "w": 1392,
+      "h": 1163.125,
+      "right": 1416,
+      "bottom": 1316.3125
+    },
+    "header": {
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 89,
+      "right": 1440,
+      "bottom": 89
+    },
+    "nav": {
+      "x": 0,
+      "y": 89,
+      "w": 1440,
+      "h": 64.1875,
+      "right": 1440,
+      "bottom": 153.1875
+    },
+    "toolbars": [
+      {
+        "rect": {
+          "x": 311,
+          "y": 295.3125,
+          "w": 1058,
+          "h": 122.296875,
+          "right": 1369,
+          "bottom": 417.609375
+        },
+        "controls": [
+          {
+            "text": "",
+            "rect": {
+              "x": 311,
+              "y": 321.609375,
+              "w": 200.625,
+              "h": 44,
+              "right": 511.625,
+              "bottom": 365.609375
+            }
+          },
+          {
+            "text": "Zone",
+            "rect": {
+              "x": 519.625,
+              "y": 308.453125,
+              "w": 74,
+              "h": 44,
+              "right": 593.625,
+              "bottom": 352.453125
+            }
+          },
+          {
+            "text": "Asset",
+            "rect": {
+              "x": 601.625,
+              "y": 308.453125,
+              "w": 77.703125,
+              "h": 44,
+              "right": 679.328125,
+              "bottom": 352.453125
+            }
+          },
+          {
+            "text": "Part",
+            "rect": {
+              "x": 687.328125,
+              "y": 308.453125,
+              "w": 66.203125,
+              "h": 44,
+              "right": 753.53125,
+              "bottom": 352.453125
+            }
+          },
+          {
+            "text": "Type",
+            "rect": {
+              "x": 761.53125,
+              "y": 308.453125,
+              "w": 71.984375,
+              "h": 44,
+              "right": 833.515625,
+              "bottom": 352.453125
+            }
+          },
+          {
+            "text": "Status",
+            "rect": {
+              "x": 841.515625,
+              "y": 308.453125,
+              "w": 83.09375,
+              "h": 44,
+              "right": 924.609375,
+              "bottom": 352.453125
+            }
+          },
+          {
+            "text": "Trust",
+            "rect": {
+              "x": 932.609375,
+              "y": 308.453125,
+              "w": 72.734375,
+              "h": 44,
+              "right": 1005.34375,
+              "bottom": 352.453125
+            }
+          },
+          {
+            "text": "Columns",
+            "rect": {
+              "x": 1013.34375,
+              "y": 308.453125,
+              "w": 101.234375,
+              "h": 44,
+              "right": 1114.578125,
+              "bottom": 352.453125
+            }
+          },
+          {
+            "text": "Compact rows",
+            "rect": {
+              "x": 1122.578125,
+              "y": 308.453125,
+              "w": 130.65625,
+              "h": 44,
+              "right": 1253.234375,
+              "bottom": 352.453125
+            }
+          },
+          {
+            "text": "Clear filters",
+            "rect": {
+              "x": 1261.234375,
+              "y": 308.453125,
+              "w": 107.765625,
+              "h": 44,
+              "right": 1369,
+              "bottom": 352.453125
+            }
+          },
+          {
+            "text": "Export CSV",
+            "rect": {
+              "x": 311,
+              "y": 373.609375,
+              "w": 111.4375,
+              "h": 44,
+              "right": 422.4375,
+              "bottom": 417.609375
+            }
+          }
+        ]
+      }
+    ],
+    "tables": [
+      {
+        "rows": 26,
+        "heights": [
+          69
+        ],
+        "wrap": {
+          "x": 311,
+          "y": 429.609375,
+          "w": 1058,
+          "h": 600,
+          "right": 1369,
+          "bottom": 1029.609375
+        },
+        "scrollHeight": 1814,
+        "clientHeight": 600,
+        "clipped": [
+          "\tS1-POND\tUltrasonic ponding depth\tS1 · Ponding / detention zone\t3 cm?\t\nOK\tNo drift flag\t3 d ago · 12 Oct 2026, 9:40 am"
+        ]
+      }
+    ],
+    "masters": [
+      {
+        "rect": {
+          "x": 48,
+          "y": 260.3125,
+          "w": 220,
+          "h": 918,
+          "right": 268,
+          "bottom": 1178.3125
+        },
+        "scrollHeight": 2794,
+        "clientHeight": 918,
+        "position": "sticky",
+        "text": "All assets\nS1\n29 inputs\nS2\n27 inputs\nS3\n26 inputs\nI1\n3 inputs\nT1\n26 inputs\nT2\n26 inputs\nA01-D\n1 inputs\nA02-D\n1 inputs\nA03-D\n1 inputs\nA04-D\n1 inputs\nA05-D\n1 inputs\nA06-D\n1 inputs\nB01-D\n1 inputs\nB02-D\n1 inputs\nB03-D\n1 inputs\nB04-D\n1 inputs\nB05-D\n1 inputs\nB06-D\n1 inputs\nC01-D\n1 inputs\nC02-D\n1 inputs\nC0"
+      }
+    ],
+    "text": "Sensors\n\nWhere each sensor and manual input is installed, its latest reading, and whether it can be trusted.\n\nAll assets\nS1\n29 inputs\nS2\n27 inputs\nS3\n26 inputs\nI1\n3 inputs\nT1\n26 inputs\nT2\n26 inputs\nA01-D\n1 inputs\nA02-D\n1 inputs\nA03-D\n1 inputs\nA04-D\n1 inputs\nA05-D\n1 inputs\nA06-D\n1 inputs\nB01-D\n1 inputs\nB02-D\n1 inputs\nB03-D\n1 inputs\nB04-D\n1 inputs\nB05-D\n1 inputs\nB06-D\n1 inputs\nC01-D\n1 inputs\nC02-D\n1 inputs\nC03-D\n1 inputs\nC04-D\n1 inputs\nC05-D\n1 inputs\nC06-D\n1 inputs\nD01-D\n1 inputs\nD02-D\n1 inputs\nD03-D\n1 inputs\nD04-D\n1 inputs\nD05-D\n1 inputs\nD06-D\n1 inputs\nSITE\n1 inputs\nB-01\n18 inputs\nB-02\n18 inputs\nB-03\n18 inputs\nSearch sensors\nZone\nAsset\nPart\nType\nStatus\nTrust\nColumns\nCompact rows\nClear filters\nExport CSV\n\tSensor\tType\tAsset and part\tLatest reading\tStatus\tTrust state?\tUpdated\n\tS1-INLET\tUltrasonic inlet level\tS1 · Kerb / pipe inlet\t18 cm?\t\nOK\tNo drift flag\t3 d ago · 12 Oct 2026, 9:40 am\n\tS1-OUTLET\tUnderdrain outlet level\tS1 · Outlet to drain network\t2 cm?\t\nOK\tNo drift flag\t3 d ago · 12 Oct 2026, 9:40 am\n\tS1-SEDIMENT\tManual sediment inspection\tS1 · Pretreatment forebay\t42 mm?\t\nOK\tNo drift flag\t3 d ago · 12 Oct 2026, 9:40 am\n\tS1-MOIST-10\tSoil moisture at 10 cm?\tS1 · Filter media\t30 % vol\t\nOK\tNo drift flag\t3 d ago · 12 Oct 2026, 9:40 am\n\tS1-TEMP-10\tSoil temperature at 10 cm?\tS1 · Filter media\t28.9 °C?\t\nOK\tNo drift flag\t3 d ago · 12 Oct 2026, 9:40 am\n\tS1-MOIST-30\tSoil moisture at 30 cm?\tS1 · Filter media\t34 % vol\t\nOK\tNo drift flag\t3 d ago · 12 Oct 2026, 9:40 am\n\tS1-TEMP-30\tSoil temperature at 30 cm?\tS1 · Filter media\t28.7 °C?\t\nOK\tNo drift flag\t3 d ago · 12 Oct 2026, 9:40 am\n\tS1-POND\tUltrasonic ponding depth\tS1 · Ponding / detention zone\t3 cm?\t\nOK\tNo drift flag\t3 d ago · 12 Oct 2026, 9:40 am\n\tS1-RISER\tUltrasonic overflow-riser level\tS1 · Overflow riser / grate\t4 cm?\t\nOK\tNo drift flag\t3 d ago · 12 Oct 2026, 9:40 am\n\tS1-WELL\tObservation-well level\tS1 · Cleanout / observation well\t6 cm?\t\nOK\tNo drift flag\t3 d ago · 12 Oct 2026, 9:40 am\n\tS1-INF-P1\tManual fixed-point ring infiltration test\tS1 · Filter media\t22 mm/h?\t\nOK\tNo drift flag\t3 d ago · 12 Oct 2026, 9:40 am\n\tS1-INF-P2\tManual fixed-point ring infiltration test\tS1 · Filter media\t22 mm/h?\t\nOK\tNo drift flag\t3 d ago · 12 Oct 2026, 9:40 am\n\tS1-INF-P3\tManual fixed-point ring infiltration test\tS1 · Filter media\t22 mm/h?\t\nOK\tNo drift flag\t3 d ago · 12 Oct 2026, 9:40 am\n\tS1-POND-DURATION\tManual post-rain elapsed-time log\tS1 · Ponding / detention zone\t2.5 h?\t\nOK\tNo drift flag\t3 d ago · 12 Oct 2026, 9:40 am\n\tS1-VIS-inlet\tManual visual inspection\tS1 · Kerb / pipe inlet\tNo issue recorded\t\nOK\tNo drift flag\t3 d ago · 12 Oct 2026, 9:40 am\n\tS1-VIS-energy\tManual visual inspection\tS1 · Rock energy dissipator\tNo issue recorded\t\nOK\tNo drift flag\t3 d ago · 12 Oct 2026, 9:40 am\n\tS1-VIS-pretreat\tManual visual inspection\tS1 · Pretreatment forebay\tNo issue recorded\t\nOK\tNo drift flag\t3 d ago · 12 Oct 2026, 9:40 am\n\tS1-VIS-sock\tManual visual inspection\tS1 · Compost filter sock\tSediment buildup observed\t\nOK\tNo drift flag\t3 d ago · 12 Oct 2026, 9:40 am\n\tS1-VIS-checkdam\tManual visual inspection\tS1 · Check dams\tNo issue recorded\t\nOK\tNo drift flag\t3 d ago · 12 Oct 2026, 9:40 am\n\tS1-VIS-ponding\tManual visual inspection\tS1 · Ponding / detention zone\tNo issue recorded\t\nOK\tNo drift flag\t3 d ago · 12 Oct 2026, 9:40 am\n\tS1-VIS-mulch\tManual visual inspection\tS1 · Mulch layer\tNo issue recorded\t\nOK\tNo drift flag\t3 d ago · 12 Oct 2026, 9:40 am\n\tS1-VIS-planting\tManual visual inspection\tS1 · Planting\tNo issue recorded\t\nOK\tNo drift flag\t3 d ago · 12 Oct 2026, 9:40 am\n\tS1-VIS-media\tManual visual inspection\tS1 · Filter media\tNo issue recorded\t\nOK\tNo drift flag\t3 d ago · 12 Oct 2026, 9:40 am\n\tS1-VIS-transition\tManual visual inspection\tS1 · Transition / geotextile layer\tNo issue recorded\t\nOK\tNo drift flag\t3 d ago · 12 Oct 2026, 9:40 am\n\tS1-VIS-drainage\tManual visual inspection\tS1 · Gravel drainage layer\tNo issue recorded\t\nOK\tNo drift flag\t3 d ago · 12 Oct 2026, 9:40 am\n216 records · 0 selected\nPrevious page\nPage 1 of 9\nNext page\nSave history (0)"
+  },
+  {
+    "name": "faults",
+    "w": 1440,
+    "documentWidth": 1440,
+    "main": {
+      "x": 24,
+      "y": 153.1875,
+      "w": 1392,
+      "h": 1883.078125,
+      "right": 1416,
+      "bottom": 2036.265625
+    },
+    "header": {
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 89,
+      "right": 1440,
+      "bottom": 89
+    },
+    "nav": {
+      "x": 0,
+      "y": 89,
+      "w": 1440,
+      "h": 64.1875,
+      "right": 1440,
+      "bottom": 153.1875
+    },
+    "toolbars": [
+      {
+        "rect": {
+          "x": 311,
+          "y": 301.375,
+          "w": 1058,
+          "h": 70.296875,
+          "right": 1369,
+          "bottom": 371.671875
+        },
+        "controls": [
+          {
+            "text": "",
+            "rect": {
+              "x": 311,
+              "y": 327.671875,
+              "w": 281.125,
+              "h": 44,
+              "right": 592.125,
+              "bottom": 371.671875
+            }
+          },
+          {
+            "text": "Zone",
+            "rect": {
+              "x": 600.125,
+              "y": 314.515625,
+              "w": 74,
+              "h": 44,
+              "right": 674.125,
+              "bottom": 358.515625
+            }
+          },
+          {
+            "text": "Fault class",
+            "rect": {
+              "x": 682.125,
+              "y": 314.515625,
+              "w": 112.6875,
+              "h": 44,
+              "right": 794.8125,
+              "bottom": 358.515625
+            }
+          },
+          {
+            "text": "Status",
+            "rect": {
+              "x": 802.8125,
+              "y": 314.515625,
+              "w": 83.09375,
+              "h": 44,
+              "right": 885.90625,
+              "bottom": 358.515625
+            }
+          },
+          {
+            "text": "Columns",
+            "rect": {
+              "x": 893.90625,
+              "y": 314.515625,
+              "w": 101.234375,
+              "h": 44,
+              "right": 995.140625,
+              "bottom": 358.515625
+            }
+          },
+          {
+            "text": "Compact rows",
+            "rect": {
+              "x": 1003.140625,
+              "y": 314.515625,
+              "w": 130.65625,
+              "h": 44,
+              "right": 1133.796875,
+              "bottom": 358.515625
+            }
+          },
+          {
+            "text": "Clear filters",
+            "rect": {
+              "x": 1141.796875,
+              "y": 314.515625,
+              "w": 107.765625,
+              "h": 44,
+              "right": 1249.5625,
+              "bottom": 358.515625
+            }
+          },
+          {
+            "text": "Export CSV",
+            "rect": {
+              "x": 1257.5625,
+              "y": 314.515625,
+              "w": 111.4375,
+              "h": 44,
+              "right": 1369,
+              "bottom": 358.515625
+            }
+          }
+        ]
+      },
+      {
+        "rect": {
+          "x": 311,
+          "y": 1138.96875,
+          "w": 1058,
+          "h": 70.296875,
+          "right": 1369,
+          "bottom": 1209.265625
+        },
+        "controls": [
+          {
+            "text": "",
+            "rect": {
+              "x": 311,
+              "y": 1165.265625,
+              "w": 340,
+              "h": 44,
+              "right": 651,
+              "bottom": 1209.265625
+            }
+          },
+          {
+            "text": "Applies to",
+            "rect": {
+              "x": 659,
+              "y": 1152.109375,
+              "w": 107.34375,
+              "h": 44,
+              "right": 766.34375,
+              "bottom": 1196.109375
+            }
+          },
+          {
+            "text": "Columns",
+            "rect": {
+              "x": 774.34375,
+              "y": 1152.109375,
+              "w": 101.234375,
+              "h": 44,
+              "right": 875.578125,
+              "bottom": 1196.109375
+            }
+          },
+          {
+            "text": "Compact rows",
+            "rect": {
+              "x": 883.578125,
+              "y": 1152.109375,
+              "w": 130.65625,
+              "h": 44,
+              "right": 1014.234375,
+              "bottom": 1196.109375
+            }
+          },
+          {
+            "text": "Clear filters",
+            "rect": {
+              "x": 1022.234375,
+              "y": 1152.109375,
+              "w": 107.765625,
+              "h": 44,
+              "right": 1130,
+              "bottom": 1196.109375
+            }
+          },
+          {
+            "text": "Export CSV",
+            "rect": {
+              "x": 1138,
+              "y": 1152.109375,
+              "w": 111.4375,
+              "h": 44,
+              "right": 1249.4375,
+              "bottom": 1196.109375
+            }
+          }
+        ]
+      }
+    ],
+    "tables": [
+      {
+        "rows": 12,
+        "heights": [
+          126
+        ],
+        "wrap": {
+          "x": 311,
+          "y": 383.671875,
+          "w": 1058,
+          "h": 600,
+          "right": 1369,
+          "bottom": 983.671875
+        },
+        "scrollHeight": 1451,
+        "clientHeight": 600,
+        "clipped": [
+          "\tF-008\tMissing cap\tT2\tCleanout / observation well\t\nMedium\t4 d ago · 11 Oct 2026, 9:40 am\t\nOpen\tCleanout cap and joint check\t\nUpdate status\nOpen\nInspected\nClosed"
+        ]
+      },
+      {
+        "rows": 17,
+        "heights": [
+          69
+        ],
+        "wrap": {
+          "x": 311,
+          "y": 1221.265625,
+          "w": 1058,
+          "h": 600,
+          "right": 1369,
+          "bottom": 1821.265625
+        },
+        "scrollHeight": 1173,
+        "clientHeight": 600,
+        "clipped": [
+          "\t\nPile not heating\n\tCompare pile probe temperature with the configured not-heating prompt; confirm with the reference probe.\tPile temperature probes + air reference\t1.0.0"
+        ]
+      }
+    ],
+    "masters": [
+      {
+        "rect": {
+          "x": 48,
+          "y": 266.375,
+          "w": 220,
+          "h": 695.0625,
+          "right": 268,
+          "bottom": 961.4375
+        },
+        "scrollHeight": 695,
+        "clientHeight": 695,
+        "position": "sticky",
+        "text": "All assets\nS1\n1 open\nI1\n1 open\nA04-D\n1 open\nS3\n2 open\nS2\n2 open\nT2\n1 open\nB-01\n2 open\nB-02\n1 open"
+      }
+    ],
+    "text": "Faults\nReport a fault\n\nFaults appear when a rule fires on a reading or an operator reports a problem.\n\nAll assets\nS1\n1 open\nI1\n1 open\nA04-D\n1 open\nS3\n2 open\nS2\n2 open\nT2\n1 open\nB-01\n2 open\nB-02\n1 open\nSearch faults\nZone\nFault class\nStatus\nColumns\nCompact rows\nClear filters\nExport CSV\n\tID\tTitle\tAsset\tPart\tSeverity\tOpened\tStatus\tRule\tActions\n\tF-001\tInlet blocked\tS1\tCompost filter sock\t\nHigh\t3 d ago · 12 Oct 2026, 6:40 am\t\nOpen\tInlet sediment or debris\t\nUpdate status\nOpen\nInspected\nClosed\n\n\tF-011\tLeachate\tB-02\tLeachate sump\t\nMedium\t4 d ago · 11 Oct 2026, 12:40 am\t\nOpen\tLeachate after rain\t\nUpdate status\nOpen\nInspected\nClosed\n\n\tF-010\tLeachate\tB-01\tLeachate sump\t\nMedium\t4 d ago · 11 Oct 2026, 3:40 am\t\nOpen\tLeachate after rain\t\nUpdate status\nOpen\nInspected\nClosed\n\n\tF-009\tToo wet\tB-01\tCompost bay / pile\t\nMedium\t4 d ago · 11 Oct 2026, 6:40 am\t\nOpen\tWet pile or puddles\t\nUpdate status\nOpen\nInspected\nClosed\n\n\tF-008\tMissing cap\tT2\tCleanout / observation well\t\nMedium\t4 d ago · 11 Oct 2026, 9:40 am\t\nOpen\tCleanout cap and joint check\t\nUpdate status\nOpen\nInspected\nClosed\n\n\tF-007\tWater standing after rain\tS3\tPonding / detention zone\t\nMedium\t4 d ago · 11 Oct 2026, 12:40 pm\t\nOpen\tStanding water after rain\t\nUpdate status\nOpen\nInspected\nClosed\n\n\tF-006\tSparse planting\tS2\tPlanting\t\nMedium\t4 d ago · 11 Oct 2026, 3:40 pm\t\nOpen\tSurface sediment and bare soil\t\nUpdate status\nOpen\nInspected\nClosed\n\n\tF-005\tMulch lost\tS2\tMulch layer\t\nMedium\t4 d ago · 11 Oct 2026, 6:40 pm\t\nOpen\tThinned or displaced mulch\t\nUpdate status\nOpen\nInspected\nClosed\n\n\tF-003\tWater standing after rain\tA04-D\tOutlet to drain network\t\nMedium\t3 d ago · 12 Oct 2026, 12:40 am\t\nOpen\tOutlet and underdrain obstruction\t\nUpdate status\nOpen\nInspected\nClosed\n\n\tF-004\tSensor needs checking\tS3\tFilter media\t\nMedium\t3 d ago · 11 Oct 2026, 9:40 pm\t\nOpen\tSensor trust\t\nUpdate status\nOpen\nInspected\nClosed\n\n\tF-002\tSensor not reporting\tI1\tOutlet to drain network\t\nMedium\t3 d ago · 12 Oct 2026, 3:40 am\t\nOpen\tSensor trust\t\nUpdate status\nOpen\nInspected\nClosed\n11 records · 0 selected\nPrevious page\nPage 1 of 1\nNext page\nFault rules and diagnosing inputs\nSearch fault rules\nApplies to\nColumns\nCompact rows\nClear filters\nExport CSV\n\tRule\tTrigger\tDiagnosing inputs\tVersion\n\t\nInlet sediment or debris\n\tInspect sediment and debris at the inlet and forebay; check bypass.\tInlet level + visual inspection\t1.0.0\n\t\nSurface sediment and bare soil\n\tInspect surface sediment, erosion, weeds and sparse planting.\tVisual only; soil moisture is an indirect proxy\t1.0.0\n\t\nStanding water after rain\n\tCompare elapsed time after rain with the configured inspection period. Inspect trapped sediment and underdrain function.\tPonding depth + observation well + manual elapsed-time record\t1.0.0\n\t\nThinned or displaced mulch\n\tInspect mulch coverage and evidence of floating material.\tVisual only\t1.0.0\n\t\nOutlet and underdrain obstruction\n\tInspect blocked outlet, backwater, pipe joints and observation-well level.\tOutlet level / flow switch + observation well + visual inspection\t1.0.0\n\t\nCleanout cap and joint check\n\tInspect missing caps, silt and leaking pipe joints.\tVisual only; observation-well level supports the inspection\t1.0.0\n\t\nFixed-point infiltration re-test\n\tUse the same marked points, method and repeats. Moisture is not the trial outcome.\tManual infiltration reference; soil sensors are indirect proxies\t1.0.0\n\t\nPile not heating\n\tCompare pile probe temperature with the configured not-heating prompt; confirm with the reference probe.\tPile temperature probes + air reference\t1.0.0\n\t\nPutrid / rotten-egg smell\n\tRecord the human smell and squeeze check; inspect wet material.\tManual smell + squeeze reference\t1.0.0\n\t\nAmmonia smell\n\tRecord the human smell check and review the dry-carbon input.\tManual smell reference; no ammonia gas sensor\t1.0.0\n\t\nWet pile or puddles\n\tUse the squeeze test to confirm relative moisture; inspect puddles.\tCapacitive moisture proxy + manual squeeze + visual inspection\t1.0.0\n\t\nPests around the bay\n\tRecord a visual inspection of pests and cover condition.\tVisual only\t1.0.0\n\t\nLeachate after rain\n\tCheck cover, base channel and sump following rain.\tRain gauge + sump level + visual inspection\t1.0.0\n\t\nIntake contamination check\n\tWeigh intake and complete the human photo checklist. The photo is not an automated model.\tScale reference + human photo checklist\t1.0.0\n\t\nAmbient / no-reheat maturity gate\n\tCompare curing temperature to measured air temperature; require no reheat and human maturity checks.\tCuring temperature + air reference + human checklist\t1.0.0\n\t\nSensor trust\n\tInvestigate drift, suspect values or offline reporting before relying on an alert.\tSensor calibration, drift and reporting status\t1.0.0\n16 records · 0 selected\nPrevious page\nPage 1 of 1\nNext page\nSave history (0)"
+  },
+  {
+    "name": "feature",
+    "w": 1440,
+    "documentWidth": 1440,
+    "main": {
+      "x": 24,
+      "y": 153.1875,
+      "w": 1392,
+      "h": 2313.859375,
+      "right": 1416,
+      "bottom": 2467.046875
+    },
+    "header": {
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 89,
+      "right": 1440,
+      "bottom": 89
+    },
+    "nav": {
+      "x": 0,
+      "y": 89,
+      "w": 1440,
+      "h": 64.1875,
+      "right": 1440,
+      "bottom": 153.1875
+    },
+    "toolbars": [
+      {
+        "rect": {
+          "x": 71,
+          "y": 3446.546875,
+          "w": 1298,
+          "h": 70.296875,
+          "right": 1369,
+          "bottom": 3516.84375
+        },
+        "controls": [
+          {
+            "text": "",
+            "rect": {
+              "x": 71,
+              "y": 3472.84375,
+              "w": 340,
+              "h": 44,
+              "right": 411,
+              "bottom": 3516.84375
+            }
+          },
+          {
+            "text": "Columns",
+            "rect": {
+              "x": 419,
+              "y": 3459.6875,
+              "w": 101.234375,
+              "h": 44,
+              "right": 520.234375,
+              "bottom": 3503.6875
+            }
+          },
+          {
+            "text": "Compact rows",
+            "rect": {
+              "x": 528.234375,
+              "y": 3459.6875,
+              "w": 130.65625,
+              "h": 44,
+              "right": 658.890625,
+              "bottom": 3503.6875
+            }
+          },
+          {
+            "text": "Clear filters",
+            "rect": {
+              "x": 666.890625,
+              "y": 3459.6875,
+              "w": 107.765625,
+              "h": 44,
+              "right": 774.65625,
+              "bottom": 3503.6875
+            }
+          },
+          {
+            "text": "Export CSV",
+            "rect": {
+              "x": 782.65625,
+              "y": 3459.6875,
+              "w": 111.4375,
+              "h": 44,
+              "right": 894.09375,
+              "bottom": 3503.6875
+            }
+          }
+        ]
+      }
+    ],
+    "tables": [
+      {
+        "rows": 15,
+        "heights": [
+          49
+        ],
+        "wrap": {
+          "x": 71,
+          "y": 3528.84375,
+          "w": 1298,
+          "h": 600,
+          "right": 1369,
+          "bottom": 4128.84375
+        },
+        "scrollHeight": 759,
+        "clientHeight": 600,
+        "clipped": [
+          ""
+        ]
+      }
+    ],
+    "masters": [],
+    "text": "S1 · Pilot swale\n\nZone A · Installed 17 Aug 2026\n\nModel details\nBack to Overview\nTrial arm\nSoil loosened + compost\nPilot dose\nPilot dose B\nNext re-test\n19 Oct 2026\nOwner of record\nZone A maintenance lead\nCompost applied\n\nB-03 · Pilot dose B · 15 L/m² · Mixing depth 150 mm · 17 Aug 2026\n\nConductivity follows the test record or entered value.\n\nOperator\nDebug\nTroubleshoot\nDimensions from model parameters / simulated readings\nKerb / pipe inlet\nRock energy dissipator\nPretreatment forebay\nCompost filter sock\nCheck dams\nPonding / detention zone\nMulch layer\nPlanting\nFilter media\nTransition / geotextile layer\nGravel drainage layer\nPerforated underdrain\nCleanout / observation well\nImpermeable liner\nNot installed\nOverflow riser / grate\nOutlet to drain network\n6.00 m\n0.93 m\nRL 0.00 m\n1\nFault\nCompost amended · 150 mm · Pilot dose B\n\nWater level follows the storm model. RL is the local level datum.\n\n2D section\nDimensions\nPlay storm\nPrevious minute\nNext minute\nReset storm\nJump to peak water\nShared clock · minute 0\nStorm timeline · includes 6 h after rain\nPlayback speed\n30x\n60x\n300x\n600x\n\nShort strokes show rain; soil shading shows moisture; pipe fill and arrows show drainage. Arrows are static; width shows flow. Playback is shared across the six feature pages. Speed is simulated seconds per real second.\n\nReady to start the storm.\n\nNo visible pool yet.\n\nThe waterline shows surface depth. Soil shading follows moisture; arrow width follows flow.\n\nMinute 0: ponding 0.0 mm, inlet 0.0 L/min, overflow 0.0 L/min.\n\nWater path · current minute\nInlet\n0\nL/min?\n0 mm\nForebay\n0\nL/min?\n0 mm\nSock\n0\nL/min?\n100 % open\nMedia\n0\nL/min?\n10 % moisture\nGravel\n0\nL/min?\n0 mm\nPipe\n0\nL/min?\n0 % fill\nOutfall\n0\nL/min?\n0 mm tailwater\nOverflow\n0\nL/min?\n0 mm\n\nInlet, forebay and sock share the inlet path level. The soil stores water before it reaches the pipe.\n\nExploded\nAssembled\nCross-section\nExplode 65%\nSensors\nIsolate part\nHide part\nShow all\nReset parts\nReset view\n\nDrag to orbit · Scroll to zoom. Dimensions are in local metres.\n\nCompost filter sock\nFault\n\nTrial option for trapping fine sediment\n\nTypical failure: Clogging or washout\n\nSensors on this part\n\nS1-INLET / Inlet water level / 0.07 cm / Reference / OK\n\nDetails\n\nS1-VIS-sock / Compost filter sock inspection / Sediment buildup observed / Reference / OK\n\nDetails\nWhy is this highlighted?\n\nInput: S1-INLET, S1-SEDIMENT, S1-VIS-sock\n\nRule: Inlet sediment or debris\n\nTrigger: recorded visual or human finding; no numeric threshold configured.\n\nRecorded 12 Oct 2026, 6:40 am\n\nDiagnosing input\n\nLevel history + visual inspection\n\nWhat looks wrong\n\nDrain-down: hours for water to clear after rain.\n\nBlockage.\n\nDraft. Check against the local authority's procedure before use.\nInspection steps\nMark inspected\nLog a clean\nRaise a work order\nStorm settings, charts and model parameters\n\nLive model alerts above are temporary scenario outputs. Open fault history.\n\nTrial record\n\n13 → 22 mm/h · Same marked points · n = 6\n\nPilot, small sample, not proof. Open trial protocol and lineage\n\nOK\nSave history (0)"
+  },
+  {
+    "name": "about",
+    "w": 1440,
+    "documentWidth": 1440,
+    "main": {
+      "x": 24,
+      "y": 153.1875,
+      "w": 1392,
+      "h": 1017.09375,
+      "right": 1416,
+      "bottom": 1170.28125
+    },
+    "header": {
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 89,
+      "right": 1440,
+      "bottom": 89
+    },
+    "nav": {
+      "x": 0,
+      "y": 89,
+      "w": 1440,
+      "h": 64.1875,
+      "right": 1440,
+      "bottom": 153.1875
+    },
+    "toolbars": [],
+    "tables": [],
+    "masters": [],
+    "text": "Data and limits\nWhat the pilot can tell us\n\nThis pilot compares untreated soil, loosened soil and soil loosened with compost at the same marked spots. Repeat field tests establish the measured differences. A small pilot cannot establish a flood-reduction percentage or prove that compost works in every soil.\n\nModel limits\n\nThe shared storm clock runs a reduced-order storage and drainage model. Entered conductivity and test records control infiltration. The recorded compost dose does not change conductivity automatically. The model needs local calibration and is not a forecast or an engineering design.\n\nInlet, forebay and sock share a modelled path level. Soil shading represents equivalent wet depth from stored moisture. Pipe fill is estimated from local head. Reverse river flow, sediment transport, mulch loss and biological fault causes are not fully solved. The compost model view presents the batch record and its checks.\n\nField checks matter\n\nCheck indirect sensors against a reference measurement. Human squeeze, smell, intake and maturity checks remain necessary. Offline readings stay unavailable. Thresholds and layer dimensions require practitioner confirmation against MSMA and the local authority before field use.\n\nSoil and compost moisture probes measure relative wetness. These readings do not establish nutrient safety, compost maturity, gas concentration or odour. Oxygen and ammonia probes are excluded; human smell checks remain.\n\nData\n\nThis environment uses generated local records, deterministic rainfall and browser-local saved changes.\n\nMap footprints use credited OpenStreetMap geometry. Household assignments, heights and drain locations require a site survey. Record the same marked points, a baseline, the batch and labelled dose, the responsible person and follow-up checks.\n\nSave history (0)"
+  },
+  {
+    "name": "overview",
+    "w": 1920,
+    "documentWidth": 1920,
+    "main": {
+      "x": 80,
+      "y": 153.1875,
+      "w": 1760,
+      "h": 1991.828125,
+      "right": 1840,
+      "bottom": 2145.015625
+    },
+    "header": {
+      "x": 0,
+      "y": 0,
+      "w": 1920,
+      "h": 89,
+      "right": 1920,
+      "bottom": 89
+    },
+    "nav": {
+      "x": 0,
+      "y": 89,
+      "w": 1920,
+      "h": 64.1875,
+      "right": 1920,
+      "bottom": 153.1875
+    },
+    "toolbars": [],
+    "tables": [],
+    "masters": [],
+    "text": "Overview\nLast storm\n7 days\n8 weeks\n\n11 faults open · 2 sensors need attention\n\nAll zones\nZone A\nZone B\nZone C\nZone D\nHomes and drainage\n\nBandar Bukit Raja Phase 1 · Last storm\n\n3D\nPlan\nS1 · Pilot swale\nZone A\nS2 · Bioretention strip\nZone B\nS3 · Control swale\nZone C\nI1 · Inlet chamber\nZone B\nT1 · Tree pit 1\nZone D\nT2 · Tree pit 2\nZone D\nSensors\nRainfall\nWater after 6 h\nReset view\nRainfall layer opacity\n55%\nZone A · 4.1 mm/h\nZone B · 5.4 mm/h\nZone C · 2.7 mm/h\nZone D · 1.4 mm/h\nJalan Gamelan 4\nJalan Gamelan 1E\nJalan Rodat 17/KU6\nPersiaran Sungai Keramat\nS1\nS2\nS3\nI1\nT1\nT2\n\nPilot houses can be selected. Drag to orbit · Scroll to zoom.\n\nPilot house\nUnder 10\n10–20\n20–40\n40–50\n50–60\n60–80\nOver 80 mm/h\n\nRainfall layer · 12 Oct 2026, 8:10 am · Last storm\n\nStorm playback\n\nCompare on Google Maps · © OpenStreetMap contributors · ODbL\n\nOpen faults\n\nPriority order\n\nHigh\nInlet blocked\n\nS1 · Compost filter sock · Zone A\n\n3 d ago · 12 Oct 2026, 6:40 am\n\nOpen\nMedium\nLeachate\n\nB-02 · Leachate sump · Zone D\n\n4 d ago · 11 Oct 2026, 12:40 am\n\nOpen\nMedium\nLeachate\n\nB-01 · Leachate sump · Zone D\n\n4 d ago · 11 Oct 2026, 3:40 am\n\nOpen\nMedium\nToo wet\n\nB-01 · Compost bay / pile · Zone D\n\n4 d ago · 11 Oct 2026, 6:40 am\n\nOpen\nMedium\nMissing cap\n\nT2 · Cleanout / observation well · Zone D\n\n4 d ago · 11 Oct 2026, 9:40 am\n\nOpen\nView all faults\nRainfall · Last storm\n\nRain rate and cumulative depth for this period\n\nView as table\nExport\n12 Oct 2026, 8:10 am\n12 Oct 2026, 8:40 am\n12 Oct 2026, 9:10 am\n12 Oct 2026, 9:40 am\n0\n20\n40\n60\n80\n0\n15\n30\n45\n60\nRain rate (mm/h)Cumulative depth (mm)\n\nBars: rain rate in mm/h, left axis. Line: cumulative depth in mm, right axis.\n\nHow long water stays after rain · Last storm\n\nHours for standing water to clear after the last storm. Target: clear within 6 h.\n\nView as table\nExport\n0 h\n2 h\n4 h\n6 h\n8 h\nS1\nS2\nS3\nS3 \nOver target\n\nI1, T1, T2: No reading.\n\nMore charts\nSave history (0)"
+  },
+  {
+    "name": "trials",
+    "w": 1920,
+    "documentWidth": 1920,
+    "main": {
+      "x": 80,
+      "y": 153.1875,
+      "w": 1760,
+      "h": 2345.546875,
+      "right": 1840,
+      "bottom": 2498.734375
+    },
+    "header": {
+      "x": 0,
+      "y": 0,
+      "w": 1920,
+      "h": 89,
+      "right": 1920,
+      "bottom": 89
+    },
+    "nav": {
+      "x": 0,
+      "y": 89,
+      "w": 1920,
+      "h": 64.1875,
+      "right": 1920,
+      "bottom": 153.1875
+    },
+    "toolbars": [
+      {
+        "rect": {
+          "x": 367,
+          "y": 789.421875,
+          "w": 1426,
+          "h": 70.296875,
+          "right": 1793,
+          "bottom": 859.71875
+        },
+        "controls": [
+          {
+            "text": "",
+            "rect": {
+              "x": 367,
+              "y": 815.71875,
+              "w": 340,
+              "h": 44,
+              "right": 707,
+              "bottom": 859.71875
+            }
+          },
+          {
+            "text": "Treatment",
+            "rect": {
+              "x": 715,
+              "y": 802.5625,
+              "w": 109.203125,
+              "h": 44,
+              "right": 824.203125,
+              "bottom": 846.5625
+            }
+          },
+          {
+            "text": "Zone",
+            "rect": {
+              "x": 832.203125,
+              "y": 802.5625,
+              "w": 74,
+              "h": 44,
+              "right": 906.203125,
+              "bottom": 846.5625
+            }
+          },
+          {
+            "text": "Status",
+            "rect": {
+              "x": 914.203125,
+              "y": 802.5625,
+              "w": 83.09375,
+              "h": 44,
+              "right": 997.296875,
+              "bottom": 846.5625
+            }
+          },
+          {
+            "text": "Owner",
+            "rect": {
+              "x": 1005.296875,
+              "y": 802.5625,
+              "w": 84.203125,
+              "h": 44,
+              "right": 1089.5,
+              "bottom": 846.5625
+            }
+          },
+          {
+            "text": "Columns",
+            "rect": {
+              "x": 1097.5,
+              "y": 802.5625,
+              "w": 101.234375,
+              "h": 44,
+              "right": 1198.734375,
+              "bottom": 846.5625
+            }
+          },
+          {
+            "text": "Compact rows",
+            "rect": {
+              "x": 1206.734375,
+              "y": 802.5625,
+              "w": 130.65625,
+              "h": 44,
+              "right": 1337.390625,
+              "bottom": 846.5625
+            }
+          },
+          {
+            "text": "Clear filters",
+            "rect": {
+              "x": 1345.390625,
+              "y": 802.5625,
+              "w": 107.765625,
+              "h": 44,
+              "right": 1453.15625,
+              "bottom": 846.5625
+            }
+          },
+          {
+            "text": "Export CSV",
+            "rect": {
+              "x": 1461.15625,
+              "y": 802.5625,
+              "w": 111.4375,
+              "h": 44,
+              "right": 1572.59375,
+              "bottom": 846.5625
+            }
+          }
+        ]
+      }
+    ],
+    "tables": [
+      {
+        "rows": 6,
+        "heights": [
+          79
+        ],
+        "wrap": {
+          "x": 367,
+          "y": 871.71875,
+          "w": 1426,
+          "h": 464,
+          "right": 1793,
+          "bottom": 1335.71875
+        },
+        "scrollHeight": 464,
+        "clientHeight": 464,
+        "clipped": []
+      }
+    ],
+    "masters": [
+      {
+        "rect": {
+          "x": 104,
+          "y": 727.125,
+          "w": 220,
+          "h": 529.890625,
+          "right": 324,
+          "bottom": 1257.015625
+        },
+        "scrollHeight": 530,
+        "clientHeight": 530,
+        "position": "sticky",
+        "text": "S1 · Swale\nSoil loosened + compost\nOn track\nS2 · Swale\nSoil loosened only\nOn track\nS3 · Swale\nUntreated (control)\nOverdue\nT1 · Tree pit\nSoil loosened + compost\nNeeds baseline\nT2 · Tree pit\nSoil loosened + compost\nOn track"
+      }
+    ],
+    "text": "Trials\n\nA trial compares three ways of treating the soil at the same marked spots: untreated, loosened only, and loosened plus compost. Each treated site is re-tested to see how fast water soaks in.\n\nS3 · n = 6\nUntreated (control)\n\n13.0 → 14.0 mm/h? (water absorbed per hour)\n\nBefore / latest re-test\n\nSame marked points · No compost\n\nRe-test minimum met\nMinimum of 12 re-tests met · 24 logged.\n\nInspect S3\nS2 · n = 6\nSoil loosened only\n\n13.0 → 19.0 mm/h? (water absorbed per hour)\n\nBefore / latest re-test\n\nSame marked points · No compost\n\nRe-test minimum met\nMinimum of 12 re-tests met · 24 logged.\n\nInspect S2\nS1 · n = 6\nSoil loosened + compost\n\n13.0 → 22.0 mm/h? (water absorbed per hour)\n\nBefore / latest re-test\n\nSame marked points · Pilot dose B\n\nRe-test minimum met\nMinimum of 12 re-tests met · 24 logged.\n\nInspect S1\nS1 · Swale\nSoil loosened + compost\nOn track\nS2 · Swale\nSoil loosened only\nOn track\nS3 · Swale\nUntreated (control)\nOverdue\nT1 · Tree pit\nSoil loosened + compost\nNeeds baseline\nT2 · Tree pit\nSoil loosened + compost\nOn track\nTrial register\nSearch trials\nTreatment\nZone\nStatus\nOwner\nColumns\nCompact rows\nClear filters\nExport CSV\n\tSite\tType\tLocation\tTreatment\tLast test\tNext re-test\tStatus\tActions\n\tS1\tSwale\tZone A\tSoil loosened + compost\t12 Oct 2026\t19 Oct 2026\t\nOn track\t\nLog a re-test\n\n\tS2\tSwale\tZone B\tSoil loosened only\t12 Oct 2026\t19 Oct 2026\t\nOn track\t\nLog a re-test\n\n\tS3\tSwale\tZone C\tUntreated (control)\t12 Oct 2026\t10 Oct 2026\t\nOverdue\t\nLog a re-test\n\n\tT1\tTree pit\tZone D\tSoil loosened + compost\tNo test\t19 Oct 2026\t\nNeeds baseline\t\nRecord baseline\n\n\tT2\tTree pit\tZone D\tSoil loosened + compost\t10 Aug 2026\t19 Oct 2026\t\nOn track\t\nLog a re-test\n5 records · 0 selected\nPrevious page\nPage 1 of 1\nNext page\nS1 · Trial record\nInspect feature\nTreatment\nSoil loosened + compost\nBaseline?\n13 mm/h\nRe-test?\n22 mm/h\nOwner of record?\nZone A maintenance lead\n\nSource: field test log S1 and batch record B-03.\n\nLog a re-test\nUpdate safety checks\nSafety checks\nNeeds nutrient sample Did water leaving the soil carry extra nutrients?\nPassed Compost has no contact with open drains.\nNeeds storm check First heavy rain: washout, clogging, photo and result.\n\nNo additional safety checks saved yet.\n\nAllocate mature compost\n\nLabelled pilot doses; no fixed target\n\nBatch\nB-01 · Temperature has not returned to ambient.\nB-02 · Temperature has not returned to ambient.\nB-03 · Mature\nPilot dose\nPilot dose A\nPilot dose B\nPilot dose C\nLabelled dose, L/m²\nAmended soil depth, mm\nApplied by\nDose cap: 25 L/m². This is a guardrail, not a treatment target.\nAllocate to S1\nSave history (0)"
+  },
+  {
+    "name": "batches",
+    "w": 1920,
+    "documentWidth": 1920,
+    "main": {
+      "x": 80,
+      "y": 153.1875,
+      "w": 1760,
+      "h": 2580.0625,
+      "right": 1840,
+      "bottom": 2733.25
+    },
+    "header": {
+      "x": 0,
+      "y": 0,
+      "w": 1920,
+      "h": 89,
+      "right": 1920,
+      "bottom": 89
+    },
+    "nav": {
+      "x": 0,
+      "y": 89,
+      "w": 1920,
+      "h": 64.1875,
+      "right": 1920,
+      "bottom": 153.1875
+    },
+    "toolbars": [
+      {
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "right": 0,
+          "bottom": 0
+        },
+        "controls": [
+          {
+            "text": "",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0,
+              "right": 0,
+              "bottom": 0
+            }
+          },
+          {
+            "text": "Columns",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0,
+              "right": 0,
+              "bottom": 0
+            }
+          },
+          {
+            "text": "Compact rows",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0,
+              "right": 0,
+              "bottom": 0
+            }
+          },
+          {
+            "text": "Clear filters",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0,
+              "right": 0,
+              "bottom": 0
+            }
+          },
+          {
+            "text": "Export CSV",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0,
+              "right": 0,
+              "bottom": 0
+            }
+          }
+        ]
+      },
+      {
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "right": 0,
+          "bottom": 0
+        },
+        "controls": [
+          {
+            "text": "",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0,
+              "right": 0,
+              "bottom": 0
+            }
+          },
+          {
+            "text": "Columns",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0,
+              "right": 0,
+              "bottom": 0
+            }
+          },
+          {
+            "text": "Compact rows",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0,
+              "right": 0,
+              "bottom": 0
+            }
+          },
+          {
+            "text": "Clear filters",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0,
+              "right": 0,
+              "bottom": 0
+            }
+          },
+          {
+            "text": "Export CSV",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0,
+              "right": 0,
+              "bottom": 0
+            }
+          }
+        ]
+      },
+      {
+        "rect": {
+          "x": 367,
+          "y": 2129.953125,
+          "w": 1426,
+          "h": 70.296875,
+          "right": 1793,
+          "bottom": 2200.25
+        },
+        "controls": [
+          {
+            "text": "",
+            "rect": {
+              "x": 367,
+              "y": 2156.25,
+              "w": 340,
+              "h": 44,
+              "right": 707,
+              "bottom": 2200.25
+            }
+          },
+          {
+            "text": "Status",
+            "rect": {
+              "x": 715,
+              "y": 2143.09375,
+              "w": 83.09375,
+              "h": 44,
+              "right": 798.09375,
+              "bottom": 2187.09375
+            }
+          },
+          {
+            "text": "Bay",
+            "rect": {
+              "x": 806.09375,
+              "y": 2143.09375,
+              "w": 64.890625,
+              "h": 44,
+              "right": 870.984375,
+              "bottom": 2187.09375
+            }
+          },
+          {
+            "text": "Maturity",
+            "rect": {
+              "x": 878.984375,
+              "y": 2143.09375,
+              "w": 94.6875,
+              "h": 44,
+              "right": 973.671875,
+              "bottom": 2187.09375
+            }
+          },
+          {
+            "text": "Start date",
+            "rect": {
+              "x": 981.671875,
+              "y": 2143.09375,
+              "w": 105.90625,
+              "h": 44,
+              "right": 1087.578125,
+              "bottom": 2187.09375
+            }
+          },
+          {
+            "text": "Columns",
+            "rect": {
+              "x": 1095.578125,
+              "y": 2143.09375,
+              "w": 101.234375,
+              "h": 44,
+              "right": 1196.8125,
+              "bottom": 2187.09375
+            }
+          },
+          {
+            "text": "Compact rows",
+            "rect": {
+              "x": 1204.8125,
+              "y": 2143.09375,
+              "w": 130.65625,
+              "h": 44,
+              "right": 1335.46875,
+              "bottom": 2187.09375
+            }
+          },
+          {
+            "text": "Clear filters",
+            "rect": {
+              "x": 1343.46875,
+              "y": 2143.09375,
+              "w": 107.765625,
+              "h": 44,
+              "right": 1451.234375,
+              "bottom": 2187.09375
+            }
+          },
+          {
+            "text": "Export CSV",
+            "rect": {
+              "x": 1459.234375,
+              "y": 2143.09375,
+              "w": 111.4375,
+              "h": 44,
+              "right": 1570.671875,
+              "bottom": 2187.09375
+            }
+          }
+        ]
+      }
+    ],
+    "tables": [
+      {
+        "rows": 2,
+        "heights": [
+          0
+        ],
+        "wrap": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "right": 0,
+          "bottom": 0
+        },
+        "scrollHeight": 0,
+        "clientHeight": 0,
+        "clipped": []
+      },
+      {
+        "rows": 1,
+        "heights": [],
+        "wrap": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "right": 0,
+          "bottom": 0
+        },
+        "scrollHeight": 0,
+        "clientHeight": 0,
+        "clipped": []
+      },
+      {
+        "rows": 4,
+        "heights": [
+          79
+        ],
+        "wrap": {
+          "x": 367,
+          "y": 2212.25,
+          "w": 1426,
+          "h": 306,
+          "right": 1793,
+          "bottom": 2518.25
+        },
+        "scrollHeight": 306,
+        "clientHeight": 306,
+        "clipped": []
+      }
+    ],
+    "masters": [
+      {
+        "rect": {
+          "x": 104,
+          "y": 243.1875,
+          "w": 220,
+          "h": 354.625,
+          "right": 324,
+          "bottom": 597.8125
+        },
+        "scrollHeight": 355,
+        "clientHeight": 355,
+        "position": "sticky",
+        "text": "B-01 · Bay 1\nActive\nChecks needed\nB-02 · Bay 2\nCuring\nChecks needed\nB-03 · Bay 3\nReleased\nMature"
+      }
+    ],
+    "text": "Batches\nTrial allocation\nB-01 · Bay 1\nActive\nChecks needed\nB-02 · Bay 2\nCuring\nChecks needed\nB-03 · Bay 3\nReleased\nMature\nB-01 · Bay 1\nActive\n\nMaturity gate?: \nBlocked\n\nTemperature has not returned to ambient. Complete the missing check, then save the check log.\n\nModel\nReadings\nChecks\nOperator\nDebug\nTroubleshoot\nCAD assembly\nIntake: scale and checklist\nCompost bay / pile\nDry carbon store\nRain cover\nBase and slope\nLeachate sump\nCuring area\nRain gauge\n1\nFault\n2\nFault\n\nSelect a part to inspect its readings and checks.\n\nExploded\nAssembled\nCross-section\nExplode 65%\nSensors\nIsolate part\nHide part\nShow all\nReset parts\nReset view\n\nDrag to orbit · Scroll to zoom. Dimensions are in local metres.\n\nCompost bay / pile\nFault\n\nActive composting with two probe depths\n\nTypical failure: Not heating, wet pile, smell or pests\n\nSensors on this part\n\nB-01-TEMP-10 / Pile temperature, 10 cm / 47 °C / Reference / OK\n\nDetails\n\nB-01-TEMP-50 / Pile temperature, 50 cm / 48 °C / Reference / OK\n\nDetails\n\nB-01-MOIST / Relative pile moisture / 68 relative % What is this? Relative moisture only; needs calibration against the squeeze test. / Proxy / OK\n\nDetails\n\nB-01-MANUAL / Squeeze / smell / Wet / Normal / Reference / OK\n\nDetails\n\nB-01-VIS-bay / Compost bay / pile inspection / No pests observed / Reference / OK\n\nDetails\nWhy is this highlighted?\n\nInput: B-01-MOIST, B-01-MANUAL, B-01-VIS-base\n\nRule: Wet pile or puddles\n\nThreshold: moisture above 60% or a wet squeeze check / puddles\n\nRecorded 11 Oct 2026, 6:40 am\n\nDiagnosing input\n\nCapacitive moisture proxy + manual squeeze + visual inspection\n\nWhat looks wrong\n\nToo wet.\n\nDraft. Check against the local authority's procedure before use.\nInspection steps\nMark inspected\nLog a clean\nRaise a work order\nBatch ledger\nSearch batches\nStatus\nBay\nMaturity\nStart date\nColumns\nCompact rows\nClear filters\nExport CSV\n\tBatch\tBay\tInputs\tStarted\tStatus\tMaturity gate?\tAllocated feature\tActions\n\tB-01\tBay 1\tFood and bokashi: 35 kg, Trimmings: 65 kg?\t10 Jul 2026\t\nActive\t\nBlocked\tNot allocated\t\nOpen bay\n\n\tB-02\tBay 2\tFood and bokashi: 35 kg, Trimmings: 65 kg?\t11 Jul 2026\t\nCuring\t\nBlocked\tNot allocated\t\nOpen bay\n\n\tB-03\tBay 3\tFood and bokashi: 35 kg, Trimmings: 65 kg?\t12 Jul 2026\t\nReleased\t\nPassed\tS1\t\nOpen bay\n3 records · 0 selected\nPrevious page\nPage 1 of 1\nNext page\nSave history (0)"
+  },
+  {
+    "name": "compost",
+    "w": 1920,
+    "documentWidth": 1920,
+    "main": {
+      "x": 80,
+      "y": 153.1875,
+      "w": 1760,
+      "h": 1972.46875,
+      "right": 1840,
+      "bottom": 2125.65625
+    },
+    "header": {
+      "x": 0,
+      "y": 0,
+      "w": 1920,
+      "h": 89,
+      "right": 1920,
+      "bottom": 89
+    },
+    "nav": {
+      "x": 0,
+      "y": 89,
+      "w": 1920,
+      "h": 64.1875,
+      "right": 1920,
+      "bottom": 153.1875
+    },
+    "toolbars": [
+      {
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "right": 0,
+          "bottom": 0
+        },
+        "controls": [
+          {
+            "text": "",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0,
+              "right": 0,
+              "bottom": 0
+            }
+          },
+          {
+            "text": "Columns",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0,
+              "right": 0,
+              "bottom": 0
+            }
+          },
+          {
+            "text": "Compact rows",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0,
+              "right": 0,
+              "bottom": 0
+            }
+          },
+          {
+            "text": "Clear filters",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0,
+              "right": 0,
+              "bottom": 0
+            }
+          },
+          {
+            "text": "Export CSV",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0,
+              "right": 0,
+              "bottom": 0
+            }
+          }
+        ]
+      },
+      {
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "right": 0,
+          "bottom": 0
+        },
+        "controls": [
+          {
+            "text": "",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0,
+              "right": 0,
+              "bottom": 0
+            }
+          },
+          {
+            "text": "Columns",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0,
+              "right": 0,
+              "bottom": 0
+            }
+          },
+          {
+            "text": "Compact rows",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0,
+              "right": 0,
+              "bottom": 0
+            }
+          },
+          {
+            "text": "Clear filters",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0,
+              "right": 0,
+              "bottom": 0
+            }
+          },
+          {
+            "text": "Export CSV",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "w": 0,
+              "h": 0,
+              "right": 0,
+              "bottom": 0
+            }
+          }
+        ]
+      }
+    ],
+    "tables": [
+      {
+        "rows": 2,
+        "heights": [
+          0
+        ],
+        "wrap": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "right": 0,
+          "bottom": 0
+        },
+        "scrollHeight": 0,
+        "clientHeight": 0,
+        "clipped": []
+      },
+      {
+        "rows": 1,
+        "heights": [],
+        "wrap": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "right": 0,
+          "bottom": 0
+        },
+        "scrollHeight": 0,
+        "clientHeight": 0,
+        "clipped": []
+      }
+    ],
+    "masters": [
+      {
+        "rect": {
+          "x": 104,
+          "y": 243.1875,
+          "w": 220,
+          "h": 234.203125,
+          "right": 324,
+          "bottom": 477.390625
+        },
+        "scrollHeight": 234,
+        "clientHeight": 234,
+        "position": "sticky",
+        "text": "Bay 1\nB-01\nBay 2\nB-02\nBay 3\nB-03"
+      }
+    ],
+    "text": "Bay 1\nBatch ledger\nBay 1\nB-01\nBay 2\nB-02\nBay 3\nB-03\nB-01 · Bay 1\nActive\n\nMaturity gate?: \nBlocked\n\nTemperature has not returned to ambient. Complete the missing check, then save the check log.\n\nModel\nReadings\nChecks\nOperator\nDebug\nTroubleshoot\nCAD assembly\nIntake: scale and checklist\nCompost bay / pile\nDry carbon store\nRain cover\nBase and slope\nLeachate sump\nCuring area\nRain gauge\n1\nFault\n2\nFault\n\nSelect a part to inspect its readings and checks.\n\nExploded\nAssembled\nCross-section\nExplode 65%\nSensors\nIsolate part\nHide part\nShow all\nReset parts\nReset view\n\nDrag to orbit · Scroll to zoom. Dimensions are in local metres.\n\nCompost bay / pile\nFault\n\nActive composting with two probe depths\n\nTypical failure: Not heating, wet pile, smell or pests\n\nSensors on this part\n\nB-01-TEMP-10 / Pile temperature, 10 cm / 47 °C / Reference / OK\n\nDetails\n\nB-01-TEMP-50 / Pile temperature, 50 cm / 48 °C / Reference / OK\n\nDetails\n\nB-01-MOIST / Relative pile moisture / 68 relative % What is this? Relative moisture only; needs calibration against the squeeze test. / Proxy / OK\n\nDetails\n\nB-01-MANUAL / Squeeze / smell / Wet / Normal / Reference / OK\n\nDetails\n\nB-01-VIS-bay / Compost bay / pile inspection / No pests observed / Reference / OK\n\nDetails\nWhy is this highlighted?\n\nInput: B-01-MOIST, B-01-MANUAL, B-01-VIS-base\n\nRule: Wet pile or puddles\n\nThreshold: moisture above 60% or a wet squeeze check / puddles\n\nRecorded 11 Oct 2026, 6:40 am\n\nDiagnosing input\n\nCapacitive moisture proxy + manual squeeze + visual inspection\n\nWhat looks wrong\n\nToo wet.\n\nDraft. Check against the local authority's procedure before use.\nInspection steps\nMark inspected\nLog a clean\nRaise a work order\nSave history (0)"
+  },
+  {
+    "name": "sensors",
+    "w": 1920,
+    "documentWidth": 1920,
+    "main": {
+      "x": 80,
+      "y": 153.1875,
+      "w": 1760,
+      "h": 1163.125,
+      "right": 1840,
+      "bottom": 1316.3125
+    },
+    "header": {
+      "x": 0,
+      "y": 0,
+      "w": 1920,
+      "h": 89,
+      "right": 1920,
+      "bottom": 89
+    },
+    "nav": {
+      "x": 0,
+      "y": 89,
+      "w": 1920,
+      "h": 64.1875,
+      "right": 1920,
+      "bottom": 153.1875
+    },
+    "toolbars": [
+      {
+        "rect": {
+          "x": 367,
+          "y": 295.3125,
+          "w": 1426,
+          "h": 70.296875,
+          "right": 1793,
+          "bottom": 365.609375
+        },
+        "controls": [
+          {
+            "text": "",
+            "rect": {
+              "x": 367,
+              "y": 321.609375,
+              "w": 340,
+              "h": 44,
+              "right": 707,
+              "bottom": 365.609375
+            }
+          },
+          {
+            "text": "Zone",
+            "rect": {
+              "x": 715,
+              "y": 308.453125,
+              "w": 74,
+              "h": 44,
+              "right": 789,
+              "bottom": 352.453125
+            }
+          },
+          {
+            "text": "Asset",
+            "rect": {
+              "x": 797,
+              "y": 308.453125,
+              "w": 77.703125,
+              "h": 44,
+              "right": 874.703125,
+              "bottom": 352.453125
+            }
+          },
+          {
+            "text": "Part",
+            "rect": {
+              "x": 882.703125,
+              "y": 308.453125,
+              "w": 66.203125,
+              "h": 44,
+              "right": 948.90625,
+              "bottom": 352.453125
+            }
+          },
+          {
+            "text": "Type",
+            "rect": {
+              "x": 956.90625,
+              "y": 308.453125,
+              "w": 71.984375,
+              "h": 44,
+              "right": 1028.890625,
+              "bottom": 352.453125
+            }
+          },
+          {
+            "text": "Status",
+            "rect": {
+              "x": 1036.890625,
+              "y": 308.453125,
+              "w": 83.09375,
+              "h": 44,
+              "right": 1119.984375,
+              "bottom": 352.453125
+            }
+          },
+          {
+            "text": "Trust",
+            "rect": {
+              "x": 1127.984375,
+              "y": 308.453125,
+              "w": 72.734375,
+              "h": 44,
+              "right": 1200.71875,
+              "bottom": 352.453125
+            }
+          },
+          {
+            "text": "Columns",
+            "rect": {
+              "x": 1208.71875,
+              "y": 308.453125,
+              "w": 101.234375,
+              "h": 44,
+              "right": 1309.953125,
+              "bottom": 352.453125
+            }
+          },
+          {
+            "text": "Compact rows",
+            "rect": {
+              "x": 1317.953125,
+              "y": 308.453125,
+              "w": 130.65625,
+              "h": 44,
+              "right": 1448.609375,
+              "bottom": 352.453125
+            }
+          },
+          {
+            "text": "Clear filters",
+            "rect": {
+              "x": 1456.609375,
+              "y": 308.453125,
+              "w": 107.765625,
+              "h": 44,
+              "right": 1564.375,
+              "bottom": 352.453125
+            }
+          },
+          {
+            "text": "Export CSV",
+            "rect": {
+              "x": 1572.375,
+              "y": 308.453125,
+              "w": 111.4375,
+              "h": 44,
+              "right": 1683.8125,
+              "bottom": 352.453125
+            }
+          }
+        ]
+      }
+    ],
+    "tables": [
+      {
+        "rows": 26,
+        "heights": [
+          69
+        ],
+        "wrap": {
+          "x": 367,
+          "y": 377.609375,
+          "w": 1426,
+          "h": 600,
+          "right": 1793,
+          "bottom": 977.609375
+        },
+        "scrollHeight": 1794,
+        "clientHeight": 600,
+        "clipped": [
+          "\tS1-POND\tUltrasonic ponding depth\tS1 · Ponding / detention zone\t3 cm?\t\nOK\tNo drift flag\t3 d ago · 12 Oct 2026, 9:40 am"
+        ]
+      }
+    ],
+    "masters": [
+      {
+        "rect": {
+          "x": 104,
+          "y": 260.3125,
+          "w": 220,
+          "h": 918,
+          "right": 324,
+          "bottom": 1178.3125
+        },
+        "scrollHeight": 2794,
+        "clientHeight": 918,
+        "position": "sticky",
+        "text": "All assets\nS1\n29 inputs\nS2\n27 inputs\nS3\n26 inputs\nI1\n3 inputs\nT1\n26 inputs\nT2\n26 inputs\nA01-D\n1 inputs\nA02-D\n1 inputs\nA03-D\n1 inputs\nA04-D\n1 inputs\nA05-D\n1 inputs\nA06-D\n1 inputs\nB01-D\n1 inputs\nB02-D\n1 inputs\nB03-D\n1 inputs\nB04-D\n1 inputs\nB05-D\n1 inputs\nB06-D\n1 inputs\nC01-D\n1 inputs\nC02-D\n1 inputs\nC0"
+      }
+    ],
+    "text": "Sensors\n\nWhere each sensor and manual input is installed, its latest reading, and whether it can be trusted.\n\nAll assets\nS1\n29 inputs\nS2\n27 inputs\nS3\n26 inputs\nI1\n3 inputs\nT1\n26 inputs\nT2\n26 inputs\nA01-D\n1 inputs\nA02-D\n1 inputs\nA03-D\n1 inputs\nA04-D\n1 inputs\nA05-D\n1 inputs\nA06-D\n1 inputs\nB01-D\n1 inputs\nB02-D\n1 inputs\nB03-D\n1 inputs\nB04-D\n1 inputs\nB05-D\n1 inputs\nB06-D\n1 inputs\nC01-D\n1 inputs\nC02-D\n1 inputs\nC03-D\n1 inputs\nC04-D\n1 inputs\nC05-D\n1 inputs\nC06-D\n1 inputs\nD01-D\n1 inputs\nD02-D\n1 inputs\nD03-D\n1 inputs\nD04-D\n1 inputs\nD05-D\n1 inputs\nD06-D\n1 inputs\nSITE\n1 inputs\nB-01\n18 inputs\nB-02\n18 inputs\nB-03\n18 inputs\nSearch sensors\nZone\nAsset\nPart\nType\nStatus\nTrust\nColumns\nCompact rows\nClear filters\nExport CSV\n\tSensor\tType\tAsset and part\tLatest reading\tStatus\tTrust state?\tUpdated\n\tS1-INLET\tUltrasonic inlet level\tS1 · Kerb / pipe inlet\t18 cm?\t\nOK\tNo drift flag\t3 d ago · 12 Oct 2026, 9:40 am\n\tS1-OUTLET\tUnderdrain outlet level\tS1 · Outlet to drain network\t2 cm?\t\nOK\tNo drift flag\t3 d ago · 12 Oct 2026, 9:40 am\n\tS1-SEDIMENT\tManual sediment inspection\tS1 · Pretreatment forebay\t42 mm?\t\nOK\tNo drift flag\t3 d ago · 12 Oct 2026, 9:40 am\n\tS1-MOIST-10\tSoil moisture at 10 cm?\tS1 · Filter media\t30 % vol\t\nOK\tNo drift flag\t3 d ago · 12 Oct 2026, 9:40 am\n\tS1-TEMP-10\tSoil temperature at 10 cm?\tS1 · Filter media\t28.9 °C?\t\nOK\tNo drift flag\t3 d ago · 12 Oct 2026, 9:40 am\n\tS1-MOIST-30\tSoil moisture at 30 cm?\tS1 · Filter media\t34 % vol\t\nOK\tNo drift flag\t3 d ago · 12 Oct 2026, 9:40 am\n\tS1-TEMP-30\tSoil temperature at 30 cm?\tS1 · Filter media\t28.7 °C?\t\nOK\tNo drift flag\t3 d ago · 12 Oct 2026, 9:40 am\n\tS1-POND\tUltrasonic ponding depth\tS1 · Ponding / detention zone\t3 cm?\t\nOK\tNo drift flag\t3 d ago · 12 Oct 2026, 9:40 am\n\tS1-RISER\tUltrasonic overflow-riser level\tS1 · Overflow riser / grate\t4 cm?\t\nOK\tNo drift flag\t3 d ago · 12 Oct 2026, 9:40 am\n\tS1-WELL\tObservation-well level\tS1 · Cleanout / observation well\t6 cm?\t\nOK\tNo drift flag\t3 d ago · 12 Oct 2026, 9:40 am\n\tS1-INF-P1\tManual fixed-point ring infiltration test\tS1 · Filter media\t22 mm/h?\t\nOK\tNo drift flag\t3 d ago · 12 Oct 2026, 9:40 am\n\tS1-INF-P2\tManual fixed-point ring infiltration test\tS1 · Filter media\t22 mm/h?\t\nOK\tNo drift flag\t3 d ago · 12 Oct 2026, 9:40 am\n\tS1-INF-P3\tManual fixed-point ring infiltration test\tS1 · Filter media\t22 mm/h?\t\nOK\tNo drift flag\t3 d ago · 12 Oct 2026, 9:40 am\n\tS1-POND-DURATION\tManual post-rain elapsed-time log\tS1 · Ponding / detention zone\t2.5 h?\t\nOK\tNo drift flag\t3 d ago · 12 Oct 2026, 9:40 am\n\tS1-VIS-inlet\tManual visual inspection\tS1 · Kerb / pipe inlet\tNo issue recorded\t\nOK\tNo drift flag\t3 d ago · 12 Oct 2026, 9:40 am\n\tS1-VIS-energy\tManual visual inspection\tS1 · Rock energy dissipator\tNo issue recorded\t\nOK\tNo drift flag\t3 d ago · 12 Oct 2026, 9:40 am\n\tS1-VIS-pretreat\tManual visual inspection\tS1 · Pretreatment forebay\tNo issue recorded\t\nOK\tNo drift flag\t3 d ago · 12 Oct 2026, 9:40 am\n\tS1-VIS-sock\tManual visual inspection\tS1 · Compost filter sock\tSediment buildup observed\t\nOK\tNo drift flag\t3 d ago · 12 Oct 2026, 9:40 am\n\tS1-VIS-checkdam\tManual visual inspection\tS1 · Check dams\tNo issue recorded\t\nOK\tNo drift flag\t3 d ago · 12 Oct 2026, 9:40 am\n\tS1-VIS-ponding\tManual visual inspection\tS1 · Ponding / detention zone\tNo issue recorded\t\nOK\tNo drift flag\t3 d ago · 12 Oct 2026, 9:40 am\n\tS1-VIS-mulch\tManual visual inspection\tS1 · Mulch layer\tNo issue recorded\t\nOK\tNo drift flag\t3 d ago · 12 Oct 2026, 9:40 am\n\tS1-VIS-planting\tManual visual inspection\tS1 · Planting\tNo issue recorded\t\nOK\tNo drift flag\t3 d ago · 12 Oct 2026, 9:40 am\n\tS1-VIS-media\tManual visual inspection\tS1 · Filter media\tNo issue recorded\t\nOK\tNo drift flag\t3 d ago · 12 Oct 2026, 9:40 am\n\tS1-VIS-transition\tManual visual inspection\tS1 · Transition / geotextile layer\tNo issue recorded\t\nOK\tNo drift flag\t3 d ago · 12 Oct 2026, 9:40 am\n\tS1-VIS-drainage\tManual visual inspection\tS1 · Gravel drainage layer\tNo issue recorded\t\nOK\tNo drift flag\t3 d ago · 12 Oct 2026, 9:40 am\n216 records · 0 selected\nPrevious page\nPage 1 of 9\nNext page\nSave history (0)"
+  },
+  {
+    "name": "faults",
+    "w": 1920,
+    "documentWidth": 1920,
+    "main": {
+      "x": 80,
+      "y": 153.1875,
+      "w": 1760,
+      "h": 1883.078125,
+      "right": 1840,
+      "bottom": 2036.265625
+    },
+    "header": {
+      "x": 0,
+      "y": 0,
+      "w": 1920,
+      "h": 89,
+      "right": 1920,
+      "bottom": 89
+    },
+    "nav": {
+      "x": 0,
+      "y": 89,
+      "w": 1920,
+      "h": 64.1875,
+      "right": 1920,
+      "bottom": 153.1875
+    },
+    "toolbars": [
+      {
+        "rect": {
+          "x": 367,
+          "y": 301.375,
+          "w": 1426,
+          "h": 70.296875,
+          "right": 1793,
+          "bottom": 371.671875
+        },
+        "controls": [
+          {
+            "text": "",
+            "rect": {
+              "x": 367,
+              "y": 327.671875,
+              "w": 340,
+              "h": 44,
+              "right": 707,
+              "bottom": 371.671875
+            }
+          },
+          {
+            "text": "Zone",
+            "rect": {
+              "x": 715,
+              "y": 314.515625,
+              "w": 74,
+              "h": 44,
+              "right": 789,
+              "bottom": 358.515625
+            }
+          },
+          {
+            "text": "Fault class",
+            "rect": {
+              "x": 797,
+              "y": 314.515625,
+              "w": 112.6875,
+              "h": 44,
+              "right": 909.6875,
+              "bottom": 358.515625
+            }
+          },
+          {
+            "text": "Status",
+            "rect": {
+              "x": 917.6875,
+              "y": 314.515625,
+              "w": 83.09375,
+              "h": 44,
+              "right": 1000.78125,
+              "bottom": 358.515625
+            }
+          },
+          {
+            "text": "Columns",
+            "rect": {
+              "x": 1008.78125,
+              "y": 314.515625,
+              "w": 101.234375,
+              "h": 44,
+              "right": 1110.015625,
+              "bottom": 358.515625
+            }
+          },
+          {
+            "text": "Compact rows",
+            "rect": {
+              "x": 1118.015625,
+              "y": 314.515625,
+              "w": 130.65625,
+              "h": 44,
+              "right": 1248.671875,
+              "bottom": 358.515625
+            }
+          },
+          {
+            "text": "Clear filters",
+            "rect": {
+              "x": 1256.671875,
+              "y": 314.515625,
+              "w": 107.765625,
+              "h": 44,
+              "right": 1364.4375,
+              "bottom": 358.515625
+            }
+          },
+          {
+            "text": "Export CSV",
+            "rect": {
+              "x": 1372.4375,
+              "y": 314.515625,
+              "w": 111.4375,
+              "h": 44,
+              "right": 1483.875,
+              "bottom": 358.515625
+            }
+          }
+        ]
+      },
+      {
+        "rect": {
+          "x": 367,
+          "y": 1138.96875,
+          "w": 1426,
+          "h": 70.296875,
+          "right": 1793,
+          "bottom": 1209.265625
+        },
+        "controls": [
+          {
+            "text": "",
+            "rect": {
+              "x": 367,
+              "y": 1165.265625,
+              "w": 340,
+              "h": 44,
+              "right": 707,
+              "bottom": 1209.265625
+            }
+          },
+          {
+            "text": "Applies to",
+            "rect": {
+              "x": 715,
+              "y": 1152.109375,
+              "w": 107.34375,
+              "h": 44,
+              "right": 822.34375,
+              "bottom": 1196.109375
+            }
+          },
+          {
+            "text": "Columns",
+            "rect": {
+              "x": 830.34375,
+              "y": 1152.109375,
+              "w": 101.234375,
+              "h": 44,
+              "right": 931.578125,
+              "bottom": 1196.109375
+            }
+          },
+          {
+            "text": "Compact rows",
+            "rect": {
+              "x": 939.578125,
+              "y": 1152.109375,
+              "w": 130.65625,
+              "h": 44,
+              "right": 1070.234375,
+              "bottom": 1196.109375
+            }
+          },
+          {
+            "text": "Clear filters",
+            "rect": {
+              "x": 1078.234375,
+              "y": 1152.109375,
+              "w": 107.765625,
+              "h": 44,
+              "right": 1186,
+              "bottom": 1196.109375
+            }
+          },
+          {
+            "text": "Export CSV",
+            "rect": {
+              "x": 1194,
+              "y": 1152.109375,
+              "w": 111.4375,
+              "h": 44,
+              "right": 1305.4375,
+              "bottom": 1196.109375
+            }
+          }
+        ]
+      }
+    ],
+    "tables": [
+      {
+        "rows": 12,
+        "heights": [
+          105
+        ],
+        "wrap": {
+          "x": 367,
+          "y": 383.671875,
+          "w": 1426,
+          "h": 600,
+          "right": 1793,
+          "bottom": 983.671875
+        },
+        "scrollHeight": 1227,
+        "clientHeight": 600,
+        "clipped": [
+          "\tF-007\tWater standing after rain\tS3\tPonding / detention zone\t\nMedium\t4 d ago · 11 Oct 2026, 12:40 pm\t\nOpen\tStanding water after rain\t\nUpdate status\nOpen\nInspected\nClosed"
+        ]
+      },
+      {
+        "rows": 17,
+        "heights": [
+          69
+        ],
+        "wrap": {
+          "x": 367,
+          "y": 1221.265625,
+          "w": 1426,
+          "h": 600,
+          "right": 1793,
+          "bottom": 1821.265625
+        },
+        "scrollHeight": 1173,
+        "clientHeight": 600,
+        "clipped": [
+          "\t\nPile not heating\n\tCompare pile probe temperature with the configured not-heating prompt; confirm with the reference probe.\tPile temperature probes + air reference\t1.0.0"
+        ]
+      }
+    ],
+    "masters": [
+      {
+        "rect": {
+          "x": 104,
+          "y": 266.375,
+          "w": 220,
+          "h": 695.0625,
+          "right": 324,
+          "bottom": 961.4375
+        },
+        "scrollHeight": 695,
+        "clientHeight": 695,
+        "position": "sticky",
+        "text": "All assets\nS1\n1 open\nI1\n1 open\nA04-D\n1 open\nS3\n2 open\nS2\n2 open\nT2\n1 open\nB-01\n2 open\nB-02\n1 open"
+      }
+    ],
+    "text": "Faults\nReport a fault\n\nFaults appear when a rule fires on a reading or an operator reports a problem.\n\nAll assets\nS1\n1 open\nI1\n1 open\nA04-D\n1 open\nS3\n2 open\nS2\n2 open\nT2\n1 open\nB-01\n2 open\nB-02\n1 open\nSearch faults\nZone\nFault class\nStatus\nColumns\nCompact rows\nClear filters\nExport CSV\n\tID\tTitle\tAsset\tPart\tSeverity\tOpened\tStatus\tRule\tActions\n\tF-001\tInlet blocked\tS1\tCompost filter sock\t\nHigh\t3 d ago · 12 Oct 2026, 6:40 am\t\nOpen\tInlet sediment or debris\t\nUpdate status\nOpen\nInspected\nClosed\n\n\tF-011\tLeachate\tB-02\tLeachate sump\t\nMedium\t4 d ago · 11 Oct 2026, 12:40 am\t\nOpen\tLeachate after rain\t\nUpdate status\nOpen\nInspected\nClosed\n\n\tF-010\tLeachate\tB-01\tLeachate sump\t\nMedium\t4 d ago · 11 Oct 2026, 3:40 am\t\nOpen\tLeachate after rain\t\nUpdate status\nOpen\nInspected\nClosed\n\n\tF-009\tToo wet\tB-01\tCompost bay / pile\t\nMedium\t4 d ago · 11 Oct 2026, 6:40 am\t\nOpen\tWet pile or puddles\t\nUpdate status\nOpen\nInspected\nClosed\n\n\tF-008\tMissing cap\tT2\tCleanout / observation well\t\nMedium\t4 d ago · 11 Oct 2026, 9:40 am\t\nOpen\tCleanout cap and joint check\t\nUpdate status\nOpen\nInspected\nClosed\n\n\tF-007\tWater standing after rain\tS3\tPonding / detention zone\t\nMedium\t4 d ago · 11 Oct 2026, 12:40 pm\t\nOpen\tStanding water after rain\t\nUpdate status\nOpen\nInspected\nClosed\n\n\tF-006\tSparse planting\tS2\tPlanting\t\nMedium\t4 d ago · 11 Oct 2026, 3:40 pm\t\nOpen\tSurface sediment and bare soil\t\nUpdate status\nOpen\nInspected\nClosed\n\n\tF-005\tMulch lost\tS2\tMulch layer\t\nMedium\t4 d ago · 11 Oct 2026, 6:40 pm\t\nOpen\tThinned or displaced mulch\t\nUpdate status\nOpen\nInspected\nClosed\n\n\tF-003\tWater standing after rain\tA04-D\tOutlet to drain network\t\nMedium\t3 d ago · 12 Oct 2026, 12:40 am\t\nOpen\tOutlet and underdrain obstruction\t\nUpdate status\nOpen\nInspected\nClosed\n\n\tF-004\tSensor needs checking\tS3\tFilter media\t\nMedium\t3 d ago · 11 Oct 2026, 9:40 pm\t\nOpen\tSensor trust\t\nUpdate status\nOpen\nInspected\nClosed\n\n\tF-002\tSensor not reporting\tI1\tOutlet to drain network\t\nMedium\t3 d ago · 12 Oct 2026, 3:40 am\t\nOpen\tSensor trust\t\nUpdate status\nOpen\nInspected\nClosed\n11 records · 0 selected\nPrevious page\nPage 1 of 1\nNext page\nFault rules and diagnosing inputs\nSearch fault rules\nApplies to\nColumns\nCompact rows\nClear filters\nExport CSV\n\tRule\tTrigger\tDiagnosing inputs\tVersion\n\t\nInlet sediment or debris\n\tInspect sediment and debris at the inlet and forebay; check bypass.\tInlet level + visual inspection\t1.0.0\n\t\nSurface sediment and bare soil\n\tInspect surface sediment, erosion, weeds and sparse planting.\tVisual only; soil moisture is an indirect proxy\t1.0.0\n\t\nStanding water after rain\n\tCompare elapsed time after rain with the configured inspection period. Inspect trapped sediment and underdrain function.\tPonding depth + observation well + manual elapsed-time record\t1.0.0\n\t\nThinned or displaced mulch\n\tInspect mulch coverage and evidence of floating material.\tVisual only\t1.0.0\n\t\nOutlet and underdrain obstruction\n\tInspect blocked outlet, backwater, pipe joints and observation-well level.\tOutlet level / flow switch + observation well + visual inspection\t1.0.0\n\t\nCleanout cap and joint check\n\tInspect missing caps, silt and leaking pipe joints.\tVisual only; observation-well level supports the inspection\t1.0.0\n\t\nFixed-point infiltration re-test\n\tUse the same marked points, method and repeats. Moisture is not the trial outcome.\tManual infiltration reference; soil sensors are indirect proxies\t1.0.0\n\t\nPile not heating\n\tCompare pile probe temperature with the configured not-heating prompt; confirm with the reference probe.\tPile temperature probes + air reference\t1.0.0\n\t\nPutrid / rotten-egg smell\n\tRecord the human smell and squeeze check; inspect wet material.\tManual smell + squeeze reference\t1.0.0\n\t\nAmmonia smell\n\tRecord the human smell check and review the dry-carbon input.\tManual smell reference; no ammonia gas sensor\t1.0.0\n\t\nWet pile or puddles\n\tUse the squeeze test to confirm relative moisture; inspect puddles.\tCapacitive moisture proxy + manual squeeze + visual inspection\t1.0.0\n\t\nPests around the bay\n\tRecord a visual inspection of pests and cover condition.\tVisual only\t1.0.0\n\t\nLeachate after rain\n\tCheck cover, base channel and sump following rain.\tRain gauge + sump level + visual inspection\t1.0.0\n\t\nIntake contamination check\n\tWeigh intake and complete the human photo checklist. The photo is not an automated model.\tScale reference + human photo checklist\t1.0.0\n\t\nAmbient / no-reheat maturity gate\n\tCompare curing temperature to measured air temperature; require no reheat and human maturity checks.\tCuring temperature + air reference + human checklist\t1.0.0\n\t\nSensor trust\n\tInvestigate drift, suspect values or offline reporting before relying on an alert.\tSensor calibration, drift and reporting status\t1.0.0\n16 records · 0 selected\nPrevious page\nPage 1 of 1\nNext page\nSave history (0)"
+  },
+  {
+    "name": "feature",
+    "w": 1920,
+    "documentWidth": 1920,
+    "main": {
+      "x": 80,
+      "y": 153.1875,
+      "w": 1760,
+      "h": 2283.671875,
+      "right": 1840,
+      "bottom": 2436.859375
+    },
+    "header": {
+      "x": 0,
+      "y": 0,
+      "w": 1920,
+      "h": 89,
+      "right": 1920,
+      "bottom": 89
+    },
+    "nav": {
+      "x": 0,
+      "y": 89,
+      "w": 1920,
+      "h": 64.1875,
+      "right": 1920,
+      "bottom": 153.1875
+    },
+    "toolbars": [
+      {
+        "rect": {
+          "x": 127,
+          "y": 3453.15625,
+          "w": 1666,
+          "h": 70.296875,
+          "right": 1793,
+          "bottom": 3523.453125
+        },
+        "controls": [
+          {
+            "text": "",
+            "rect": {
+              "x": 127,
+              "y": 3479.453125,
+              "w": 340,
+              "h": 44,
+              "right": 467,
+              "bottom": 3523.453125
+            }
+          },
+          {
+            "text": "Columns",
+            "rect": {
+              "x": 475,
+              "y": 3466.296875,
+              "w": 101.234375,
+              "h": 44,
+              "right": 576.234375,
+              "bottom": 3510.296875
+            }
+          },
+          {
+            "text": "Compact rows",
+            "rect": {
+              "x": 584.234375,
+              "y": 3466.296875,
+              "w": 130.65625,
+              "h": 44,
+              "right": 714.890625,
+              "bottom": 3510.296875
+            }
+          },
+          {
+            "text": "Clear filters",
+            "rect": {
+              "x": 722.890625,
+              "y": 3466.296875,
+              "w": 107.765625,
+              "h": 44,
+              "right": 830.65625,
+              "bottom": 3510.296875
+            }
+          },
+          {
+            "text": "Export CSV",
+            "rect": {
+              "x": 838.65625,
+              "y": 3466.296875,
+              "w": 111.4375,
+              "h": 44,
+              "right": 950.09375,
+              "bottom": 3510.296875
+            }
+          }
+        ]
+      }
+    ],
+    "tables": [
+      {
+        "rows": 15,
+        "heights": [
+          49
+        ],
+        "wrap": {
+          "x": 127,
+          "y": 3535.453125,
+          "w": 1666,
+          "h": 600,
+          "right": 1793,
+          "bottom": 4135.453125
+        },
+        "scrollHeight": 759,
+        "clientHeight": 600,
+        "clipped": [
+          ""
+        ]
+      }
+    ],
+    "masters": [],
+    "text": "S1 · Pilot swale\n\nZone A · Installed 17 Aug 2026\n\nModel details\nBack to Overview\nTrial arm\nSoil loosened + compost\nPilot dose\nPilot dose B\nNext re-test\n19 Oct 2026\nOwner of record\nZone A maintenance lead\nCompost applied\n\nB-03 · Pilot dose B · 15 L/m² · Mixing depth 150 mm · 17 Aug 2026\n\nConductivity follows the test record or entered value.\n\nOperator\nDebug\nTroubleshoot\nDimensions from model parameters / simulated readings\nKerb / pipe inlet\nRock energy dissipator\nPretreatment forebay\nCompost filter sock\nCheck dams\nPonding / detention zone\nMulch layer\nPlanting\nFilter media\nTransition / geotextile layer\nGravel drainage layer\nPerforated underdrain\nCleanout / observation well\nImpermeable liner\nNot installed\nOverflow riser / grate\nOutlet to drain network\n6.00 m\n0.93 m\nRL 0.00 m\n1\nFault\nCompost amended · 150 mm · Pilot dose B\n\nWater level follows the storm model. RL is the local level datum.\n\n2D section\nDimensions\nPlay storm\nPrevious minute\nNext minute\nReset storm\nJump to peak water\nShared clock · minute 0\nStorm timeline · includes 6 h after rain\nPlayback speed\n30x\n60x\n300x\n600x\n\nShort strokes show rain; soil shading shows moisture; pipe fill and arrows show drainage. Arrows are static; width shows flow. Playback is shared across the six feature pages. Speed is simulated seconds per real second.\n\nReady to start the storm.\n\nNo visible pool yet.\n\nThe waterline shows surface depth. Soil shading follows moisture; arrow width follows flow.\n\nMinute 0: ponding 0.0 mm, inlet 0.0 L/min, overflow 0.0 L/min.\n\nWater path · current minute\nInlet\n0\nL/min?\n0 mm\nForebay\n0\nL/min?\n0 mm\nSock\n0\nL/min?\n100 % open\nMedia\n0\nL/min?\n10 % moisture\nGravel\n0\nL/min?\n0 mm\nPipe\n0\nL/min?\n0 % fill\nOutfall\n0\nL/min?\n0 mm tailwater\nOverflow\n0\nL/min?\n0 mm\n\nInlet, forebay and sock share the inlet path level. The soil stores water before it reaches the pipe.\n\nExploded\nAssembled\nCross-section\nExplode 65%\nSensors\nIsolate part\nHide part\nShow all\nReset parts\nReset view\n\nDrag to orbit · Scroll to zoom. Dimensions are in local metres.\n\nCompost filter sock\nFault\n\nTrial option for trapping fine sediment\n\nTypical failure: Clogging or washout\n\nSensors on this part\n\nS1-INLET / Inlet water level / 0.07 cm / Reference / OK\n\nDetails\n\nS1-VIS-sock / Compost filter sock inspection / Sediment buildup observed / Reference / OK\n\nDetails\nWhy is this highlighted?\n\nInput: S1-INLET, S1-SEDIMENT, S1-VIS-sock\n\nRule: Inlet sediment or debris\n\nTrigger: recorded visual or human finding; no numeric threshold configured.\n\nRecorded 12 Oct 2026, 6:40 am\n\nDiagnosing input\n\nLevel history + visual inspection\n\nWhat looks wrong\n\nDrain-down: hours for water to clear after rain.\n\nBlockage.\n\nDraft. Check against the local authority's procedure before use.\nInspection steps\nMark inspected\nLog a clean\nRaise a work order\nStorm settings, charts and model parameters\n\nLive model alerts above are temporary scenario outputs. Open fault history.\n\nTrial record\n\n13 → 22 mm/h · Same marked points · n = 6\n\nPilot, small sample, not proof. Open trial protocol and lineage\n\nOK\nSave history (0)"
+  },
+  {
+    "name": "about",
+    "w": 1920,
+    "documentWidth": 1920,
+    "main": {
+      "x": 80,
+      "y": 153.1875,
+      "w": 1760,
+      "h": 1017.09375,
+      "right": 1840,
+      "bottom": 1170.28125
+    },
+    "header": {
+      "x": 0,
+      "y": 0,
+      "w": 1920,
+      "h": 89,
+      "right": 1920,
+      "bottom": 89
+    },
+    "nav": {
+      "x": 0,
+      "y": 89,
+      "w": 1920,
+      "h": 64.1875,
+      "right": 1920,
+      "bottom": 153.1875
+    },
+    "toolbars": [],
+    "tables": [],
+    "masters": [],
+    "text": "Data and limits\nWhat the pilot can tell us\n\nThis pilot compares untreated soil, loosened soil and soil loosened with compost at the same marked spots. Repeat field tests establish the measured differences. A small pilot cannot establish a flood-reduction percentage or prove that compost works in every soil.\n\nModel limits\n\nThe shared storm clock runs a reduced-order storage and drainage model. Entered conductivity and test records control infiltration. The recorded compost dose does not change conductivity automatically. The model needs local calibration and is not a forecast or an engineering design.\n\nInlet, forebay and sock share a modelled path level. Soil shading represents equivalent wet depth from stored moisture. Pipe fill is estimated from local head. Reverse river flow, sediment transport, mulch loss and biological fault causes are not fully solved. The compost model view presents the batch record and its checks.\n\nField checks matter\n\nCheck indirect sensors against a reference measurement. Human squeeze, smell, intake and maturity checks remain necessary. Offline readings stay unavailable. Thresholds and layer dimensions require practitioner confirmation against MSMA and the local authority before field use.\n\nSoil and compost moisture probes measure relative wetness. These readings do not establish nutrient safety, compost maturity, gas concentration or odour. Oxygen and ammonia probes are excluded; human smell checks remain.\n\nData\n\nThis environment uses generated local records, deterministic rainfall and browser-local saved changes.\n\nMap footprints use credited OpenStreetMap geometry. Household assignments, heights and drain locations require a site survey. Record the same marked points, a baseline, the batch and labelled dose, the responsible person and follow-up checks.\n\nSave history (0)"
+  }
+]

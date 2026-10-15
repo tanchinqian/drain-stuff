@@ -1,13 +1,14 @@
 import { Suspense, useState } from 'react';
 import { Link, NavLink, Outlet } from 'react-router-dom';
 import { Waves } from 'lucide-react';
-import DemoWalkthrough from './DemoWalkthrough';
 import Toast from './Toast';
+import SimulationDriver from '../simulation/physics/SimulationDriver';
 export default function AppLayout() {
   const [demo] = useState(new URLSearchParams(location.search).get('demo') === '1');
   const suffix = demo ? '?demo=1' : '';
   return (
     <>
+      <SimulationDriver />
       <a className="skip-link" href="#main">
         Skip to content
       </a>
@@ -17,10 +18,6 @@ export default function AppLayout() {
           Drain Trial Console
         </Link>
         <div className="inline">
-          <span className="badge">
-            <span className="square" />
-            Synthetic demo data
-          </span>
           <Link className="button" to={'/about' + suffix}>
             Limits
           </Link>
@@ -40,7 +37,6 @@ export default function AppLayout() {
           </NavLink>
         ))}
       </nav>
-      {demo && <DemoWalkthrough />}
       <main id="main">
         <Suspense
           fallback={
@@ -52,7 +48,7 @@ export default function AppLayout() {
           <Outlet context={{ demo }} />
         </Suspense>
       </main>
-      <footer>Operator view · Local ponding and drain upkeep · Synthetic demonstration</footer>
+      <footer>Local ponding and drain upkeep</footer>
       <Toast />
     </>
   );

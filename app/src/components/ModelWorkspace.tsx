@@ -1,5 +1,9 @@
+import type { ModelPhysics } from '../three/PhysicsOverlay';
+import FlowStrip from './FlowStrip';
+import PhysicsControls from './PhysicsControls';
+import PhysicsSection from './PhysicsSection';
 import SearchableSelect from './SearchableSelect';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import type { Config, Fault, Part, PartId, Sensor } from '../api/types';
 import { legacyParts } from '../api/modelCatalog';
@@ -11,12 +15,16 @@ import SensorPositions from './SensorPositions';
 import { AssemblyControls, PartControls } from './ModelControls';
 export default function ModelWorkspace({
   ownerId,
-  parts,
+  parts: sourceParts,
   sensors,
   config,
   faults,
   kind = 'drainage',
+  physics,
+  summary,
 }: {
+  physics?: ModelPhysics;
+  summary?: ReactNode;
   ownerId: string;
   parts: Part[];
   sensors: Sensor[];
@@ -24,15 +32,27 @@ export default function ModelWorkspace({
   faults: Fault[];
   kind?: 'drainage' | 'compost';
 }) {
+  const parts = useMemo(
+    () =>
+      sourceParts.map((p) =>
+        p.installed && sensors.some((s) => p.sensorIds.includes(s.sensorId) && s.status !== 'ok')
+          ? { ...p, status: 'offline' as const }
+          : p,
+      ),
+    [sourceParts, sensors],
+  );
+  const [flat, setFlat] = useState(false),
+    [dimensionsVisible, setDimensionsVisible] = useState(true);
+
   const [params] = useSearchParams();
-  const [showSensors, setShowSensors] = useState(true);
+  const [showSensors, setShowSensors] = useState(false);
   const [partSearch, setPartSearch] = useState('');
   const select = useSelection((s) => s.selectPart),
     selected = useSelection((s) => s.partId);
   const [mode, setMode] = useState<ViewMode>('Operator'),
-    [assembly, setAssembly] = useState<Assembly>('exploded'),
+    [assembly, setAssembly] = useState<Assembly>(physics ? 'section' : 'exploded'),
     [explode, setExplode] = useState(65),
-    [cutAxis, setCutAxis] = useState<'X' | 'Z'>('X'),
+    [cutAxis, setCutAxis] = useState<'X' | 'Y' | 'Z'>(physics ? 'Z' : 'X'),
     [cutPosition, setCutPosition] = useState(0),
     [offsets, setOffsets] = useState<Offsets>({}),
     [move, setMove] = useState(false),
@@ -87,17 +107,7 @@ export default function ModelWorkspace({
   const part = parts.find((p) => p.partId === selected);
   if (!part) return null;
   return (
-    <>
-      <div className="panel-heading">
-        <div className="segments">
-          {(['Operator', 'Debug', 'Troubleshoot'] as const).map((value) => (
-            <button key={value} aria-pressed={mode === value} onClick={() => setMode(value)}>
-              {value}
-            </button>
-          ))}
-        </div>
-        <span className="small">Illustrative CAD-style assembly · synthetic readings</span>
-      </div>
+    <div className={'model-workspace ' + (kind === 'compost' ? 'compost-model' : '')}>
       <div className="field mobile-part-picker">
         <span>Model part</span>
         <SearchableSelect
@@ -132,6 +142,14 @@ export default function ModelWorkspace({
             .map((p) => (
               <button
                 key={p.partId}
+                className={
+                  p.installed && p.sensorIds.length ? 'part-status-' + p.status : undefined
+                }
+                title={
+                  !p.installed || !p.sensorIds.length
+                    ? 'Check by eye: not installed or not monitored'
+                    : undefined
+                }
                 aria-pressed={selected === p.partId}
                 onClick={() => select(p.partId)}
               >
@@ -141,33 +159,93 @@ export default function ModelWorkspace({
               </button>
             ))}
         </aside>
-        <section className="panel">
-          <DrainScene
-            featureId={ownerId}
-            kind={kind}
-            dimensions={config.schematic}
-            sensors={sensors}
-            showSensors={showSensors}
-            parts={parts}
-            mode={mode}
-            assembly={assembly}
-            explode={explode}
-            cutAxis={cutAxis}
-            cutPosition={cutPosition}
-            offsets={offsets}
-            onMove={(partId, position) =>
-              setOffsets((previous) => ({ ...previous, [partId]: position }))
-            }
-            move={move}
-            isolate={isolate}
-            hidden={hidden}
-            labels={labels}
-            wireframe={wireframe}
-            edges={edges}
-            reset={reset}
-          />
-          <p className="small">{config.schematic.label}</p>
-          {showSensors && <SensorPositions sensors={sensorMarkers(sensors)} />}
+        <section className="panel model-card">
+          <div className="model-mode">
+            <div className="segments">
+              {(['Operator', 'Debug', 'Troubleshoot'] as const).map((value) => (
+                <button
+                  key={value}
+                  aria-pressed={mode === value}
+                  onClick={() => {
+                    setMode(value);
+                    setShowSensors(value === 'Debug');
+                    setMove(false);
+                  }}
+                >
+                  {value}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {physics && flat ? (
+            <PhysicsSection {...physics} />
+          ) : (
+            <DrainScene
+              physics={physics}
+              dimensionsVisible={dimensionsVisible}
+              featureId={ownerId}
+              kind={kind}
+              dimensions={config.schematic}
+              sensors={sensors}
+              showSensors={showSensors}
+              parts={parts}
+              mode={mode}
+              assembly={assembly}
+              explode={explode}
+              cutAxis={cutAxis}
+              cutPosition={cutPosition}
+              offsets={offsets}
+              onMove={(partId, position) =>
+                setOffsets((previous) => ({ ...previous, [partId]: position }))
+              }
+              move={mode === 'Debug' && move}
+              isolate={isolate}
+              hidden={hidden}
+              labels={labels}
+              wireframe={wireframe}
+              edges={edges}
+              reset={reset}
+            />
+          )}
+          <p className="small">
+            {physics
+              ? 'Water level follows the storm model. RL is the local level datum.'
+              : 'Select a part to inspect its readings and checks.'}
+          </p>
+          {physics && (
+            <>
+              <div className="physics-view-controls">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={flat}
+                    onChange={(e) => setFlat(e.target.checked)}
+                  />{' '}
+                  2D section
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={dimensionsVisible}
+                    onChange={(e) => setDimensionsVisible(e.target.checked)}
+                  />{' '}
+                  Dimensions
+                </label>
+              </div>
+              <PhysicsControls ownerId={ownerId} />
+              <FlowStrip ownerId={ownerId} />
+            </>
+          )}
+          {showSensors && (
+            <SensorPositions
+              showPositions={mode === 'Debug'}
+              sensors={sensorMarkers(sensors).filter(
+                (s) => mode === 'Debug' || s.partId === selected,
+              )}
+            />
+          )}
+          {summary}
           <div className="part-settings">
             <AssemblyControls {...controlProps} />
             <PartControls {...controlProps} />
@@ -175,6 +253,7 @@ export default function ModelWorkspace({
         </section>
         <PartPanel
           part={part}
+          config={config}
           fault={faults.find(
             (f) => f.featureId === ownerId && f.partId === selected && f.status !== 'closed',
           )}
@@ -182,6 +261,6 @@ export default function ModelWorkspace({
           sensors={sensors.filter((s) => part.sensorIds.includes(s.sensorId))}
         />
       </div>
-    </>
+    </div>
   );
 }

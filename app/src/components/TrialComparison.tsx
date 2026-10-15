@@ -1,6 +1,8 @@
+import { CheckCircle2, CircleDashed } from 'lucide-react';
+import Term from './Term';
 import { Link } from 'react-router-dom';
 import type { Config, TrialDetail } from '../api/types';
-import { armName, testMean } from '../utils';
+import { armName, testMean, formatValue } from '../utils';
 export default function TrialComparison({
   trials,
   config,
@@ -8,35 +10,86 @@ export default function TrialComparison({
   trials: TrialDetail[];
   config: Config;
 }) {
+  const scale = Math.max(
+    30,
+    ...trials.flatMap((t) => [
+      testMean(t.tests, 'baseline')?.value ?? 0,
+      testMean(t.tests, 'retest')?.value ?? 0,
+    ]),
+  );
   return (
     <section className="trial-comparison" aria-label="Three trial arms compared side by side">
       {(['control', 'decompaction', 'compost'] as const).map((arm) => {
         const trial = trials.find((t) => t.arm === arm),
           before = trial && testMean(trial.tests, 'baseline'),
-          after = trial && testMean(trial.tests, 'retest');
+          after = trial && testMean(trial.tests, 'retest'),
+          count =
+            trial?.tests.filter((t) => t.phase === 'retest' && t.metric === 'infiltration_mm_hr')
+              .length ?? 0,
+          minimum = config.minTests ?? config.minimumN,
+          met = count >= minimum;
         return (
           <article className="trial-arm" key={arm}>
-            <span
-              className="swatch"
-              style={{ background: `var(--arm-${arm === 'decompaction' ? 'decompact' : arm})` }}
-            />
-            <span className="small">
-              {trial?.featureId || 'No feature'} · n = {after?.n ?? 0}
-            </span>
-            <h2>{armName[arm]}</h2>
-            <p className="measure">
-              {before?.value.toFixed(1) ?? '—'} → {after?.value.toFixed(1) ?? '—'}{' '}
-              <small>mm/h</small>
+            <h2>
+              <span
+                className="swatch"
+                style={{ background: `var(--arm-${arm === 'decompaction' ? 'decompact' : arm})` }}
+              />
+              {armName[arm]}
+            </h2>
+            <p className="small">
+              {trial?.featureId} · {trial?.markedPoints ?? 0} marked points · {count} re-tests
             </p>
-            <p className="small">Before / latest re-test · synthetic</p>
-            <p className="small">Same marked points · {trial?.doseLabel || 'No compost'}</p>
-            <p className="takeaway">
-              {(after?.n ?? 0) < config.minimumN
-                ? 'Not enough data yet'
-                : 'Minimum sample count recorded. Measured difference only.'}
+            <div
+              className="before-after"
+              role="group"
+              aria-label={`${armName[arm]}: before ${before?.value ?? 'not recorded'}, latest ${after?.value ?? 'not recorded'} mm/h`}
+            >
+              {(
+                [
+                  ['Before', before?.value],
+                  ['Latest', after?.value],
+                ] as const
+              ).map(([label, value]) => (
+                <div key={label}>
+                  <span>{label}</span>
+                  <span className="bar-track">
+                    {value !== undefined && (
+                      <i
+                        style={{
+                          width: `${(value / scale) * 100}%`,
+                          background: `var(--arm-${arm === 'decompaction' ? 'decompact' : arm})`,
+                        }}
+                      />
+                    )}
+                  </span>
+                  <strong>{formatValue(value, 'mm/h')}</strong>
+                </div>
+              ))}
+              <p className="small">
+                Scale: 0–{formatValue(scale)} <Term text="mm/h" />
+              </p>
+            </div>
+            <div className="trial-progress">
+              <p>
+                {met ? (
+                  <CheckCircle2 size={16} aria-hidden="true" />
+                ) : (
+                  <CircleDashed size={16} aria-hidden="true" />
+                )}
+                {count} of {minimum} re-tests needed · {met ? 'Minimum met' : 'More tests needed'}
+              </p>
+              <progress
+                max={minimum}
+                value={Math.min(count, minimum)}
+                aria-label={armName[arm] + ' re-test progress'}
+              />
+            </div>
+            <p className="small">
+              A re-test is one marked-point observation; repeats are recorded with it.
             </p>
             {trial && (
-              <Link className="button" style={{ marginTop: 12 }} to={'/feature/' + trial.featureId}>
+              <Link className="text-link" to={'/feature/' + trial.featureId}>
                 Inspect {trial.featureId}
               </Link>
             )}

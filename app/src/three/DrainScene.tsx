@@ -5,7 +5,11 @@ import { Box3, Line, Material, Matrix4, Mesh, MeshStandardMaterial, Plane, Vecto
 import type { Config, Part, PartId, Sensor } from '../api/types';
 import { createDrainParts, palette } from './geometry';
 import { useSelection } from '../state';
+import { createPhysicsGeometry } from './physicsGeometry';
+import { PhysicsWater, DimensionLines, type ModelPhysics } from './PhysicsOverlay';
+import PhysicsSection from '../components/PhysicsSection';
 import FitCamera from './FitCamera';
+import PartHighlight from './PartHighlight';
 import SensorMarkers from './SensorMarkers';
 import { createCompostParts } from './compostGeometry';
 import { sensorMarkers } from '../api/sensorViews';
@@ -13,6 +17,8 @@ export type Assembly = 'exploded' | 'assembled' | 'section';
 export type ViewMode = 'Operator' | 'Debug' | 'Troubleshoot';
 export type Offsets = Partial<Record<PartId, [number, number, number]>>;
 export interface Props {
+  physics?: ModelPhysics;
+  dimensionsVisible?: boolean;
   kind?: 'drainage' | 'compost';
   dimensions: Config['schematic'];
   sensors: Sensor[];
@@ -22,7 +28,7 @@ export interface Props {
   mode: ViewMode;
   assembly: Assembly;
   explode: number;
-  cutAxis: 'X' | 'Z';
+  cutAxis: 'X' | 'Y' | 'Z';
   cutPosition: number;
   offsets: Offsets;
   onMove: (id: PartId, position: [number, number, number]) => void;
@@ -71,17 +77,48 @@ function Model(props: Props) {
     () =>
       props.kind === 'compost'
         ? createCompostParts()
-        : createDrainParts(props.featureId, props.dimensions),
-    [props.featureId, props.kind, props.dimensions],
+        : props.physics
+          ? createPhysicsGeometry(props.physics.config)
+          : createDrainParts(props.featureId, props.dimensions),
+    [props.featureId, props.kind, props.dimensions, props.physics?.config],
+  );
+  useEffect(
+    () => () => {
+      const geometries = new Set<import('three').BufferGeometry>();
+      const materials = new Set<Material>();
+      Object.values(groups).forEach((group) =>
+        group?.traverse((object) => {
+          if (object instanceof Mesh || object instanceof Line) {
+            geometries.add(object.geometry);
+            (Array.isArray(object.material) ? object.material : [object.material]).forEach((m) =>
+              materials.add(m),
+            );
+          }
+        }),
+      );
+      geometries.forEach((g) => g.dispose());
+      materials.forEach((m) => {
+        if (m instanceof MeshStandardMaterial) m.map?.dispose();
+        m.dispose();
+      });
+    },
+    [groups],
   );
   const plane = useMemo(() => new Plane(), []),
     controls = useRef<ComponentRef<typeof OrbitControls>>(null);
   const e = props.assembly === 'exploded' ? props.explode / 100 : 0;
   useEffect(() => {
-    plane.normal.set(props.cutAxis === 'X' ? -1 : 0, 0, props.cutAxis === 'Z' ? -1 : 0);
+    plane.normal.set(
+      props.cutAxis === 'X' ? -1 : 0,
+      props.cutAxis === 'Y' ? -1 : 0,
+      props.cutAxis === 'Z' ? -1 : 0,
+    );
     plane.constant = props.cutPosition;
     props.parts.forEach((part) => {
       groups[part.partId]?.traverse((object) => {
+        if (object.userData.sectionFace)
+          object.visible =
+            props.assembly === 'section' && props.cutAxis === 'Z' && props.cutPosition === 0;
         if (!(object instanceof Mesh) && !(object instanceof Line)) return;
         const materials: Material[] = Array.isArray(object.material)
           ? object.material
@@ -90,7 +127,7 @@ function Model(props: Props) {
           material.clippingPlanes = props.assembly === 'section' ? [plane] : [];
           const dim = !part.installed || (props.mode === 'Troubleshoot' && part.status === 'ok');
           const baseOpacity = Number(material.userData.baseOpacity ?? 1);
-          material.opacity = dim ? baseOpacity * 0.25 : baseOpacity;
+          material.opacity = dim ? baseOpacity * (!part.installed ? 0.25 : 0.4) : baseOpacity;
           material.transparent = dim || baseOpacity < 1 || object instanceof Line;
           material.depthWrite = !dim && baseOpacity === 1;
           if (material instanceof MeshStandardMaterial)
@@ -116,11 +153,22 @@ function Model(props: Props) {
   return (
     <>
       <FitCamera
-        width={13.5}
-        height={9.6}
+        width={
+          props.physics
+            ? Math.max(
+                7,
+                props.physics.config.values.length.value + (props.assembly === 'exploded' ? 7 : 4),
+              )
+            : props.kind === 'compost'
+              ? 11.6
+              : 13.5
+        }
+        height={
+          props.physics && props.assembly !== 'exploded' ? 6 : props.kind === 'compost' ? 8 : 9.6
+        }
         controlsRef={controls}
         enabled={!props.move}
-        target={[1.2, 1.2, 0]}
+        target={props.physics && props.assembly !== 'exploded' ? [0.5, 0, 0] : [1.2, 1.2, 0]}
       />
       <color attach="background" args={['#E2DCCB']} />
       <ambientLight intensity={1.35} />
@@ -131,6 +179,9 @@ function Model(props: Props) {
         <meshStandardMaterial color={palette.ground} />
         <Edges color={palette.ink3} />
       </mesh>
+      {props.physics && props.dimensionsVisible && props.assembly !== 'exploded' && (
+        <DimensionLines config={props.physics.config} />
+      )}
       {props.parts.map((part) => {
         const id = part.partId,
           base = shifts(id, e),
@@ -151,29 +202,50 @@ function Model(props: Props) {
                 select(id);
               }}
             />
-            {props.showSensors && part.installed && (
+            {props.physics && part.installed && (
+              <PhysicsWater
+                id={id}
+                physics={props.physics}
+                plane={props.assembly === 'section' ? plane : undefined}
+              />
+            )}
+            {props.showSensors && part.installed && (props.mode === 'Debug' || selected === id) && (
               <SensorMarkers
                 sensors={sensorMarkers(props.sensors).filter((s) => s.partId === id)}
               />
             )}
-            {selected === id && <SelectedBounds group={geometry} />}
-            {props.labels && (props.mode !== 'Operator' || selected === id) && (
-              <Html position={[label.x, label.y, label.z]} center>
-                <div className="scene-label">
-                  {part.name}
-                  {!part.installed && '  -  Not installed'}
-                  {props.mode === 'Troubleshoot' && part.status !== 'ok' && (
-                    <small>
-                      {' '}
-                      · Check{' '}
-                      {props.parts
-                        .filter((p) => p.status !== 'ok')
-                        .findIndex((p) => p.partId === id) + 1}
-                    </small>
-                  )}
-                </div>
-              </Html>
+            {part.installed && part.sensorIds.length > 0 && part.status !== 'ok' && (
+              <PartHighlight
+                group={geometry}
+                status={part.status}
+                number={
+                  props.parts
+                    .filter((p) => p.installed && p.status !== 'ok')
+                    .findIndex((p) => p.partId === id) + 1
+                }
+                name={part.name}
+              />
             )}
+            {selected === id && part.status === 'ok' && <SelectedBounds group={geometry} />}
+            {props.labels &&
+              (props.mode !== 'Operator' || (selected === id && part.status === 'ok')) && (
+                <Html position={[label.x, label.y, label.z]} center>
+                  <div className="scene-label">
+                    {part.name}
+                    {!part.installed && '  -  Not installed; check by eye'}
+                    {part.installed && !part.sensorIds.length && ' - Not monitored; check by eye'}
+                    {props.mode === 'Troubleshoot' && part.status !== 'ok' && (
+                      <small>
+                        {' '}
+                        · Check{' '}
+                        {props.parts
+                          .filter((p) => p.status !== 'ok')
+                          .findIndex((p) => p.partId === id) + 1}
+                      </small>
+                    )}
+                  </div>
+                </Html>
+              )}
           </group>
         );
         return props.move ? (
@@ -226,6 +298,9 @@ export default function DrainScene(props: Props) {
           ? 'Selectable 3D compost bay parts'
           : 'Selectable 3D drainage parts'
       }
+      data-model-kind={props.physics?.config.kind}
+      data-frame-second={props.physics?.frame?.second}
+      data-ponding-mm={(props.physics?.frame?.ponding ?? 0) * 1000}
       data-explode={props.explode}
       data-part-count={props.parts.length}
     >
@@ -236,7 +311,13 @@ export default function DrainScene(props: Props) {
         dpr={[1, 2]}
         frameloop="demand"
         gl={{ antialias: true, localClippingEnabled: true }}
-        fallback={<p>3D unavailable. All parts and readings remain available in the part list.</p>}
+        fallback={
+          props.physics ? (
+            <PhysicsSection {...props.physics} />
+          ) : (
+            <p>3D unavailable. All parts and readings remain available in the part list.</p>
+          )
+        }
       >
         <Model {...props} />
       </Canvas>

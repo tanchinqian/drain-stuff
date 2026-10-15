@@ -1,52 +1,28 @@
 import { test, expect } from '@playwright/test';
-test('trial and batch record searches recover from no results', async ({ page }) => {
+test('record search, selection and saved columns recover from no results', async ({ page }) => {
   for (const route of ['trials', 'batches']) {
     await page.goto('/' + route);
     const search = page.getByRole('searchbox', { name: 'Search ' + route, exact: true });
     await search.fill('no-such-record');
-    await expect(page.getByRole('status').filter({ hasText: 'No matching ' + route })).toBeVisible();
+    await expect(page.getByRole('status').filter({ hasText: 'No records match' })).toBeVisible();
     await search.fill('');
-    await expect(page.getByRole('status').filter({ hasText: 'No matching ' + route })).toHaveCount(0);
-    for (const width of [1440, 390]) {
-      await page.setViewportSize({ width, height: 1000 });
-      await page.evaluate(() => window.scrollTo(0, 0));
-      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-      await page.screenshot({ path: `../.impeccable/review/search-${route}-${width}.png`, fullPage: true });
-    }
+    await expect(
+      page.getByRole('table', { name: route, exact: true }).locator('tbody tr').first(),
+    ).toBeVisible();
   }
-});
-test('search narrows options without changing selection, and clears on selection', async ({
-  page,
-}) => {
   await page.goto('/sensors');
-  const search = page.getByRole('searchbox', { name: 'Search part options', exact: true });
-  const select = page.getByRole('combobox', { name: 'Part', exact: true });
-  await search.fill('  FILTER  ');
-  await expect(select).toHaveValue('');
-  await expect(select.locator('option:not([hidden])')).toHaveCount(2);
-  await select.selectOption({ label: 'Compost filter sock' });
-  await expect(search).toHaveValue('');
-  await search.fill('zzzz-not-found');
-  await expect(page.getByRole('status').filter({ hasText: 'No matching options' })).toBeVisible();
-  await expect(select).toHaveValue('sock');
-  await page.getByRole('button', { name: 'Clear part search' }).click();
-  await expect(search).toHaveValue('');
-  await expect(select).toHaveValue('sock');
-  for (const width of [1440, 390]) {
-    await page.setViewportSize({ width, height: 1000 });
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
-      true,
-    );
-    await page.screenshot({
-      path: `../.impeccable/review/search-${width === 1440 ? 'desktop' : 'mobile'}.png`,
-      fullPage: true,
-    });
-  }
+  await page.locator('.table-filter summary').filter({ hasText: 'Columns' }).click();
+  await page.getByRole('checkbox', { name: 'Updated', exact: true }).uncheck();
+  await page.reload();
+  await expect(page.getByRole('columnheader', { name: /Updated/ })).toHaveCount(0);
+});
+test('map selection is direct and short controls stay simple', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('searchbox', { name: 'Search map house options' }).fill('1174511531');
-  await expect(
-    page
-      .getByRole('combobox', { name: 'Select a mapped house', exact: true })
-      .locator('option:not([hidden])'),
-  ).toHaveCount(1);
+  await expect(page.getByRole('combobox', { name: 'Pilot house', exact: true })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Plan', exact: true }).click();
+  await page.locator('.plan-svg [data-house-id="A01"]').click();
+  await expect(page.getByRole('dialog')).toContainText('A01');
+  await page.keyboard.press('Escape');
+  await page.goto('/feature/S1');
+  await expect(page.getByRole('combobox', { name: 'Playback speed', exact: true })).toBeVisible();
 });
