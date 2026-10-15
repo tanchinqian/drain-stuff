@@ -1,5 +1,5 @@
-import DataTable from './DataTable';
-import { timeLabel, displayName } from '../utils';
+import RecordHistory from './RecordHistory';
+import { displayName } from '../utils';
 import Term from './Term';
 import { useState, type FormEvent } from 'react';
 import type { BatchChecks, BatchDetail } from '../api/types';
@@ -152,23 +152,8 @@ export default function BatchChecksForm({ batch }: { batch: BatchDetail }) {
           </p>
         )}
       </form>
-      <h3>Check history</h3>
-      <DataTable
-        id={'batch-checks-' + batch.id}
-        rows={batch.checkHistory ?? []}
-        rowId={(r) => r.id}
-        columns={[
-          { key: 'when', label: 'When', value: (r) => timeLabel(r.t) },
-          { key: 'who', label: 'Who', value: (r) => r.user },
-          { key: 'entry', label: 'Entry', value: (r) => r.action },
-          {
-            key: 'checks',
-            label: 'Results',
-            value: (r) =>
-              `Squeeze: ${displayName(r.checks.squeeze)}; smell: ${displayName(r.checks.smell)}; cover: ${r.checks.bayCovered ? 'checked' : 'pending'}; sump ${r.checks.sumpLevelCm} cm`,
-          },
-        ]}
-      />
+      <RecordHistory entries={(batch.checkHistory??[]).map(r=>({...r,action:batch.id+' checks saved',note:`Squeeze: ${displayName(r.checks.squeeze)}; smell: ${displayName(r.checks.smell)}; cover: ${r.checks.bayCovered?'checked':'pending'}; sump ${r.checks.sumpLevelCm} cm`}))} title="Check history"/>
+
     </section>
   );
 }

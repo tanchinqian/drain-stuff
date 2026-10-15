@@ -5,6 +5,7 @@ import BatchReadingForm from './BatchReadingForm';
 import BatchChecksForm from './BatchChecksForm';
 import Chip from './Chip';
 import Term from './Term';
+import {formatValue,timeLabel,displayName} from '../utils';
 export default function BatchWorkspace({
   batch,
   config,
@@ -82,6 +83,7 @@ export default function BatchWorkspace({
             config={config}
             faults={faults}
             kind="compost"
+            summary={<section className="model-summary" aria-label="Latest bay summary"><h3>Latest bay reading</h3><dl><div><dt>Temperature</dt><dd>{formatValue(batch.readings.at(-1)?.tempC,'°C')}</dd></div><div><dt>Moisture</dt><dd>{formatValue(batch.readings.at(-1)?.moisturePct,'%')}</dd></div><div><dt>Human checks</dt><dd>{displayName(batch.checks.squeeze)} · {displayName(batch.checks.smell)}</dd></div></dl><p className="small">{batch.readings.at(-1)&&timeLabel(batch.readings.at(-1)!.t)}</p></section>}
           />
         )}
       </section>

@@ -159,9 +159,9 @@ function Model(props: Props) {
                 7,
                 props.physics.config.values.length.value + (props.assembly === 'exploded' ? 7 : 4),
               )
-            : 13.5
+            : props.kind==='compost'?10.8:13.5
         }
-        height={props.physics && props.assembly !== 'exploded' ? 6 : 9.6}
+        height={props.physics && props.assembly !== 'exploded' ? 6 : props.kind==='compost'?7.5:9.6}
         controlsRef={controls}
         enabled={!props.move}
         target={props.physics && props.assembly !== 'exploded' ? [0.5, 0, 0] : [1.2, 1.2, 0]}

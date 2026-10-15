@@ -3,7 +3,7 @@ import FlowStrip from './FlowStrip';
 import PhysicsControls from './PhysicsControls';
 import PhysicsSection from './PhysicsSection';
 import SearchableSelect from './SearchableSelect';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import type { Config, Fault, Part, PartId, Sensor } from '../api/types';
 import { legacyParts } from '../api/modelCatalog';
@@ -21,8 +21,10 @@ export default function ModelWorkspace({
   faults,
   kind = 'drainage',
   physics,
+  summary,
 }: {
   physics?: ModelPhysics;
+  summary?:ReactNode;
   ownerId: string;
   parts: Part[];
   sensors: Sensor[];
@@ -105,27 +107,7 @@ export default function ModelWorkspace({
   const part = parts.find((p) => p.partId === selected);
   if (!part) return null;
   return (
-    <>
-      <div className="panel-heading">
-        <div className="segments">
-          {(['Operator', 'Debug', 'Troubleshoot'] as const).map((value) => (
-            <button
-              key={value}
-              aria-pressed={mode === value}
-              onClick={() => {
-                setMode(value);
-                setShowSensors(value === 'Debug');
-                setMove(false);
-              }}
-            >
-              {value}
-            </button>
-          ))}
-        </div>
-        <span className="small">
-          {physics ? 'Dimensions from model parameters / simulated readings' : 'CAD assembly'}
-        </span>
-      </div>
+    <div className={'model-workspace '+(kind==='compost'?'compost-model':'')} >
       <div className="field mobile-part-picker">
         <span>Model part</span>
         <SearchableSelect
@@ -177,7 +159,26 @@ export default function ModelWorkspace({
               </button>
             ))}
         </aside>
-        <section className="panel">
+        <section className="panel model-card">
+      <div className="model-mode">
+        <div className="segments">
+          {(['Operator', 'Debug', 'Troubleshoot'] as const).map((value) => (
+            <button
+              key={value}
+              aria-pressed={mode === value}
+              onClick={() => {
+                setMode(value);
+                setShowSensors(value === 'Debug');
+                setMove(false);
+              }}
+            >
+              {value}
+            </button>
+          ))}
+        </div>
+
+      </div>
+
           {physics && flat ? (
             <PhysicsSection {...physics} />
           ) : (
@@ -245,6 +246,7 @@ export default function ModelWorkspace({
               )}
             />
           )}
+          {summary}
           <div className="part-settings">
             <AssemblyControls {...controlProps} />
             <PartControls {...controlProps} />
@@ -260,6 +262,6 @@ export default function ModelWorkspace({
           sensors={sensors.filter((s) => part.sensorIds.includes(s.sensorId))}
         />
       </div>
-    </>
+    </div>
   );
 }
