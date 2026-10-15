@@ -5,9 +5,8 @@ import { useWrite } from '../hooks';
 import type { FaultAction } from '../api/types';
 import type { ViewMode } from '../three/DrainScene';
 import Status from './Status';
-import SensorInfo from './SensorInfo';
+import PartSensors from './PartSensors';
 import { dateTime, displayName } from '../utils';
-import { DEMO_NOW } from '../api/mock/seed';
 export default function PartPanel({
   part,
   config,
@@ -25,7 +24,7 @@ export default function PartPanel({
   const action = useWrite((value: FaultAction) => {
     if (!fault) throw new Error('No open fault is attached to this part.');
     return api.faultAction(fault.id, value);
-  }, 'Fault record updated.');
+  },(value)=>`${fault?.id??'Fault'} · ${value==='cleaned'?'Clean logged':value==='inspected'?'Marked inspected':'Work order recorded'}`);
   return (
     <section className="panel detail-readings" aria-label="Selected part readings">
       <div className="panel-heading">
@@ -35,9 +34,7 @@ export default function PartPanel({
       <p>{part.purpose}</p>
       <p className="small">Typical failure: {part.typicalFailure}</p>
       <h3 style={{ marginTop: 20 }}>Sensors on this part</h3>
-      {sensors.map((s) => (
-        <SensorInfo key={s.sensorId} sensor={s} compact showPosition={mode === 'Debug'} />
-      ))}
+      {!!sensors.length&&<PartSensors sensors={sensors}/>}
       {!sensors.length && (
         <p className="small">
           {part.installed
@@ -46,8 +43,7 @@ export default function PartPanel({
         </p>
       )}
       {fault && (
-        <div className="notice">
-          <h3>Why is this highlighted?</h3>
+        <details className="notice fault-explanation" open={sensors.some(s=>s.scope==='compost')?undefined:true}><summary><h3>Why is this highlighted?</h3></summary>
           <p>Input: {fault.sensorIds.join(', ') || 'Human inspection'}</p>
           <p title={fault.ruleId}>
             Rule:{' '}
@@ -80,7 +76,7 @@ export default function PartPanel({
               time.
             </p>
           )}
-        </div>
+        </details>
       )}
       {part.readings.length ? (
         part.readings.map((r) => (
@@ -141,7 +137,7 @@ export default function PartPanel({
             <dt>Reading age</dt>
             <dd>
               {part.readings.length
-                ? Math.round((Date.parse(DEMO_NOW) - Date.parse(part.readings.at(-1)!.t)) / 60000) +
+                ? Math.round((Date.now() - Date.parse(part.readings.at(-1)!.t)) / 60000) +
                   ' min'
                 : 'Offline / unavailable'}
             </dd>
