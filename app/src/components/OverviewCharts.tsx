@@ -29,6 +29,8 @@ export default function OverviewCharts({
   from,
   to,
   range,
+  observationDate,
+  sampleAt,
 }: {
   rainfall: RainPoint[];
   features: Feature[];
@@ -37,6 +39,8 @@ export default function OverviewCharts({
   from: string;
   to: string;
   range: string;
+  observationDate:string;
+  sampleAt:string;
 }) {
   const measurements = useQuery({
     queryKey: ['overview-measurements', from, to, features.map((f) => f.id).join(',')],
@@ -95,8 +99,8 @@ export default function OverviewCharts({
   return (
     <div className="charts-grid">
       <ChartFrame
-        title={'Rainfall · ' + range}
-        subtitle="Rain rate and cumulative depth for this period"
+        title={'Rainfall · ' + range + ' · ' + observationDate}
+        subtitle="Selected zone samples; all-zone view uses their mean."
         headers={['Time', 'Rain mm/h', 'Cumulative mm']}
         rows={storm.map((r) => [dateTime(r.t), r.mmPerHr, Number(r.cumulative.toFixed(1))])}
         takeaway="Bars: rain rate in mm/h, left axis. Line: cumulative depth in mm, right axis."
@@ -111,12 +115,13 @@ export default function OverviewCharts({
             <XAxis
               dataKey="time"
               minTickGap={50}
-              tickFormatter={(v) => String(v).split(',').slice(0, 2).join(',')}
+              tickFormatter={(v) => range==='Last storm'?String(v).split(',').at(-1)!.trim():String(v).split(',')[0]}
             />
             <YAxis yAxisId="rate" width={40} />
             <YAxis yAxisId="depth" orientation="right" width={50} />
             <Tooltip content={<ChartTooltip />} />
             <Legend />
+            <ReferenceLine yAxisId="rate" x={dateTime(sampleAt)} stroke="#2f2b26" strokeDasharray="3 3" />
             <Bar
               yAxisId="rate"
               dataKey="mmPerHr"

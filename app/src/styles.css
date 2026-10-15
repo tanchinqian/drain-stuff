@@ -2063,3 +2063,15 @@ main > .about {
     justify-content: flex-start;
   }
 }
+
+/* Overview: let the mapped object lead the work surface. */
+.overview-grid {align-items:start;}
+.overview-map .neighbourhood-scene {height:clamp(480px,65vh,760px);}
+.overview-map .plan-svg {height:clamp(480px,65vh,760px);width:100%;}
+.overview-map .scene-toolbar {margin-block:14px 10px;}
+.rainfall-instant {margin:8px 0;}
+.charts-grid {grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch;}
+.charts-grid > .panel {display:flex;flex-direction:column;min-height:370px;}
+.charts-grid .chart-area {height:240px;flex:none;}
+.chart-empty {align-self:start;padding:12px 0;border-block:1px solid var(--border);font-size:14px;}
+@media (max-width:760px) {.charts-grid {grid-template-columns:1fr;}.overview-map .neighbourhood-scene,.overview-map .plan-svg {height:400px;}}

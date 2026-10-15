@@ -21,6 +21,7 @@ export default function ChartFrame({
   hasData?: boolean;
 }) {
   const [table, setTable] = useState(false);
+  if(!hasData)return <p className="chart-empty" role="status"><strong>{title}</strong> · No readings in this range.</p>;
   return (
     <section className="panel">
       <div className="panel-heading">

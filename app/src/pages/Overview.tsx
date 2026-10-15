@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { api } from '../api/client';
@@ -7,7 +7,6 @@ import { useSimulation } from '../simulation/physics/store';
 import NeighbourhoodScene from '../three/NeighbourhoodScene';
 import PlanMap from '../components/PlanMap';
 import HouseRecord from '../components/HouseRecord';
-import SearchableSelect from '../components/SearchableSelect';
 import { QueryState } from '../components/QueryState';
 import OverviewCharts from '../components/OverviewCharts';
 import Chip from '../components/Chip';
@@ -15,7 +14,7 @@ import PhysicsControls from '../components/PhysicsControls';
 import { radarStops } from '../site/weather';
 import { site } from '../site/layout';
 import { partName } from '../api/modelCatalog';
-import { dateTime, displayName, timeLabel, faultOrder } from '../utils';
+import { dateTime, dateOnly, displayName, timeLabel, faultOrder } from '../utils';
 export default function Overview() {
   const [now] = useState(() => new Date().toISOString());
   const [view, setView] = useState<'3d' | 'plan'>('3d'),
@@ -29,6 +28,7 @@ export default function Overview() {
     zoneId = useSelection((s) => s.zoneId),
     selectZone = useSelection((s) => s.selectZone),
     second = useSimulation((s) => s.second);
+  useEffect(()=>{selectZone(null);selectHouse(null);},[selectZone,selectHouse]);
   const config = useQuery({ queryKey: ['config'], queryFn: api.config });
   const to = config.data?.dataThrough ?? now,
     from = new Date(
@@ -79,10 +79,14 @@ export default function Overview() {
     return {
       synthetic: true as const,
       zone: z.id,
+      t: point?.t ?? start,
       peakMmPerHr: point?.mmPerHr ?? point?.peakMmPerHr ?? 0,
       totalMm: point?.totalMm ?? 0,
     };
   });
+  const weatherTimes=Array.from(new Set((data?.rain??[]).filter(r=>!zoneId||r.zone===zoneId).map(r=>r.t??start))).sort();
+  const chartRain=weatherTimes.map(t=>{const rows=(data?.rain??[]).filter(r=>(r.t??start)===t&&(!zoneId||r.zone===zoneId));return {t,mmPerHr:rows.reduce((n,r)=>n+(r.mmPerHr??r.peakMmPerHr),0)/Math.max(1,rows.length),cumulativeMm:rows.reduce((n,r)=>n+r.totalMm,0)/Math.max(1,rows.length)};});
+  const sampleAt=samples[0]?.t??start;
   return (
     <QueryState loading={config.isPending || query.isPending} error={query.error ?? config.error}>
       <div className="page-heading">
@@ -143,21 +147,6 @@ export default function Overview() {
                   </button>
                 </div>
               </div>
-              <nav className="feature-jumps" aria-label="Open a drainage trial">
-                {features.map((f) => (
-                  <Link
-                    key={f.id}
-                    className="feature-jump"
-                    onClick={() => selectHouse(null)}
-                    to={'/feature/' + f.id}
-                  >
-                    <strong>
-                      {f.id} · {f.name}
-                    </strong>
-                    <span>Zone {f.zone}</span>
-                  </Link>
-                ))}
-              </nav>
               <div className="scene-toolbar">
                 <button aria-pressed={showSensors} onClick={() => setShowSensors(!showSensors)}>
                   Sensors
@@ -182,24 +171,10 @@ export default function Overview() {
                   />
                   <output>{cloudOpacity}%</output>
                 </label>
-                <div className="house-search">
-                  <SearchableSelect
-                    label="Pilot house"
-                    value={houseId ?? ''}
-                    onChange={(e) => selectHouse(e.target.value || null)}
-                  >
-                    <option value="">Select a pilot house</option>
-                    {data.houses
-                      .filter((h) => !zoneId || h.zone === zoneId)
-                      .map((h) => (
-                        <option key={h.id} value={h.id}>
-                          {h.id} · Zone {h.zone}
-                        </option>
-                      ))}
-                  </SearchableSelect>
-                </div>
+
               </div>
-              <div className="map-zones" aria-label="Zone rainfall">
+              <p className="small rainfall-instant">Current rainfall sample · {dateTime(sampleAt)}. Chart shows the full selected period.</p>
+              <div className="map-zones" aria-label="Zone rainfall" data-sample-time={sampleAt}>
                 {samples
                   .filter((s) => !zoneId || s.zone === zoneId)
                   .map((s) => (
@@ -233,7 +208,7 @@ export default function Overview() {
                 />
               )}
               <p className="scene-caption">
-                Pilot houses can be selected. Drag to orbit · Scroll to zoom.
+                Click a pilot house or pin. Drag to orbit · Scroll to zoom. Use Plan for keyboard access.
               </p>
               <div className="heat-legend">
                 <span>
@@ -300,13 +275,15 @@ export default function Overview() {
             </section>
           </div>
           <OverviewCharts
-            rainfall={data.rainfall}
+            rainfall={chartRain}
             features={features}
             faults={faults}
             config={config.data}
             from={from}
             to={to}
             range={range}
+            observationDate={dateOnly(to)}
+            sampleAt={sampleAt}
           />
         </>
       )}
