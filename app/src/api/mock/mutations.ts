@@ -1,3 +1,4 @@
+import { nowIso } from '../../clock';
 import type {
   AllocationInput,
   BatchChecks,
@@ -16,7 +17,7 @@ const finite = (v: unknown, max = 1000) => {
   return v;
 };
 export function recordTrialTest(db: Database, trial: TrialDetail, input: TestInput) {
-  const recordedAt = new Date().toISOString();
+  const recordedAt = nowIso();
   finite(input.value);
   if (
     !['baseline', 'retest'].includes(input.phase) ||
@@ -151,12 +152,12 @@ export function allocateBatch(db: Database, batch: BatchDetail, input: Allocatio
   trial.doseLabel = input.doseLabel;
   trial.doseCapOk = true;
   trial.batchId = batch.id;
-  trial.appliedAt = new Date().toISOString();
+  trial.appliedAt = nowIso();
   trial.appliedBy = input.appliedBy;
   if (input.amendedDepthM !== undefined) trial.amendedDepthM = input.amendedDepthM;
   (trial.history ??= []).push({
     id: crypto.randomUUID(),
-    t: new Date().toISOString(),
+    t: nowIso(),
     user: input.appliedBy,
     action: 'Compost allocated',
     note: batch.id + ' / ' + input.lPerM2 + ' L/m2',

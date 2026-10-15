@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { generateMock, config } from './seed';
+import { generateMock, config, DEMO_NOW } from './seed';
 import { mockRequest, resetMock } from './index';
 import { evaluateRules, maturityReason } from './rules';
 import { statusShape } from '../../components/Status';
@@ -126,7 +126,11 @@ it('keeps unresolved carry-over faults in a date window and exposes the ponding 
   expect(rules.find((r) => r.id === 'RULE-PERSISTENT-PONDING-001')?.thresholdKeys).toContain(
     'inspection.standingWaterH',
   );
-  const path = '/faults?from=2026-10-15T00:00:00.000Z&to=2026-10-15T23:59:59.999Z';
+  const path =
+    '/faults?from=' +
+    new Date(Date.parse(DEMO_NOW) + 86400000).toISOString() +
+    '&to=' +
+    new Date(Date.parse(DEMO_NOW) + 2 * 86400000).toISOString();
   expect(((await mockRequest(path)) as Fault[]).some((f) => f.id === 'F-001')).toBe(true);
   await mockRequest('/faults/F-001/status', 'POST', { status: 'closed', user: 'Operator' });
   expect(((await mockRequest(path)) as Fault[]).some((f) => f.id === 'F-001')).toBe(false);

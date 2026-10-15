@@ -1786,3 +1786,280 @@ progress::-webkit-progress-value {
 progress::-moz-progress-bar {
   background: var(--ink);
 }
+
+/* Round 4 stabilisation: one shell gutter and complete compact records. */
+main {
+  width: calc(100% - 48px);
+  max-width: none;
+  margin: 24px;
+  padding: 0;
+}
+.app-header {
+  padding: 20px 24px;
+}
+.navigation {
+  padding: 8px 24px;
+}
+main > .about {
+  max-width: 72ch;
+}
+.table-toolbar {
+  gap: 6px;
+  margin: 12px 0;
+  align-items: center;
+}
+.table-toolbar button,
+.table-filter summary,
+.table-search {
+  height: 36px;
+  min-height: 36px;
+  font-size: 14px;
+}
+.table-toolbar button {
+  padding: 0 10px;
+  white-space: nowrap;
+}
+.table-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  padding: 0 10px;
+  flex: 1 1 170px;
+  min-width: 120px;
+  max-width: 300px;
+}
+.table-search input {
+  height: 34px;
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  outline-offset: 3px;
+  background: transparent;
+}
+.table-filter summary {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 10px;
+  white-space: nowrap;
+}
+.table-filter summary::-webkit-details-marker {
+  display: none;
+}
+.table-filter fieldset {
+  margin: 0;
+  min-width: 220px;
+  max-width: min(340px, calc(100vw - 48px));
+  box-shadow: 0 6px 16px #2f2b2614;
+}
+.filter-count {
+  font-size: 12px;
+  min-width: 18px;
+  padding: 0 4px;
+  text-align: center;
+  background: var(--well);
+}
+.data-table .table-wrap {
+  max-height: none;
+  overflow-x: auto;
+  overflow-y: visible;
+}
+.data-table table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: auto;
+}
+.data-table th,
+.data-table td {
+  height: 40px;
+  padding: 4px 10px;
+  vertical-align: middle;
+  text-align: left;
+  white-space: nowrap;
+  max-width: 360px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-bottom: 1px solid var(--border);
+}
+.data-table th {
+  height: 36px;
+  font-weight: 600;
+  background: var(--well2);
+}
+.data-table .sort-label,
+.data-table .row-open,
+.text-link {
+  padding: 0;
+  margin: 0;
+  min-height: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+}
+.data-table .sort-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  font-size: 13px;
+}
+.data-table .row-open,
+.text-link {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.data-table .sort-label:hover,
+.data-table .row-open:hover,
+.text-link:hover {
+  background: transparent;
+  color: var(--heat-3);
+}
+.data-table .record-id,
+.record-id {
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 13px;
+}
+.data-table td button:not(.row-open):not(.text-link),
+.data-table td select {
+  height: 30px;
+  min-height: 30px;
+  padding: 3px 8px;
+  margin: 0;
+  font-size: 13px;
+}
+.data-table .row-actions {
+  margin: 0;
+  gap: 6px;
+  flex-wrap: nowrap;
+}
+.data-table.compact td {
+  height: 32px;
+  padding-block: 1px;
+}
+.data-table.compact td button:not(.row-open):not(.text-link),
+.data-table.compact td select {
+  height: 28px;
+  min-height: 28px;
+}
+.table-pagination {
+  justify-content: flex-end;
+  gap: 10px;
+  font-size: 13px;
+}
+.table-pagination > span:first-child {
+  margin-right: auto;
+}
+.table-pagination label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.table-pagination button,
+.table-pagination select {
+  height: 32px;
+  min-height: 32px;
+  padding: 4px 8px;
+  font-size: 13px;
+}
+.asset-list {
+  max-height: calc(100dvh - 32px);
+  top: 16px;
+  padding-right: 4px;
+  scrollbar-width: thin;
+}
+.asset-list > input {
+  min-height: 36px;
+  height: 36px;
+  font-size: 14px;
+}
+.asset-list section {
+  display: grid;
+  gap: 4px;
+}
+.asset-list h3 {
+  font-size: 12px;
+  font-weight: 600;
+  margin: 8px 0 4px;
+  color: var(--ink2);
+}
+.asset-list button {
+  padding: 8px 10px;
+  min-height: 36px;
+}
+.asset-list small {
+  margin-top: 2px;
+  font-size: 12px;
+}
+.asset-group summary {
+  padding: 10px 0;
+  cursor: pointer;
+}
+.asset-group button {
+  width: 100%;
+  margin-top: 4px;
+}
+.record-history {
+  margin-top: 16px;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+.record-history summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.record-history ol {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0;
+}
+.record-history li {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.status-select {
+  border: 1px solid var(--border);
+  background: var(--panel);
+  font: inherit;
+  width: 110px;
+}
+@media (max-width: 760px) {
+  main {
+    width: calc(100% - 24px);
+    margin: 16px 12px;
+  }
+  .app-header {
+    padding: 16px 12px;
+  }
+  .navigation {
+    padding: 8px 12px;
+  }
+  .asset-list {
+    max-height: 240px;
+    position: static;
+  }
+  .table-toolbar {
+    gap: 8px;
+  }
+  .table-toolbar button,
+  .table-filter summary {
+    min-height: 40px;
+    height: 40px;
+  }
+  .table-search {
+    max-width: none;
+    flex-basis: 100%;
+    height: 40px;
+  }
+  .table-pagination {
+    justify-content: flex-start;
+  }
+}

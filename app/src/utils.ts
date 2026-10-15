@@ -1,3 +1,4 @@
+import { today } from './clock';
 import type { Arm, TestResult } from './api/types';
 export const armName: Record<Arm, string> = {
   control: 'Untreated (control)',
@@ -14,9 +15,19 @@ export const dateOnly = (t: string) =>
   new Intl.DateTimeFormat('en-MY', { dateStyle: 'medium', timeZone: 'Asia/Singapore' }).format(
     new Date(t),
   );
-export const overdue = (t: string) =>
-  t.slice(0, 10) <
-  new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Singapore' }).format(new Date());
+export const overdue = (t: string) => t.slice(0, 10) < today();
+export function trialStatus(
+  t: import('./api/types').TrialDetail,
+  at = new Date(),
+): 'Needs baseline' | 'Overdue' | 'On track' {
+  if (!t.baselineDone) return 'Needs baseline';
+  const latest = t.tests.at(-1)?.t;
+  const due = Math.min(
+    Date.parse(t.nextRetestDue + 'T23:59:59+08:00'),
+    latest ? Date.parse(latest) + 7 * 86400000 : 0,
+  );
+  return due < at.getTime() ? 'Overdue' : 'On track';
+}
 export function testMean(tests: TestResult[], phase: 'baseline' | 'retest') {
   const rows = tests.filter((t) => t.phase === phase && t.metric === 'infiltration_mm_hr');
   const latest = rows.at(-1)?.t;

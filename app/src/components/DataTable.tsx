@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react';
+import { Search, ChevronDown, ArrowUp, ArrowDown, ChevronsUpDown } from 'lucide-react';
 import { exportCsv, displayName, formatValue } from '../utils';
 import Term from './Term';
 export interface Column<T> {
@@ -46,8 +47,8 @@ export default function DataTable<T>({
   const [search, setSearch] = useState(''),
     [sort, setSort] = useState({ key: '', direction: 1 }),
     [picks, setPicks] = useState<Record<string, string[]>>({}),
-    [selected, setSelected] = useState<string[]>([]),
     [page, setPage] = useState(0),
+    [pageSize, setPageSize] = useState(10),
     [compact, setCompact] = useState(false);
   const [visible, setVisible] = useState<string[]>(() => {
     try {
@@ -80,9 +81,9 @@ export default function DataTable<T>({
         : String(x ?? '').localeCompare(String(y ?? ''), undefined, { numeric: true }))
     );
   });
-  const last = Math.max(0, Math.ceil(sorted.length / 25) - 1),
+  const last = Math.max(0, Math.ceil(sorted.length / pageSize) - 1),
     current = Math.min(page, last),
-    shown = sorted.slice(current * 25, current * 25 + 25),
+    shown = sorted.slice(current * pageSize, (current + 1) * pageSize),
     cols = columns.filter((c) => visible.includes(c.key));
   const toggle = (key: string, value: string) => {
     setPicks((s) => ({
@@ -93,13 +94,16 @@ export default function DataTable<T>({
     }));
     setPage(0);
   };
+  const label = id.replaceAll('-', ' ');
   return (
     <div className={'data-table ' + (compact ? 'compact' : '')}>
       <div className="table-toolbar">
-        <label className="field">
-          Search {id.replaceAll('-', ' ')}
+        <label className="table-search">
+          <Search size={16} aria-hidden="true" />
           <input
             type="search"
+            aria-label={'Search ' + label}
+            placeholder={'Search ' + label}
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
@@ -108,10 +112,13 @@ export default function DataTable<T>({
           />
         </label>
         {filters.map((f) => (
-          <details key={f.key} className="table-filter">
+          <details key={f.key} className="table-filter" name="record-table-menu">
             <summary>
               {f.label}
-              {picks[f.key]?.length ? ` (${picks[f.key].length})` : ''}
+              {!!picks[f.key]?.length && (
+                <span className="filter-count">{picks[f.key].length}</span>
+              )}
+              <ChevronDown size={14} aria-hidden="true" />
             </summary>
             <fieldset>
               <legend>{f.label}</legend>
@@ -130,8 +137,11 @@ export default function DataTable<T>({
             </fieldset>
           </details>
         ))}
-        <details className="table-filter">
-          <summary>Columns</summary>
+        <details className="table-filter" name="record-table-menu">
+          <summary>
+            Columns
+            <ChevronDown size={14} aria-hidden="true" />
+          </summary>
           <fieldset>
             <legend>Visible columns</legend>
             {columns.map((c) => (
@@ -160,27 +170,27 @@ export default function DataTable<T>({
         <button aria-pressed={compact} onClick={() => setCompact(!compact)}>
           {compact ? 'Comfortable rows' : 'Compact rows'}
         </button>
-        <button
-          onClick={() => {
-            setSearch('');
-            setPicks({});
-            setPage(0);
-          }}
-        >
-          Clear filters
-        </button>
+        {(search || Object.values(picks).some((p) => p.length > 0)) && (
+          <button
+            onClick={() => {
+              setSearch('');
+              setPicks({});
+              setPage(0);
+            }}
+          >
+            Clear filters
+          </button>
+        )}
         <button
           onClick={() =>
             exportCsv(
               id,
               cols.map((c) => c.label),
-              sorted
-                .filter((r) => !selected.length || selected.includes(rowId(r)))
-                .map((r) => cols.map((c) => c.value(r) ?? 'No reading')),
+              sorted.map((r) => cols.map((c) => c.value(r) ?? 'No reading')),
             )
           }
         >
-          Export CSV{selected.length ? ` (${selected.length})` : ''}
+          Export CSV
         </button>
       </div>
       {loading ? (
@@ -188,23 +198,9 @@ export default function DataTable<T>({
       ) : (
         <>
           <div className="table-wrap">
-            <table aria-label={id.replaceAll('-', ' ')}>
+            <table aria-label={label}>
               <thead>
                 <tr>
-                  <th>
-                    <input
-                      type="checkbox"
-                      aria-label={'Select all visible ' + id}
-                      checked={shown.length > 0 && shown.every((r) => selected.includes(rowId(r)))}
-                      onChange={(e) =>
-                        setSelected(
-                          e.target.checked
-                            ? Array.from(new Set([...selected, ...shown.map(rowId)]))
-                            : selected.filter((k) => !shown.some((r) => rowId(r) === k)),
-                        )
-                      }
-                    />
-                  </th>
                   {cols.map((c) => (
                     <th
                       key={c.key}
@@ -217,6 +213,7 @@ export default function DataTable<T>({
                       }
                     >
                       <button
+                        className="sort-label"
                         aria-label={'Sort by ' + c.label}
                         onClick={() =>
                           setSort({
@@ -226,7 +223,15 @@ export default function DataTable<T>({
                         }
                       >
                         {c.label}
-                        {sort.key === c.key ? (sort.direction === 1 ? ' ↑' : ' ↓') : ''}
+                        {sort.key === c.key ? (
+                          sort.direction === 1 ? (
+                            <ArrowUp size={12} aria-hidden="true" />
+                          ) : (
+                            <ArrowDown size={12} aria-hidden="true" />
+                          )
+                        ) : (
+                          <ChevronsUpDown size={12} aria-hidden="true" />
+                        )}
                       </button>
                       <Term text={c.label} helpOnly />
                     </th>
@@ -236,25 +241,14 @@ export default function DataTable<T>({
               </thead>
               <tbody>
                 {shown.map((row) => (
-                  <tr key={rowId(row)} data-selected={selected.includes(rowId(row))}>
-                    <td>
-                      <input
-                        type="checkbox"
-                        aria-label={'Select ' + rowId(row)}
-                        checked={selected.includes(rowId(row))}
-                        onChange={(e) =>
-                          setSelected(
-                            e.target.checked
-                              ? [...selected, rowId(row)]
-                              : selected.filter((k) => k !== rowId(row)),
-                          )
-                        }
-                      />
-                    </td>
+                  <tr key={rowId(row)}>
                     {cols.map((c, i) => (
-                      <td key={c.key}>
+                      <td key={c.key} title={String(c.value(row) ?? 'No reading')}>
                         {i === 0 && onSelect ? (
-                          <button className="row-open" onClick={() => onSelect(row)}>
+                          <button
+                            className={'row-open ' + (c.key === 'id' ? 'record-id' : '')}
+                            onClick={() => onSelect(row)}
+                          >
                             {c.render ? c.render(row) : c.value(row)}
                           </button>
                         ) : c.render ? (
@@ -280,9 +274,22 @@ export default function DataTable<T>({
             </p>
           )}
           <div className="table-pagination">
-            <span>
-              {sorted.length} records · {selected.length} selected
-            </span>
+            <span>{sorted.length} records</span>
+            <label>
+              Rows per page{' '}
+              <select
+                aria-label={'Rows per page for ' + label}
+                value={pageSize}
+                onChange={(e) => {
+                  setPageSize(Number(e.target.value));
+                  setPage(0);
+                }}
+              >
+                {[10, 20, 25].map((n) => (
+                  <option key={n}>{n}</option>
+                ))}
+              </select>
+            </label>
             <button disabled={current === 0} onClick={() => setPage(current - 1)}>
               Previous page
             </button>

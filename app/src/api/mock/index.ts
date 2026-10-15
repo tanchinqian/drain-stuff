@@ -1,3 +1,4 @@
+import { nowIso, rebaseDates } from '../../clock';
 import type {
   Fault,
   FaultRule,
@@ -9,7 +10,7 @@ import type {
   TestInput,
 } from '../types';
 import { allocateBatch, parseBatchChecks, recordGuardrails, recordTrialTest } from './mutations';
-import { generateMock, DEMO_NOW, type Database } from './seed';
+import { generateMock, DEMO_NOW, SEED_REFERENCE, type Database } from './seed';
 import { evaluateRules, maturityReason } from './rules';
 import { buildParts } from '../parts';
 import { legacyParts, faultRules } from '../modelCatalog';
@@ -28,7 +29,11 @@ try {
     'trials' in raw &&
     Array.isArray(raw.trials)
   ) {
-    const saved = raw as Database;
+    const original = raw as Database;
+    const saved = original.clockAnchor
+      ? original
+      : rebaseDates(original, SEED_REFERENCE, DEMO_NOW, true);
+    saved.clockAnchor ??= DEMO_NOW;
     const defaults = generateMock();
     // Refresh map geometry without replacing saved inspections, trials or allocations.
     saved.houses.forEach((h) => {
@@ -147,7 +152,7 @@ function refreshSensors() {
 }
 const audit = (action: string, note?: string, user = 'Local operator'): AuditEntry => ({
   id: crypto.randomUUID(),
-  t: new Date().toISOString(),
+  t: nowIso(),
   user,
   action,
   note,
@@ -189,7 +194,7 @@ const registry: (FaultRule & { legacyId: string })[] = faultRules.map((r) => {
 });
 function normalizeFaults() {
   db.config.contractVersion = '3.0.0';
-  db.config.dataThrough = DEMO_NOW;
+  db.config.dataThrough = db.rainfall.at(-1)?.t ?? DEMO_NOW;
   db.batches.forEach((b) =>
     b.readings.forEach((r, i) => {
       r.prompts ??= evaluateRules(b.readings.slice(0, i + 1), b.checks, db.config);
@@ -391,7 +396,7 @@ export async function mockRequest(path: string, method = 'GET', body?: unknown):
       sensorStatusesAtAlert: {},
       diagnosingInput: input.note,
       severity: finite(input.severity, 1, 3) as 1 | 2 | 3,
-      openedAt: new Date().toISOString(),
+      openedAt: nowIso(),
       status: 'open',
       zone: feature.zone,
       raisedBy: 'manual',
@@ -406,7 +411,7 @@ export async function mockRequest(path: string, method = 'GET', body?: unknown):
     if (!['inspected', 'cleaned', 'work_order'].includes(a))
       throw new Error('Unknown fault action.');
     fault.status = a === 'cleaned' ? 'closed' : 'inspected';
-    db.actions.push({ faultId: id, action: a, t: new Date().toISOString() });
+    db.actions.push({ faultId: id, action: a, t: nowIso() });
     (fault.history ??= []).push(
       audit(
         a === 'inspected'
@@ -434,7 +439,7 @@ export async function mockRequest(path: string, method = 'GET', body?: unknown):
     const batch = find(db.batches, (b) => b.id === id);
     batch.readings.push({
       synthetic: true,
-      t: new Date().toISOString(),
+      t: nowIso(),
       tempC: finite(input.tempC, 0, 100),
       moisturePct: finite(input.moisturePct, 0, 100),
       photoUrl: typeof input.photoUrl === 'string' ? input.photoUrl : undefined,

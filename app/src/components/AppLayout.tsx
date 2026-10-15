@@ -2,7 +2,6 @@ import { Suspense, useState } from 'react';
 import { Link, NavLink, Outlet } from 'react-router-dom';
 import { Waves } from 'lucide-react';
 import Toast from './Toast';
-import Activity from './Activity';
 import SimulationDriver from '../simulation/physics/SimulationDriver';
 export default function AppLayout() {
   const [demo] = useState(new URLSearchParams(location.search).get('demo') === '1');
@@ -47,7 +46,6 @@ export default function AppLayout() {
           }
         >
           <Outlet context={{ demo }} />
-          <Activity />
         </Suspense>
       </main>
       <footer>Local ponding and drain upkeep</footer>
