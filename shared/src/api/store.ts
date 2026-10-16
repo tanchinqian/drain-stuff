@@ -1,4 +1,5 @@
 import { CONTRACT_VERSION } from "../contract";
+import {archiveTrialExamples} from '../trialExamples';
 import { nowIso } from "../clock";
 import type {
   Fault,
@@ -30,6 +31,7 @@ export function createDataStore(
   refreshSeedInputs = true,
 ) {
   let db = structuredClone(initial);
+  archiveTrialExamples(db);
   if (!db.features.some(f => f.id === 'R1')) db.features.push({id:'R1',name:'Typical roadside kerb inlet and concrete drain',kind:'inlet',arm:null,zone:'D',x:18,y:8,status:'ok',synthetic:true});
   let currentActor = "Local operator";
   function persist() {
@@ -553,6 +555,8 @@ export function createDataStore(
     snapshot: () => structuredClone(db),
     reset: () => {
       db = generateMock();
+      archiveTrialExamples(db);
+      db.features.push({id:'R1',name:'Typical roadside kerb inlet and concrete drain',kind:'inlet',arm:null,zone:'D',x:18,y:8,status:'ok',synthetic:true});
       refreshSensors();
       normalizeFaults();
       persist();

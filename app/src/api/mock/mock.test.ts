@@ -28,7 +28,10 @@ describe('deterministic synthetic generator', () => {
   });
 });
 describe('allocation and measurement guardrails', () => {
-  beforeEach(resetMock);
+  beforeEach(async()=>{
+    resetMock();
+    for(const id of ['S1','S2']) for(const point of [1,2,3]) await mockRequest('/trials/'+id+'/tests','POST',{phase:'baseline',metric:'infiltration_mm_hr',value:13,n:2,pointId:id+'-P'+point});
+  });
   const allocation = {
     featureId: 'S1',
     doseLabel: 'Pilot dose B',
@@ -83,7 +86,7 @@ describe('allocation and measurement guardrails', () => {
     vi.useRealTimers();
     const trial = (await mockRequest('/trials/S1')) as TrialDetail;
     expect(trial.tests.filter((t) => t.pointId === 'S1-P1' && t.phase === 'retest')).toHaveLength(
-      10,
+      2,
     );
     expect(trial.n).toBe(6);
   });

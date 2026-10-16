@@ -51,7 +51,8 @@ export class Repository {
     })();
     if (this.sql.prepare("SELECT 1 FROM app_state WHERE id = 1").get()) {
       const state=this.load();
-      if(!state.features.some(f=>f.id==='R1')) this.save(createDataStore(state,undefined,false).snapshot());
+      const upgraded=createDataStore(state,undefined,false).snapshot();
+      if(JSON.stringify(upgraded)!==JSON.stringify(state)) this.save(upgraded);
       return false;
     }
     this.save(createDataStore(generateMock()).snapshot());

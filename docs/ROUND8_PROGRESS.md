@@ -45,6 +45,13 @@ The owner authorised continuing through the remaining stages without routine app
 - D7/D8 done: reproducible leave-one-out sanity check, 8 of 9 cause labels found in top three; small paired example set, not accuracy. Adversarial/timeout/cache/provider-envelope tests and prompt snapshot included. Current backend/shared count is 54 passing.
 - Prompt addendum done: versioned behavior file loaded at startup, required JSON/limits/safety rules and three format-only examples. Every server suggestion carries the loaded version; the offline template is explicitly identified separately.
 
+## Stage E — materials and trial
+
+- Done: navigation is Overview, Faults, Sensors, Materials and trial, About. Batch and trial routes remain behind the materials page, with maturity gates, allocations, marked-point protocol and safety checks.
+- Done: trial comparisons keep protocol arm order and show entered measurements only. No re-test produces “No re-tests recorded yet”. Old synthetic example tests are retained in `exampleTrialArchive`, removed from active trial results and inferred baseline readiness, and are not used as measured evidence. Entered tests are tagged `origin: operator`; legacy entries with matching Test saved history and non-synthetic imported measurements are preserved.
+- Done: materials wording describes compost benefit as a hypothesis and says loosening may account for most of a measured change. No inoculant prompt exists in active source; none was added. No new compost feature or efficacy claim.
+- Checks: 55 backend/shared tests pass, including idempotent archival and preservation of an entered test. The updated nine mock guardrail tests pass; app/server TypeScript passes. Full regression/browser checks follow in Stage F.
+
 ## Subsequent stages
 
-E and F follow in that order. This log is updated at each stage commit. No cloud deployment is claimed.
+Stage F is the final regression, evidence and handoff pass. No cloud deployment is claimed.

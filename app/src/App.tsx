@@ -6,6 +6,7 @@ const Observations = lazy(() => import('./pages/Overview'));
 const FeatureDetail = lazy(() => import('./pages/FeatureDetail'));
 const Faults = lazy(() => import('./pages/Faults'));
 const Trials = lazy(() => import('./pages/Trials'));
+const Materials = lazy(()=>import('./pages/Materials'));
 const Batches = lazy(() => import('./pages/Batches'));
 const About = lazy(() => import('./pages/About'));
 const Sensors = lazy(() => import('./pages/Sensors'));
@@ -19,6 +20,7 @@ export default function App() {
         <Route path="feature/:id" element={<FeatureDetail />} />
         <Route path="faults" element={<Faults />} />
         <Route path="trials" element={<Trials />} />
+        <Route path="materials" element={<Materials />} />
         <Route path="batches" element={<Batches />} />
         <Route path="batches/:bay" element={<CompostBay />} />
         <Route path="sensors" element={<Sensors />} />

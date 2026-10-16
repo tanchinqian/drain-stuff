@@ -45,6 +45,7 @@ export default function TrialComparison({
               role="group"
               aria-label={`${armName[arm]}: before ${before?.value ?? 'not recorded'}, latest ${after?.value ?? 'not recorded'} mm/h`}
             >
+              {!after && <p>No re-tests recorded yet</p>}
               {(
                 [
                   ['Before', before?.value],

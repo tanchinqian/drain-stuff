@@ -57,6 +57,7 @@ export function recordTrialTest(
         ? "h"
         : "mm";
   const test = {
+    origin:'operator' as const,
     synthetic: true as const,
     t: recordedAt,
     phase: input.phase,

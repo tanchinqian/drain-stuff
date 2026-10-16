@@ -69,6 +69,7 @@ export function seededRandom(seed: number) {
   };
 }
 export interface Database {
+  exampleTrialArchive?:Record<string,TestResult[]>;
   version: 2;
   clockAnchor?: string;
   sensors: Sensor[];

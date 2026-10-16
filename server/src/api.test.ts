@@ -121,8 +121,9 @@ test("auth, actor, CORS, malformed JSON and request limit", async () => {
 test("legacy writes all persist and audit the header actor", async () => {
   const state = repo.load(),
     batch = state.batches[0],
-    trial = state.trials.find((t) => t.baselineDone)!;
+    trial = state.trials[0];
   const calls: [string, unknown][] = [
+    ...[1,2,3].map(point=>['/trials/'+trial.featureId+'/tests',{phase:'baseline',metric:'infiltration_mm_hr',value:13,pointId:trial.featureId+'-P'+point,n:2}] as [string,unknown]),
     [
       "/faults",
       {
@@ -193,6 +194,8 @@ test("allocation enforces maturity, dose and recorded actor", async () => {
     tempC: 30,
     moisturePct: 50,
   });
+  trial.tests=[1,2,3].map(point=>({origin:'operator',t:new Date().toISOString(),phase:'baseline',metric:'infiltration_mm_hr',value:13,unit:'mm/h',pointId:'S1-P'+point,n:2}));
+  trial.baselineDone=true;
   trial.guardrails.noOpenDrainContact = true;
   repo.save(state);
   const input = {

@@ -195,6 +195,7 @@ export interface Fault extends Synthetic {
   zone: ZoneId;
 }
 export interface TestResult extends Synthetic {
+  origin?: 'seed'|'operator';
   t: string;
   phase: "baseline" | "retest";
   metric: Metric;
