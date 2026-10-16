@@ -8,7 +8,11 @@ export const faultEffects = {
   damagedOutlet: { key: "drainC", multiplier: 0.6, upkeep: false },
 } as const;
 export function boardConfig(id: string): PhysicsConfig {
-  const config = featureConfig(id === "R1" ? "I1" : id);
+  const config = featureConfig(id);
+  config.values.surfaceLimit.value = 0.15;
+  // Illustrative catchments entered for the demo; no surveyed network dimensions are implied.
+  if (id === 'S1') { config.values.roofArea.value = 200; config.values.pavedArea.value = 100; config.values.surfaceLimit.value = 0.05; }
+  if (id === 'S2') { config.values.roofArea.value = 1000; config.values.pavedArea.value = 500; }
   if (id === "R1") {
     config.id = id;
     // Typical concrete channel: equivalent circular hydraulic capacity, not surveyed box flow.

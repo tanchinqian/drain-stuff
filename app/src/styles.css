@@ -2444,3 +2444,25 @@ main > .about {
 .model-label-layout { overflow: hidden; font-family: inherit; }
 .scene-performance { position: absolute; left: 10px; bottom: 8px; padding: 5px 8px; background: #f4f0e6; color: #2f2b26; font-size: 12px; pointer-events: none; }
 .quality-status { font-size: 12px; color: #5e564b; margin-right: auto; align-self: center; }
+
+/* Storm triage extends the Map desk register. */
+.storm-inputs { margin-bottom: 18px; }
+.storm-form { display: flex; flex-wrap: wrap; align-items: end; gap: 14px; margin: 16px 0; }
+.storm-form .field { min-width: 180px; flex: 0 1 260px; }
+.triage-layout { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+.triage-map { position: sticky; top: 12px; min-width: 0; }
+.triage-map .neighbourhood-scene { height: 480px; }
+.triage-row { padding: 18px 0; border-top: 1px solid var(--border); }
+.triage-row.selected { background: var(--well2); padding-inline: 12px; }
+.triage-asset { text-align: left; border: 0; background: transparent; padding: 5px 0; }
+.rank-number { display: inline-block; min-width: 28px; font-variant-numeric: tabular-nums; }
+.mode-line { display: grid; grid-template-columns: 105px minmax(40px, 1fr) 90px; align-items: center; gap: 8px; font-size: 13px; padding: 3px 0; font-variant-numeric: tabular-nums; }
+.mode-line strong { text-align: right; }
+.mode-track { height: 9px; background: var(--well); }
+.mode-track > span { display: block; height: 100%; background: var(--ink2); }
+.mode-line:first-child .mode-track > span { background: var(--ink); }
+.capacity-note { color: var(--heat-3); font-weight: 600; }
+.fault-chips { display: flex; flex-wrap: wrap; gap: 7px; margin: 12px 0; font-size: 13px; }
+.warning-data { max-height: 180px; overflow: auto; white-space: pre-wrap; }
+.empty-note { padding: 20px 0; max-width: 65ch; }
+@media(max-width:1000px) { .triage-layout { grid-template-columns: 1fr; } .triage-map { position: static; } }

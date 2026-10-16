@@ -46,7 +46,7 @@ export default function Overview() {
       const [zones, houses, features, faults, rain, rainfall, sensors] = await Promise.all([
         api.zones(),
         api.houses(),
-        api.features(),
+        api.features().then(rows => rows.filter(f => !['T1', 'T2'].includes(f.id))),
         api.faults(from, to),
         api.zoneRain(from, to),
         api.rainfall(from, to),

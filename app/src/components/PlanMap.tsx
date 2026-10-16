@@ -14,6 +14,7 @@ export default function PlanMap({
   sensors,
   showSensors,
   cloudOpacity,
+  ranks = {}, selectedAsset, onSelectAsset,
 }: {
   houses: House[];
   zones: Zone[];
@@ -23,6 +24,7 @@ export default function PlanMap({
   sensors: Sensor[];
   showSensors: boolean;
   cloudOpacity: number;
+  ranks?: Record<string, number>; selectedAsset?: string; onSelectAsset?: (id: string) => void;
 }) {
   const selectHouse = useSelection((s) => s.selectHouse),
     selected = useSelection((s) => s.houseId),
@@ -172,18 +174,18 @@ export default function PlanMap({
               onClick={(e) => {
                 e.stopPropagation();
                 selectHouse(null);
-                navigate('/feature/' + f.id);
+                if (onSelectAsset) onSelectAsset(f.id); else navigate('/feature/' + f.id);
               }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
-                  navigate('/feature/' + f.id);
+                  if (onSelectAsset) onSelectAsset(f.id); else navigate('/feature/' + f.id);
                 }
               }}
             >
-              <rect x="-22" y="-22" width="44" height="44" rx="2" fill="var(--ink)" />
-              <text textAnchor="middle" y="5" className="feature-label">
-                {f.id}
+              <rect x="-22" y="-22" width="44" height="44" rx="2" fill={selectedAsset === f.id ? 'var(--ink)' : 'var(--panel)'} stroke="var(--ink)" strokeWidth={ranks[f.id] ? Math.max(1, 5-ranks[f.id]*0.7) : 1} />
+              <text textAnchor="middle" y="5" fill={selectedAsset === f.id ? 'var(--panel)' : 'var(--ink)'}>
+                {ranks[f.id] ? ranks[f.id]+'·' : ''}{f.id}
               </text>
             </g>
           );

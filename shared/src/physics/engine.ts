@@ -303,6 +303,14 @@ export function simulatePhysics(
     cumulative.input += directRain;
     cell.surface += networkStep.delivered + directRain;
     const flux = emptyFlux();
+    // Entered board scenarios spill above the upstream surface limit; retain volume conservation.
+    if (v.surfaceLimit?.value > 0) for (const node of network.nodes) {
+      if (!["property drain", "kerb flow", "gully inlet"].includes(node.id)) continue;
+      const spill = Math.max(0, node.volume - node.area * v.surfaceLimit.value);
+      node.volume -= spill;
+      cumulative.overflow += spill;
+      flux.overflow += spill / dt;
+    }
     flux.runoff = runoff.reduce((a, b) => a + b, 0) / dt;
     flux.inlet = networkStep.delivered / dt;
     const head = volumeStage(
@@ -401,7 +409,7 @@ export function simulatePhysics(
     );
     cell.surface -= overflow;
     cumulative.overflow += overflow;
-    flux.overflow = overflow / dt;
+    flux.overflow += overflow / dt;
     second += dt;
     if (
       Math.abs(second / 60 - Math.round(second / 60)) < 1e-7 ||

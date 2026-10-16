@@ -9,6 +9,7 @@ export const featureCallouts: Record<string, [number, number]> = {
   S2: [10, -10],
   S3: [-22, 12],
   I1: [24, -5],
+  R1: [27, 9],
   T1: [7, 12],
   T2: [21, 9],
 };
@@ -35,8 +36,8 @@ export const zoneCentres = Object.fromEntries(
 // shortcut: trial locations are illustrative assignments, replace with surveyed pilot locations.
 export function featurePosition(id: string): [number, number] {
   const zone = (
-    { S1: "A", S2: "B", S3: "C", I1: "B", T1: "D", T2: "D" } as const
-  )[id as "S1" | "S2" | "S3" | "I1" | "T1" | "T2"];
+    { S1: "A", S2: "B", S3: "C", I1: "B", R1: "D", T1: "D", T2: "D" } as const
+  )[id as "S1" | "S2" | "S3" | "I1" | "R1" | "T1" | "T2"];
   const centre = zoneCentres[zone];
   return [
     centre[0] + (id === "T1" ? 2 : id === "T2" ? -2 : 0),

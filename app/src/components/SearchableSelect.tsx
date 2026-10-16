@@ -41,12 +41,6 @@ export default function SearchableSelect({
   const [open, setOpen] = useState(false),
     [active, setActive] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
-  if (options.length < 8)
-    return (
-      <select {...props} aria-label={props['aria-label'] ?? label} onChange={onChange}>
-        {children}
-      </select>
-    );
   const matches = options.filter((o) => o.label.toLowerCase().includes(query.toLowerCase()));
   const selected = options.find((o) => o.value === String(props.value));
   const choose = (value: string) => {

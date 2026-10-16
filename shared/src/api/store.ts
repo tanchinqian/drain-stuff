@@ -30,6 +30,7 @@ export function createDataStore(
   refreshSeedInputs = true,
 ) {
   let db = structuredClone(initial);
+  if (!db.features.some(f => f.id === 'R1')) db.features.push({id:'R1',name:'Typical roadside kerb inlet and concrete drain',kind:'inlet',arm:null,zone:'D',x:18,y:8,status:'ok',synthetic:true});
   let currentActor = "Local operator";
   function persist() {
     save?.(structuredClone(db));

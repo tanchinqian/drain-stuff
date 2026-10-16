@@ -584,7 +584,5 @@ test("server reads preserve saved sensor values and observation times", async ()
   const saved = await request("/sensors/" + state.sensors[0].sensorId);
   expect(saved.data.lastValue).toBe(123.45);
   expect(saved.data.lastAt).toBe("2026-01-01T00:00:00.000Z");
-  expect(
-    repo.load().faults.every((f) => f.workOrder?.state !== "confirmed"),
-  ).toBe(true);
+  expect(repo.load().faults.map(f=>f.workOrder?.state)).toEqual(state.faults.map(f=>f.workOrder?.state));
 });

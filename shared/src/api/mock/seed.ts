@@ -187,7 +187,7 @@ export function generateMock(seed = 2026): Database {
     {
       id: "F-001",
       featureId: "S1",
-      partId: "sock",
+      partId: "inlet",
       type: "blockage",
       severity: 3,
       zone: "A",
@@ -222,6 +222,7 @@ export function generateMock(seed = 2026): Database {
     sensorIds: [],
     sensorStatusesAtAlert: {},
     diagnosingInput: "Level history + visual inspection",
+    workOrder: { state: f.id === 'F-001' ? 'confirmed' : 'detected' },
   })) as Fault[];
   const rainfall: RainPoint[] = [];
   for (let day = 55; day >= 0; day--) {
@@ -422,7 +423,7 @@ export function generateMock(seed = 2026): Database {
       row.sensorId = `${ownerId}-${row.metric === "infiltration_mm_hr" ? "INF-P1" : row.metric === "sediment_mm" ? "SEDIMENT" : "OUTLET"}`;
   for (const fault of faults) {
     fault.sensorIds =
-      fault.partId === "sock"
+      fault.partId === "sock" || fault.partId === "inlet"
         ? [
             fault.featureId + "-INLET",
             fault.featureId + "-SEDIMENT",

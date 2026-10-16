@@ -74,6 +74,7 @@ export const parameters = {
   gravity: p(9.81, "m/s2", "orifice"),
   overflowLength: p(0.6, "m", "overflow weir"),
   nodeArea: p(2, "m2", "surface node storage"),
+  surfaceLimit: p(0, "m", "entered upstream spill level; zero disables spilling"),
   outfallInvert: p(0, "m datum", "tailwater head"),
   tailwater: p(0, "m datum", "no reverse flow; downstream throttling"),
   sediment: p(0, "m", "forebay sediment"),
@@ -122,11 +123,11 @@ export interface PhysicsConfig {
   sampleCount: number;
 }
 export function featureConfig(id: string): PhysicsConfig {
-  if (!["S1", "S2", "S3", "I1", "T1", "T2"].includes(id))
+  if (!["S1", "S2", "S3", "I1", "R1", "T1", "T2"].includes(id))
     throw new Error(`Unknown feature ${id}`);
   const config: PhysicsConfig = {
     id,
-    kind: id[0] === "I" ? "inlet" : id[0] === "T" ? "tree_pit" : "swale",
+    kind: id[0] === "I" || id === "R1" ? "inlet" : id[0] === "T" ? "tree_pit" : "swale",
     values: structuredClone(parameters),
     sampleCount: 0,
   };
@@ -148,6 +149,7 @@ export function featureConfig(id: string): PhysicsConfig {
       nativeKs: p(0, "m/s", "impermeable chamber"),
       crest: p(0.4, "m", "chamber bypass crest"),
     });
+  if (id === "R1") for (const [key, value] of Object.entries({length:8, width:0.6, crest:0.45, pipeDiameter:0.3, pipeLength:8, pavedArea:100, roofArea:0, lawnArea:0})) config.values[key as ParameterKey].value = value;
   return config;
 }
 export const scenarios = [

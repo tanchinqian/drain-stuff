@@ -17,7 +17,7 @@ export function buildParts(
 ): Part[] {
   const definitions = compost
     ? bayParts
-    : ownerId === "I1"
+    : ownerId === "I1" || ownerId === "R1"
       ? drainParts
           .filter((p) =>
             [

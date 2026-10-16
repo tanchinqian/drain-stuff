@@ -15,13 +15,13 @@ export function result(run: PhysicsRun): ModeResult {
   const limit = run.config.values.crest.value;
   let hoursAboveLimit = 0;
   for (let i = 1; i < run.frames.length; i++)
-    if (run.frames[i].ponding > limit)
+    if (run.frames[i].ponding > limit || (run.config.values.surfaceLimit.value > 0 && run.frames[i].network.some(n => ['property drain','kerb flow','gully inlet'].includes(n.id) && n.depth >= run.config.values.surfaceLimit.value - 1e-9)))
       hoursAboveLimit +=
         (run.frames[i].second - run.frames[i - 1].second) / 3600;
   return {
     config: run.config,
     summary: {
-      peakPondingM: Math.max(...run.frames.map((f) => f.ponding)),
+      peakPondingM: Math.max(...run.frames.map((f) => Math.max(f.ponding,...f.network.filter(n=>['property drain','kerb flow','gully inlet'].includes(n.id)).map(n=>n.depth)))),
       hoursAboveLimit,
       overflowM3: run.frames.at(-1)!.cumulative.overflow,
       maxRelativeError: Math.max(...run.frames.map((f) => f.relativeError)),

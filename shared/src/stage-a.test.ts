@@ -5,6 +5,16 @@ import { retrieve } from "./retrieval";
 import { runStorm } from "./physics/triage";
 const state = generateMock(),
   base = boardConfig("S1");
+test('demo board has calculated fixable, capacity-limited and clear scenarios', () => {
+  const input = {preset:'heavy' as const, assets:['S1','S2','S3','I1','R1'] as const, options:{robustness:false,previewUnconfirmed:false,recoveryMinutes:360}};
+  const rows = runStorm({...input,assets:[...input.assets]}, state.faults, state.trials).rows;
+  const s1 = rows.find(r=>r.asset==='S1')!;
+  expect(s1.asInstalled.summary.overflowM3).toBeGreaterThan(0.4);
+  expect(s1.ifCleared.summary.overflowM3).toBe(0);
+  expect(rows.find(r=>r.asset==='S2')!.capacityLimited).toBe(true);
+  expect(rows.find(r=>r.asset==='R1')!.asInstalled.summary.overflowM3).toBe(0);
+  for(const r of rows) expect(r.asInstalled.summary.maxRelativeError).toBeLessThan(1e-5);
+});
 test("confirmation, upkeep and sensor faults map only to configured effects", () => {
   const f = {
     ...state.faults[0],
