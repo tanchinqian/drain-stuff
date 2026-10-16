@@ -8,8 +8,10 @@ import {
 } from './config';
 import type { PhysicsFrame, PhysicsRun } from './engine';
 import type { Pattern, RainPoint } from './rainfall';
-export const featureIds = ['S1', 'S2', 'S3', 'I1', 'T1', 'T2'] as const;
+export const featureIds = ['S1', 'S2', 'S3', 'I1', 'R1', 'T1', 'T2'] as const;
 interface SimulationState {
+  replay: {jobId:string;asset:string;mode:string} | null;
+  loadReplay: (config:PhysicsConfig, jobId:string, mode:string) => void;
   manualKs: Record<string, boolean>;
   configs: Record<string, PhysicsConfig>;
   runs: Record<string, PhysicsRun>;
@@ -39,6 +41,13 @@ interface SimulationState {
 }
 const restart = { second: 0, playing: false, busy: true, error: null, runs: {} };
 export const useSimulation = create<SimulationState>((set, get) => ({
+  replay: null,
+  loadReplay: (config, jobId, mode) => {
+    const configs = structuredClone(get().configs);
+    for (const c of Object.values(configs)) for (const k of ['peak','duration','recovery'] as const) c.values[k] = {...config.values[k]};
+    configs[config.id] = structuredClone(config);
+    set(s=>({...restart,configs,revision:s.revision+1,pattern:'alternating-block',drawn:[],scenario:'Normal',manualKs:{...s.manualKs,[config.id]:true},replay:{jobId,asset:config.id,mode}}));
+  },
   manualKs: {},
   configs: Object.fromEntries(featureIds.map((id) => [id, featureConfig(id)])),
   runs: {},
@@ -79,9 +88,14 @@ export const useSimulation = create<SimulationState>((set, get) => ({
     if (key === 'recovery')
       for (const c of Object.values(configs)) c.values[key] = { ...c.values[key], value, source };
     else configs[id].values[key] = { ...configs[id].values[key], value, source };
+    if (['length','width','crest','mediaDepth','transitionDepth','gravelDepth','pipeDiameter'].includes(key)) {
+      let user='Local operator';
+      try { user=JSON.parse(sessionStorage.getItem('drain-operator') ?? '{}').name || user; } catch { /* no saved session */ }
+      configs[id].dimensionRecord={user,at:new Date().toISOString()};
+    }
     if (key === 'ks') configs[id].sampleCount = n;
     set((s) => ({
-      ...restart,
+      ...restart, replay:null,
       configs,
       manualKs: key === 'ks' ? { ...s.manualKs, [id]: source !== 'trial-record' } : s.manualKs,
       revision: s.revision + 1,
@@ -92,11 +106,11 @@ export const useSimulation = create<SimulationState>((set, get) => ({
     const configs = structuredClone(get().configs);
     for (const c of Object.values(configs))
       c.values[key] = { ...c.values[key], value, source: 'placeholder' };
-    set((s) => ({ ...restart, configs, revision: s.revision + 1 }));
+    set((s) => ({ ...restart, replay:null, configs, revision: s.revision + 1 }));
   },
   setPattern: (pattern, drawn = []) =>
-    set((s) => ({ ...restart, pattern, drawn, revision: s.revision + 1 })),
-  setScenario: (scenario) => set((s) => ({ ...restart, scenario, revision: s.revision + 1 })),
+    set((s) => ({ ...restart, replay:null, pattern, drawn, revision: s.revision + 1 })),
+  setScenario: (scenario) => set((s) => ({ ...restart, replay:null, scenario, revision: s.revision + 1 })),
   retry: () => set((s) => ({ ...restart, revision: s.revision + 1 })),
 }));
 export function frameAt(run: PhysicsRun | undefined, second: number): PhysicsFrame | undefined {

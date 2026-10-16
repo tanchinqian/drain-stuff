@@ -117,6 +117,7 @@ export const parameters = {
 } satisfies Record<string, Parameter>;
 export type ParameterKey = keyof typeof parameters;
 export interface PhysicsConfig {
+  dimensionRecord?: {user:string;at:string};
   id: string;
   kind: "swale" | "inlet" | "tree_pit";
   values: Record<ParameterKey, Parameter>;

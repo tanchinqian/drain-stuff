@@ -86,6 +86,7 @@ export default function CatchmentContext({
         ),
       )}
       {box('gutter', [x, c.kerbHeight - 0.015, 0], [c.roadWidth, 0.02, 0.3], '#777e78')}
+      {(f?.network.find(n=>n.id==='kerb flow')?.depth ?? 0) > 0.001 && <mesh name="upstream-ponding" position={[x,c.kerbHeight+(f!.network.find(n=>n.id==='kerb flow')!.depth/2),0]}><boxGeometry args={[c.roadWidth,f!.network.find(n=>n.id==='kerb flow')!.depth,d.topWidth+0.4]}/><WaterMaterial design={d} depth={f!.network.find(n=>n.id==='kerb flow')!.depth} low={low}/></mesh>}
       {c.roofArea > 0 && (
         <group>
           {box(

@@ -1,4 +1,5 @@
 import type { PhysicsConfig } from "./config";
+import { buildParts } from '../api/parts';
 
 /** SI dimensions shared by the ledger, solver, sections and WebGL geometry. */
 export function drainDesign(config: PhysicsConfig) {
@@ -8,6 +9,7 @@ export function drainDesign(config: PhysicsConfig) {
     gravel = v.gravelDepth.value;
   const depth = media + transition + gravel;
   return {
+    parts: buildParts(config.id,[],[]).map(p=>p.partId),
     length: v.length.value,
     bedWidth: v.width.value,
     sideSlope: v.sideSlope.value,

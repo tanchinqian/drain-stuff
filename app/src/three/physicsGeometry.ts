@@ -172,6 +172,7 @@ export function createSwaleGeometry(c: PhysicsConfig): ModelGroups {
   ]);
   sock.rotation.x = Math.PI / 2;
   sock.material.map = hatch('mulch', palette.heat1);
+  if (v.sockOpen.value < 0.5) sock.material.color.set(palette.ink2);
   for (const x of [-l / 6, l / 6]) k.box('checkdam', [0.08, 0.12, w], [x, 0.06, 0], palette.well);
   const pipeY = bottom + g / 2,
     r = v.pipeDiameter.value / 2;

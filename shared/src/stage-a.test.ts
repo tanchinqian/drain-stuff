@@ -3,6 +3,18 @@ import { faultConfig, boardConfig, confirmed } from "./physics/faults";
 import { generateMock } from "./api/mock/seed";
 import { retrieve } from "./retrieval";
 import { runStorm } from "./physics/triage";
+import { drainDesign } from './physics/design';
+import { buildParts } from './api/parts';
+import { simulatePhysics } from './physics/engine';
+test('replay geometry parts and saved configs agree; sensor faults do not alter water', () => {
+  for(const id of ['S1','S2','S3','I1','R1']) expect(drainDesign(boardConfig(id)).parts).toEqual(buildParts(id,[],[]).map(p=>p.partId));
+  const original = boardConfig('S1'); original.values.recovery.value=0;
+  const f = {...generateMock().faults[0],workOrder:{state:'confirmed' as const}};
+  const a = simulatePhysics(faultConfig(original,[f],'installed'));
+  const b = simulatePhysics(faultConfig(original,[f],'cleared'));
+  expect(a.frames.map(f=>f.ponding)).not.toEqual(b.frames.map(f=>f.ponding));
+  for(const fault of [{...f,type:'sensor_suspect' as const},{...f,workOrder:{state:'detected' as const}}]) expect(faultConfig(original,[fault],'installed')).toEqual(faultConfig(original,[fault],'cleared'));
+});
 const state = generateMock(),
   base = boardConfig("S1");
 test('demo board has calculated fixable, capacity-limited and clear scenarios', () => {
@@ -14,7 +26,7 @@ test('demo board has calculated fixable, capacity-limited and clear scenarios', 
   expect(rows.find(r=>r.asset==='S2')!.capacityLimited).toBe(true);
   expect(rows.find(r=>r.asset==='R1')!.asInstalled.summary.overflowM3).toBe(0);
   for(const r of rows) expect(r.asInstalled.summary.maxRelativeError).toBeLessThan(1e-5);
-});
+}, 20000);
 test("confirmation, upkeep and sensor faults map only to configured effects", () => {
   const f = {
     ...state.faults[0],

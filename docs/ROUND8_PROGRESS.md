@@ -12,6 +12,13 @@ The owner authorised continuing through the remaining stages without routine app
 - 3D mode replay, typical section and fidelity labels are integrated in Stage B2 next.
 - Verification: 35 backend/shared tests pass, including all three demo conditions and water-balance error below 1e-5; app TypeScript build passes. Browser checks are recorded under Stage F.
 
+## Stage B2 — 3D replay
+
+- Done: board replay opens the asset with its saved input snapshot. As installed / If cleared toggle loads the exact saved mode config into the shared worker and clock. Later temporary parameter edits leave the saved run unchanged.
+- Done: R1 reuses concrete inlet geometry and the existing 2D section. Typical-design fidelity appears on every feature; dimension edits record local operator/date metadata.
+- Done: inlet restriction banks water on the roadside context using computed upstream node depth; restricted socks darken; existing pipe fill and gravel water levels follow engine outputs. Sensor-suspect/detected faults leave configs unchanged.
+- Done: DrainDesign exposes the same part IDs as the feature list; unit checks cover the five assets, changed water for confirmed faults, and identical configs for sensor/detected-only faults. Registered sensor markers are completed alongside the Stage G registry.
+
 ## Subsequent stages
 
-B2, C, G, D, E and F are in progress in that order. This log is updated at each stage commit. No cloud deployment is claimed.
+C, G, D, E and F follow in that order. This log is updated at each stage commit. No cloud deployment is claimed.
