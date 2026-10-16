@@ -1,5 +1,15 @@
 # API contract changelog
 
+## 4.0.0 — 16 October 2026, Stage A
+
+- Added local Hono/SQLite server, shared contract/rule/engine package, migrations, durable audit and seeded `dev:all` startup.
+- Bearer authentication and entered-name audit replace the unimplemented cookie-session proposal; no independent person identity is claimed.
+- Added storm jobs, triage/overrides/robustness, warnings proxy, six-state fault lifecycle/verification, cases/guidance and deterministic diagnosis/feedback endpoints.
+- Fault adds optional `workOrder`; existing fields remain. Legacy close/cleaned cannot bypass verification on the server. Legacy demo batch creation is disabled there.
+- API GET transport can fall back with a notice after connection loss; failed writes never replay locally. Browser mock remains available, including offline previews of the new API shapes.
+- No Stage B board, Stage C lifecycle UI, Stage D LLM adapter or Stage G ingest implementation is claimed. Local-first delivery makes hosting optional.
+
+
 ## 3.0.0 — 15 October 2026
 
 - Typed sensor detail and numeric reading history: GET `/sensors/:id`, `/sensors/:id/readings`.

@@ -1,3 +1,13 @@
+# Local startup — Round 8 Stage A
+
+From this folder, run `npm ci`, `npm --prefix app ci`, then **`npm run dev:all`**. It starts the local API and React app and seeds an empty SQLite database. Enter your name and the token from ignored `.env.local` on first connection. The terminal prints the app URL; it never prints the token. Existing database records are preserved. Node 20.12+ is required.
+
+`npm run build:all` builds both; `npm run start:server` serves the built app/API together. Standalone `npm --prefix app run dev` still supports the original offline mock when no API base is configured.
+
+See [local setup and optional deployment](docs/DEPLOY.md), [Stage A status](docs/ROUND8_STAGE_A.md), and [contract 4.0.0](docs/BACKEND_HANDOFF.md). Stage A is complete before starting the triage board or other Round 8 stages. No live sensor feed or LLM explanation is enabled yet.
+
+---
+
 # Drain Trial Console
 
 A local React console for drainage and compost pilot operations. The cream/brown Archivo Map desk includes fixed pilot-house selection, six hydraulic feature models, trial and batch records, sensors, faults and audited local saves. Generated local records use the same client as an optional backend.

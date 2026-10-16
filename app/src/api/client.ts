@@ -24,21 +24,44 @@ import type {
   Zone,
   ZoneRain,
 } from './types';
-export const CONTRACT_VERSION = '3.0.0';
-const base = import.meta.env.VITE_API_BASE?.replace(/\/$/, '');
+export { CONTRACT_VERSION } from '../../../shared/src/contract';
+export const configuredBase = import.meta.env.VITE_API_BASE?.replace(/\/$/, '');
+export function operatorAccess() {
+  try {
+    return JSON.parse(sessionStorage.getItem('drain-operator') || 'null') as {
+      token: string;
+      name: string;
+    } | null;
+  } catch {
+    return null;
+  }
+}
+export function operatorHeaders(): Record<string, string> {
+  const access = operatorAccess();
+  return access ? { Authorization: 'Bearer ' + access.token, 'X-Operator-Name': access.name } : {};
+}
+export function useLocalDemo(reason = 'manual') {
+  isMock = true;
+  selected = undefined;
+  window.dispatchEvent(new CustomEvent('api-source-change', { detail: reason }));
+}
+
+const base = configuredBase;
 export let isMock = !base || import.meta.env.VITE_DATA_SOURCE === 'mock';
 let selected: Promise<void> | undefined;
 async function selectSource() {
   if (isMock) return;
   selected ??= fetch(base + '/config', {
     signal: AbortSignal.timeout(2500),
-    credentials: 'include',
+    credentials: 'omit',
+    headers: operatorHeaders(),
   })
     .then((response) => {
       if (response.status >= 500) throw new Error('Connection unavailable');
     })
     .catch(() => {
       isMock = true;
+      if (typeof window !== 'undefined') window.dispatchEvent(new Event('api-source-change'));
     });
   await selected;
 }
@@ -48,17 +71,31 @@ export function showDataNotice() {
     (import.meta.env.VITE_SHOW_DATA_NOTICE !== 'false' && isMock)
   );
 }
-async function request<T>(path: string, body?: unknown): Promise<T> {
+async function request<T>(path: string, body?: unknown, timeoutMs = 15000): Promise<T> {
   await selectSource();
   if (isMock) return (await mockRequest(path, body === undefined ? 'GET' : 'POST', body)) as T;
-  const response = await fetch(base + path, {
-    credentials: 'include',
-    method: body === undefined ? 'GET' : 'POST',
-    headers: body === undefined ? undefined : { 'Content-Type': 'application/json' },
-    body: body === undefined ? undefined : JSON.stringify(body),
-    signal: AbortSignal.timeout(15000),
-  });
+  let response: Response;
+  try {
+    response = await fetch(base + path, {
+      credentials: 'omit',
+      method: body === undefined ? 'GET' : 'POST',
+      headers: {
+        ...operatorHeaders(),
+        ...(body === undefined ? {} : { 'Content-Type': 'application/json' }),
+      },
+      body: body === undefined ? undefined : JSON.stringify(body),
+      signal: AbortSignal.timeout(timeoutMs),
+    });
+  } catch {
+    if (body !== undefined)
+      throw new Error('Connection lost. Your change was not saved. Reconnect before trying again.');
+    isMock = true;
+    if (typeof window !== 'undefined') window.dispatchEvent(new Event('api-source-change'));
+    return (await mockRequest(path, 'GET')) as T;
+  }
   if (!response.ok) {
+    if (response.status === 401 && typeof window !== 'undefined')
+      window.dispatchEvent(new Event('api-auth-required'));
     const payload = await response.json().catch(() => null);
     throw new Error(
       typeof payload?.error?.message === 'string'
@@ -75,7 +112,52 @@ const query = (params: Record<string, string | undefined>) => {
   });
   return '?' + search;
 };
+import type {
+  StormInput,
+  StormRequest,
+  StormResult,
+  Suggestion,
+  CaseRecord,
+  GuidanceRecord,
+} from '../../../shared/src/contract';
+interface StormJob {
+  id: string;
+  status: 'queued' | 'running' | 'completed' | 'failed';
+  input: StormInput;
+  result: StormResult | null;
+  error: string | null;
+}
 export const api = {
+  stormRun: (input: StormRequest) => request<StormJob>('/storm-runs', input),
+  stormResult: (id: string) => request<StormJob>('/storm-runs/' + encodeURIComponent(id)),
+  triage: (id: string) =>
+    request<StormResult & { stormRunId: string }>('/triage?stormRunId=' + encodeURIComponent(id)),
+  triageOverride: (input: {
+    stormRunId: string;
+    asset: string;
+    position: number;
+    reason: string;
+  }) => request<Ok>('/triage/overrides', input),
+  warnings: () => request<{ available: boolean; warnings?: unknown[] }>('/weather/warnings'),
+  faultLifecycle: (
+    id: string,
+    action: 'confirm' | 'assign' | 'clear' | 'verify' | 'close' | 'reopen',
+    input: unknown,
+  ) =>
+    request<Fault>(
+      '/faults/' + encodeURIComponent(id) + '/' + action,
+      input,
+      action === 'verify' ? 180000 : 15000,
+    ),
+  cases: () => request<CaseRecord[]>('/cases'),
+  guidance: () => request<GuidanceRecord[]>('/guidance'),
+  diagnose: (faultId: string) => request<Suggestion>('/ai/diagnose', { faultId }),
+  diagnosisFeedback: (input: {
+    suggestionId: string;
+    choice: 'accept' | 'edit' | 'reject';
+    note: string;
+    rankedStepIds?: string[];
+  }) => request<Ok>('/ai/feedback', input),
   sensors: (filters: { ownerId?: string; zone?: string; partId?: string; status?: string } = {}) =>
     request<Sensor[]>('/sensors' + query(filters)),
   sensor: (id: string) => request<Sensor>('/sensors/' + encodeURIComponent(id)),

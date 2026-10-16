@@ -23,10 +23,10 @@ export default function About() {
           or an engineering design.
         </p>
         <p>
-          Inlet, forebay and sock share a modelled path level. Soil shading represents equivalent
-          wet depth from stored moisture. Pipe fill is estimated from local head. Reverse river
-          flow, sediment transport, mulch loss and biological fault causes are not fully solved. The
-          compost model view presents the batch record and its checks.
+          Inlet, forebay and sock share a modelled path level. Soil shading and the wetting contour
+          use the cached saturation field. Pipe fill follows stored pipe volume and discharge.
+          Reverse river flow, sediment transport, mulch loss and biological fault causes are not
+          fully solved. The compost model view presents the batch record and its checks.
         </p>
         <h2>Field checks matter</h2>
         <p>
@@ -41,6 +41,18 @@ export default function About() {
           are excluded; human smell checks remain.
         </p>
         <h2>Data</h2>
+        {config.data?.synthetic && (
+          <p>
+            This database includes seeded demonstration records. No field hardware is connected in
+            this stage.
+          </p>
+        )}
+        {!isMock && (
+          <p>
+            Connected records are saved to the local database. People using the shared operator
+            token enter their own name; individual identities are not verified.
+          </p>
+        )}
         {showDataNotice() && (
           <p className="small">
             {isMock

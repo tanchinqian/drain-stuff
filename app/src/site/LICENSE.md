@@ -1,6 +1,6 @@
 # Map data
 
-The building footprints, road coordinates and mapped areas in `bandar-bukit-raja.json`
+The building footprints, road coordinates and mapped areas in `shared/src/site/bandar-bukit-raja.json`
 are derived from OpenStreetMap, © OpenStreetMap contributors, and are available under
 the [Open Database License 1.0](https://opendatacommons.org/licenses/odbl/1-0/).
 See [OpenStreetMap copyright and attribution](https://www.openstreetmap.org/copyright).

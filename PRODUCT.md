@@ -1,3 +1,7 @@
+# Current Round 8 Stage A
+
+A local Hono/SQLite API and canonical shared package now accompany the React app. `npm run dev:all` starts both with a preserved/idempotently seeded database. Bearer-token first connection, saved audits, background storm runs and deterministic diagnosis endpoints are implemented. The current Overview and materials/trial navigation remain until their designated stages. LLM adapters, the public-source case/guidance seed, ingest/device design and the triage board are not yet delivered. The user made cloud deployment optional; local startup is Stage A's acceptance target. Earlier backend-unavailable statements below are historical.
+
 # Drain Trial Console
 
 ## Current Round 6 refinement
@@ -10,7 +14,7 @@ An operator console for a small drainage and compost pilot. Operators inspect pi
 
 ## Accepted scope
 
-- Local React app in `app/`, using contract **3.0.0** through one API client. A configured, reachable backend is preferred; the browser-local mock is the fallback. No backend is bundled.
+- Local React app in `app/`, using contract **3.0.0** through one API client. A configured, reachable backend is preferred; the browser-local mock is the fallback. A local backend is now bundled; standalone mock mode remains.
 - Confirmed identity: **Map desk**, with cream and brown surfaces, Archivo typography, native controls and geometric schematics. The user explicitly retained the seven radar colours and cyan water when approving Round 3's other changes.
 - Uncapped responsive work surface with 24px desktop and 12px mobile gutters, shared record tables, searchable grouped asset rails, non-modal drawers, plain display names, glossary popovers and dated save feedback. Record histories stay collapsed until opened; no universal page activity history.
 - Overview uses fixed mapped geometry, **24 interactive pilot houses**, six feature destinations, a Plan alternative and optional sensor markers. Context houses are geometry only. House movement and layout editing are removed.

@@ -1,4 +1,34 @@
-# Backend handoff — contract 3.0.0
+# Backend handoff — contract 4.0.0
+
+## Stage A local production path
+
+The implemented API is `server/src/api.ts` (Hono + better-sqlite3). Canonical types, schemas, record/rule logic and engine modules are in `shared/src`; `app/src/api/types.ts` and the original engine paths are compatibility exports. `npm run dev:all` starts the local app and server with an idempotently seeded database. This is the required outcome under the user's local-first instruction; cloud deployment is optional and has not occurred. See [DEPLOY.md](DEPLOY.md) and [ROUND8_STAGE_A.md](ROUND8_STAGE_A.md).
+
+All `/api/v1` routes require `Authorization: Bearer <OPERATOR_TOKEN>`; POST also requires `X-Operator-Name`. The server stamps audit actor/time and ignores body user/appliedBy as identity. The entered name is self-asserted under a shared token. Bodies are capped at 128 KiB; unknown/invalid fields fail validation. CORS allows the same host or configured exact origins. SQLite uses one writer process, WAL and numbered transactional migrations. An append-only audit table rejects update/delete; this is not protection against an administrator replacing the database file.
+
+### New endpoints
+
+| Method/path | Request / response |
+|---|---|
+| POST `/storm-runs` | `{preset:"moderate|heavy|extreme",assets:["S1",...],options?}` OR `custom:{peakMmHr,durationMinutes}`; returns 202 job `{id,status,input,result,error,createdAt,actor}`. Assets S1/S2/S3/I1/R1 only. |
+| GET `/storm-runs/:id` | Same job; poll until completed/failed. Jobs and fault/config snapshots persist. Soil arrays are not stored in JSON; light timelines/configs/summaries are. |
+| GET `/triage?stormRunId=` | Ranked three-mode results, capacity flag, fault IDs, perturbation orders, recorded overrides, and `Relative ranking, not a prediction`. |
+| POST `/triage/overrides` | `{stormRunId,asset,position,reason,user?}`; reason required; server actor wins; immutable audit. |
+| GET `/weather/warnings` | Cached [data.gov.my weather warnings](https://developer.data.gov.my/realtime-api/weather), five-minute positive / 30-second unavailable cache. Failure: `{available:false}`. No rainfall forecast conversion is made. |
+| POST `/faults/:id/confirm`, `/assign`, `/clear`, `/verify`, `/close`, `/reopen` | `{note,assignee?,evidence?}`; returns saved Fault with optional `workOrder`. State sequence detected→confirmed→assigned→cleared→verified→closed. Reopen returns detected. Named assignee required. Capacity-limited latest runs block clearance assignment. |
+| GET `/faults/:id/audit` | Server audit rows for this fault. Legacy record history remains on Fault. |
+| GET `/cases`, GET `/cases/:id` | Source-labelled operator cases. No fabricated public incident seed. |
+| POST `/cases` | `{faultId,cause,outcome,stepsTaken[]}`; only a verified closed fault, known draft step IDs; one case per fault. |
+| GET `/guidance` | Source-bearing guidance records; empty until Stage D seeds the reviewed public-source library. |
+| POST `/ai/diagnose` | `{faultId}`; deterministic retrieval suggestion, sources, draft banner, mode and `stage-a-deterministic-v1`. Missing/untrusted evidence gives insufficientInformation and no steps. No LLM call in Stage A, regardless of key. |
+| POST `/ai/feedback` | `{suggestionId,choice:"accept|edit|reject",note,rankedStepIds?}`; validates draft step IDs; persists feedback/audit. |
+
+Verification evidence is one of `{type:"sensor",sensorId,value,unit}`, `{type:"photo",path:"/uploads/name.jpg"}`, or `{type:"storm-rerun",stormRunId}`. Sensor must be registered on the asset, trusted, and use its unit. A photo must already exist under local `data/uploads`; upload UI belongs to Stage C. Re-runs compare the original job's installed summary with the same storm/fault snapshot after removing only this confirmed fault. A concurrent lifecycle change fails with 409. Stage C's attachment/escalation UI and Stage D's provider adapters are not delivered early.
+
+Six storm requests/minute and twenty AI requests/minute share token-level process buckets. The single-worker queue admits up to five jobs and enforces a 180-second calculation timeout. Interrupted jobs become failed on restart. Only confirmed/assigned faults count; explicit preview may include detected faults; sensor trust faults never alter the physics. The If cleared run removes mapped upkeep faults, while Capacity limit removes all mapped fault effects. See `shared/src/physics/faults.ts` and `triage.ts`.
+
+Legacy compatibility policies: `/faults/:id/status` cannot close unverified work; `/actions` with `cleaned` cannot bypass verification; legacy `POST /batches {}` is rejected with 403. Other existing response fields are retained. The following reference tables describe those existing data shapes; version-4 policies above supersede older workflow notes.
+
 
 ## Round 6 worker result extension
 
@@ -8,14 +38,14 @@ The hydraulic worker output is version-local, not a saved observation endpoint. 
 
 Grid storage is change relative to the initial retention field; native storage participates in the ledger. Direct bed rain is now included in input. CSV adds native storage change, pipe fill/velocity and soil residual columns. Saved sensor/trial/batch APIs and schema v2 persistence are unchanged. Moisture overlays sample installation depth without overwriting observations. See PHYSICS_MODEL.md and ROUND6_WATER_REALISM.md for uncalibrated-model limits.
 
-This is the current local React application's contract, superseding endpoint and UI statements in earlier stage records. Authoritative shapes: `app/src/api/types.ts`; callers: `app/src/api/client.ts`; executable local behavior: `app/src/api/mock/`. [Concrete response examples](contract-examples.v3.json) were generated from that implementation. Each top-level list example contains its first item only; nested objects retain their fields. Optional properties can be omitted. A backend has not been deployed or integrated with real probes.
+This is the current local React application's contract, superseding endpoint and UI statements in earlier stage records. Authoritative shapes: `shared/src/api/types.ts`; callers: `app/src/api/client.ts`; executable local behavior: `app/src/api/mock/`. [Concrete response examples](contract-examples.v3.json) were generated from that implementation. Each top-level list example contains its first item only; nested objects retain their fields. Optional properties can be omitted. A local persistent backend is implemented. No field probes or cloud deployment are claimed.
 
 ## Connection, environment and authentication
 
 Vite reads these values at startup/build. Restart the development server after changing `.env.local`.
 
 ```dotenv
-VITE_API_BASE=http://localhost:8080/api
+VITE_API_BASE=http://127.0.0.1:8080/api/v1
 VITE_DATA_SOURCE=api
 # Optional; unset uses the selected source's default.
 VITE_SHOW_DATA_NOTICE=
@@ -23,8 +53,8 @@ VITE_SHOW_DATA_NOTICE=
 
 - An empty base selects the browser-local mock. `VITE_DATA_SOURCE=mock` explicitly forces it even with a base. `api` or an unset source prefers a configured base.
 - API discovery probes `GET {base}/config` once per page load with a 2.5-second timeout. Network/timeout/5xx failure selects mock for the session. A 4xx response stays in API mode so authentication/authorization errors remain visible. Every screen then uses the same `api.*` client functions.
-- After successful discovery, request failures remain errors; a failed write never silently writes to mock. Ordinary requests time out after 15 seconds. Reload to rediscover the source. Discovery can issue an extra config request; no continuous health polling occurs.
-- Requests use `credentials: include`. A production backend must authenticate users, authorize assets/actions, supply cookie sessions and CSRF protection, and allow the exact frontend origin with credentialed CORS when cross-origin. No bearer-token login or identity provider is implemented. Never trust the form's `user`/`appliedBy` field as authenticated identity.
+- After discovery, a network failure on a GET opens the mock with a visible connection notice. A failed write is never retried against mock. Ordinary requests time out after 15 seconds; verification can wait up to 180 seconds. Reload to rediscover the source. Discovery can issue an extra config request; no continuous health polling occurs.
+- Requests use bearer headers and `credentials: omit`. The first-use connection form keeps the token/name in tab session storage. A 401 returns to that form. Never put the operator token in Vite configuration or a public bundle.
 - `VITE_SHOW_DATA_NOTICE=true` shows one small source notice on About; `false` hides it; unset shows it only for mock. Operational pages have no source badge. Vite variables are public build configuration, never secrets.
 
 To switch: implement the contract and errors below, configure the base and `api` source, restart, check `/config`, and exercise reads plus a permitted write against a disposable backend environment. Browser transport tests cover discovery, fallback and failed writes with intercepted responses, not a live backend.
@@ -47,7 +77,7 @@ Every response shape below has a JSON example in `contract-examples.v3.json`; `G
 
 | Method and path | Query parameters | Response / behavior |
 | --- | --- | --- |
-| GET `/config` | None | `Config`; contractVersion `3.0.0`, thresholds and observation horizon |
+| GET `/config` | None | `Config`; contractVersion `4.0.0`, thresholds and observation horizon |
 | GET `/zones` | None | `Zone[]`: id, name, peakMmPerHr, housesHoldingWater6h, housesTotal |
 | GET `/houses` | Optional `zone` in mock | `House[]`: 24 pilot records, fixed x/y, drainId, zone, nearestFeature, ownerOfRecord, lastReadingAt, holdsWater6h |
 | GET `/features` | None | `Feature[]`: six feature records |
@@ -165,7 +195,7 @@ None of these numerical defaults have been confirmed against field calibration o
 
 | Keys | Current value | Status / meaning |
 | --- | --- | --- |
-| contractVersion, dataThrough | 3.0.0; 2026-10-12T01:40:00.000Z | Software version; fixed mock observation horizon, not a live station timestamp |
+| contractVersion, dataThrough | 4.0.0; seeded observation horizon | Software version; fixed mock observation horizon, not a live station timestamp |
 | doseCapLPerM2 | 25 | Provisional guardrail, not application target |
 | pilotDoses | A 10, B 15, C 20 L/m² | Provisional labelled trial doses |
 | drainDownLimitH | 6 | Provisional comparison target |
@@ -198,13 +228,13 @@ The physics engine's separate typed parameter register is [PHYSICS_PARAMETERS.md
 
 **Client computation:** rainfall interpolation (inverse-distance between API zone points, extent coverage only, no sine noise), range/zone filtering of displayed records, chart presentation, table state, shared playback and deterministic scenario worker. The selected history window is mapped across the shared playback duration; historical weather and entered scenario hyetograph are separate inputs, not asserted identical. Radar palette and cyan water were retained by the user's colour exception.
 
-**Client scenario model:** rainfall/runoff/network, lumped surface/media/transition/gravel storage, pipe discharge and overflow. SI units internally; display L/min, mm/h, mm, %. Soil shading is an equivalent wet depth derived from bulk moisture, not a resolved moving front. Pipe fill comes from local head, not a solved longitudinal profile. Inlet/forebay/sock share one upstream path level; they are not separately routed chambers. Static arrow width scales with discharge. Pink amendment depth/dose comes from allocation. Conductivity follows the latest field test mean/n unless manually overridden, never dose. Feature virtual readings are not written into sensor records. The Sensors register shows saved API readings; manual observations are never replaced by model values. See [PHYSICS_MODEL.md](PHYSICS_MODEL.md) for equations and limits.
+**Client scenario model:** shared rainfall/runoff/network, surface and pipe storage, Richards media/transition/gravel/native field, discharge and overflow. SI units internally; display L/min, mm/h, mm, %. Soil shading/contour comes from the cached saturation field. Pipe fill comes from stored circular-segment volume, not a longitudinal dynamic-wave profile. Inlet/forebay/sock share one upstream path level; they are not separately routed chambers. Water streak speed and effect density follow engine discharge. Pink amendment depth/dose comes from allocation. Conductivity follows the latest field test mean/n unless manually overridden, never dose. Feature virtual readings are not written into sensor records. The Sensors register shows saved API readings; manual observations are never replaced by model values. See [PHYSICS_MODEL.md](PHYSICS_MODEL.md) for equations and limits.
 
 ## Mock persistence and migration
 
 Deterministic seed 2026 supplies values; newly generated observation dates, sensor times, rainfall and dataThrough anchor to app load time. The historical reference 12 Oct 2026 09:40 Singapore is a seed construction reference, not the current observation clock. Persisted writes and actual audit/check histories retain their saved timestamps. New user writes/audits use wall clock; next re-test is seven days after a new test. Client due status uses the earlier of the recorded due day and latest test plus seven days, compared as a Singapore calendar day. Mock zone rainfall scales a common ten-minute storm by zone peaks 52/68/34/18 relative to 63 mm/h. Pilot assignments, owners and trial outcomes are invented; OSM buildings supply context geometry only.
 
-Browser storage key `drain-trial-console-v1` holds schema version 2. Migration preserves tests, checks, allocations, trust and calibration while refreshing fixed map coordinates, filling missing checklist fields, normalizing fault IDs/rule IDs, adding histories and setting contract version 3.0.0. Old Batches with missing prompt snapshots are backfilled once using available current checks; these are not genuine historical check snapshots. New readings store their prompt snapshot at save time. Existing allocations without a mixing depth display “not recorded” until an operator records one. The static default S1 allocation includes 150 mm depth.
+Browser storage key `drain-trial-console-v1` holds schema version 2. Migration preserves tests, checks, allocations, trust and calibration while refreshing fixed map coordinates, filling missing checklist fields, normalizing fault IDs/rule IDs, adding histories and setting contract version 4.0.0. Old Batches with missing prompt snapshots are backfilled once using available current checks; these are not genuine historical check snapshots. New readings store their prompt snapshot at save time. Existing allocations without a mixing depth display “not recorded” until an operator records one. The static default S1 allocation includes 150 mm depth.
 
 Reload retains saved mock data; source switching does not upload or merge it into an API. Corrupt/incompatible storage starts a seed; unavailable/full storage leaves the in-memory mock usable but cannot guarantee reload persistence. No multi-user synchronization, concurrency control, durable photo service or production audit security exists in local mode. Back up required records before clearing browser data. Reset helpers are test utilities, not operational reset controls.
 

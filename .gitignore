@@ -10,3 +10,11 @@ debug.log
 app/*.tsbuildinfo
 sites/
 app/site-source-osm.xml
+
+node_modules/
+server/dist/
+data/
+.env
+.env.local
+*.sqlite*
+*.db
