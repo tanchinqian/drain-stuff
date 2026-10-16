@@ -14,7 +14,19 @@ self.onmessage = (event: MessageEvent<RunRequest>) => {
       request.kind === 'hydraulic'
         ? simulatePhysics(request.config, request.pattern, request.drawn)
         : simulateCompost(request.config, request.options);
-    self.postMessage({ id: request.id, ok: true, result });
+    const transfer: Transferable[] =
+      request.kind === 'hydraulic'
+        ? (result as ReturnType<typeof simulatePhysics>).frames.flatMap((f) =>
+            f.soil
+              ? [
+                  f.soil.theta.buffer,
+                  f.soil.saturation.buffer,
+                  ...(f.soil.surfaceWetness ? [f.soil.surfaceWetness.buffer] : []),
+                ]
+              : [],
+          )
+        : [];
+    self.postMessage({ id: request.id, ok: true, result }, { transfer });
   } catch (error) {
     self.postMessage({
       id: request.id,

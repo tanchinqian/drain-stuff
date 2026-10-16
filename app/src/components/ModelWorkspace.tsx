@@ -43,6 +43,7 @@ export default function ModelWorkspace({
   );
   const [flat, setFlat] = useState(false),
     [dimensionsVisible, setDimensionsVisible] = useState(true);
+  const [lowQuality, setLowQuality] = useState(false);
 
   const [params] = useSearchParams();
   const [showSensors, setShowSensors] = useState(false);
@@ -183,6 +184,7 @@ export default function ModelWorkspace({
           ) : (
             <DrainScene
               physics={physics}
+              lowQuality={lowQuality}
               dimensionsVisible={dimensionsVisible}
               featureId={ownerId}
               kind={kind}
@@ -216,6 +218,14 @@ export default function ModelWorkspace({
           {physics && (
             <>
               <div className="physics-view-controls">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={lowQuality}
+                    onChange={(e) => setLowQuality(e.target.checked)}
+                  />{' '}
+                  Low quality
+                </label>
                 <label>
                   <input
                     type="checkbox"

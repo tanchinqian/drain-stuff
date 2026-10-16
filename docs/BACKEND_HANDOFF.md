@@ -1,5 +1,13 @@
 # Backend handoff — contract 3.0.0
 
+## Round 6 worker result extension
+
+The hydraulic worker output is version-local, not a saved observation endpoint. `PhysicsRun` adds `computeMs`; frames are cached at minute boundaries. `PhysicsFrame` adds `soilResidual`, `pipeFill` (y/D), `pipeVelocity` (m/s), optional `cell.native` (m3 storage change), and optional `soil` for swales/tree pits. `soil` contains `nx,nz,width,depth,dx,dz`, `theta:Float32Array`, `saturation:Float32Array`, optional `surfaceWetness:Float32Array` and `wetBandHeight` (m). Arrays are row-major `[depthRow*nx+acrossColumn]`, top first. All buffers transfer from the worker; inlet chambers omit soil. Persisting this output needs binary storage or explicit array serialization, not numeric-key JSON objects.
+
+`cell.pipe` stores the finite downstream conduit volume. `flux.drain` is soil/chamber discharge entering that pipe; new `flux.outfall` is its actual discharge leaving the feature. `cumulative.outlet` integrates outfall, not underdrain inflow. Pipe y/D comes from stored circular-segment area, and velocity is outfall Q divided by that area. CSV adds pipe storage as well as outfall discharge; consumers must not conflate these two flows.
+
+Grid storage is change relative to the initial retention field; native storage participates in the ledger. Direct bed rain is now included in input. CSV adds native storage change, pipe fill/velocity and soil residual columns. Saved sensor/trial/batch APIs and schema v2 persistence are unchanged. Moisture overlays sample installation depth without overwriting observations. See PHYSICS_MODEL.md and ROUND6_WATER_REALISM.md for uncalibrated-model limits.
+
 This is the current local React application's contract, superseding endpoint and UI statements in earlier stage records. Authoritative shapes: `app/src/api/types.ts`; callers: `app/src/api/client.ts`; executable local behavior: `app/src/api/mock/`. [Concrete response examples](contract-examples.v3.json) were generated from that implementation. Each top-level list example contains its first item only; nested objects retain their fields. Optional properties can be omitted. A backend has not been deployed or integrated with real probes.
 
 ## Connection, environment and authentication

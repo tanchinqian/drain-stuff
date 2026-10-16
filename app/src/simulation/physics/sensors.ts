@@ -61,8 +61,15 @@ export function virtualInput(
             ? thermal.core
             : thermal.surface;
   } else if (s.sensorId.includes('RAIN')) value = frame.rainTenMinuteMm;
-  else if (s.sensorId.includes('MOIST-')) value = frame.moisture * 100;
-  else {
+  else if (s.sensorId.includes('MOIST-')) {
+    const field = frame.soil;
+    if (field) {
+      const depth = s.sensorId.endsWith('-30') ? 0.3 : 0.1;
+      const index =
+        Math.min(field.nz - 1, Math.floor(depth / field.dz)) * field.nx + Math.floor(field.nx / 2);
+      value = field.theta[index] * 100;
+    } else value = frame.moisture * 100;
+  } else {
     const level = s.sensorId.endsWith('INLET')
       ? (frame.network.find((n) => n.id === 'kerb flow')?.depth ?? 0)
       : /OUTLET|WELL/.test(s.sensorId)

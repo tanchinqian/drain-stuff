@@ -1,5 +1,7 @@
 import type { PhysicsConfig } from '../simulation/physics/config';
 import type { PhysicsFrame } from '../simulation/physics/engine';
+import { useMemo } from 'react';
+import { drainDesign } from '../simulation/physics/design';
 export default function PhysicsSection({
   config,
   frame,
@@ -9,6 +11,32 @@ export default function PhysicsSection({
   frame?: PhysicsFrame;
   amendment?: { depth: number; dose: string; batch: string };
 }) {
+  const d = drainDesign(config);
+  const field = frame?.soil;
+  const soilImage = useMemo(() => {
+    if (!field) return;
+    const canvas = document.createElement('canvas');
+    canvas.width = field.nx;
+    canvas.height = field.nz;
+    const ctx = canvas.getContext('2d')!,
+      image = ctx.createImageData(field.nx, field.nz);
+    for (let i = 0; i < field.saturation.length; i++) {
+      const depth = (Math.floor(i / field.nx) + 0.5) * field.dz;
+      const dry =
+        depth < d.mediaDepth
+          ? [201, 178, 142]
+          : depth < d.mediaDepth + d.transitionDepth
+            ? [232, 222, 198]
+            : depth < d.soilDepth
+              ? [197, 190, 170]
+              : [157, 132, 101];
+      const factor = 1 - 0.5 * field.saturation[i];
+      for (let j = 0; j < 3; j++) image.data[i * 4 + j] = Math.round(dry[j] * factor);
+      image.data[i * 4 + 3] = 255;
+    }
+    ctx.putImageData(image, 0, 0);
+    return canvas.toDataURL();
+  }, [field, d.mediaDepth, d.transitionDepth, d.soilDepth]);
   const v = config.values,
     inlet = config.kind === 'inlet',
     depth = inlet
@@ -84,24 +112,14 @@ export default function PhysicsSection({
             )}
           </>
         )}
-        {!inlet && frame && (
-          <rect
+        {!inlet && soilImage && field && (
+          <image
+            href={soilImage}
             x={center - w / 2}
-            y={y + 0.05 * scale}
+            y={y + d.mulchDepth * scale}
             width={w}
-            height={
-              Math.min(
-                1,
-                Math.max(
-                  0,
-                  (frame.moisture - v.wilting.value) / (v.porosity.value - v.wilting.value),
-                ),
-              ) *
-              v.mediaDepth.value *
-              scale
-            }
-            fill="#79624a"
-            fillOpacity=".5"
+            height={field.depth * scale}
+            preserveAspectRatio="none"
           />
         )}
         {!inlet && amendment && (
@@ -121,9 +139,44 @@ export default function PhysicsSection({
         {water > 0 && (
           <path
             d={`M${center - w / 2} ${y}H${center + w / 2}L${center + w / 2 + v.sideSlope.value * water * scale} ${y - water * scale}H${center - w / 2 - v.sideSlope.value * water * scale}Z`}
-            fill="#61cce9"
-            fillOpacity=".6"
+            fill="#88afa5"
+            fillOpacity=".5"
           />
+        )}
+        {!inlet && (
+          <g>
+            <defs>
+              <clipPath id={'pipe-section-' + config.id}>
+                <circle
+                  cx={center}
+                  cy={y + (depth - d.gravelDepth / 2) * scale}
+                  r={(d.pipeDiameter * scale) / 2}
+                />
+              </clipPath>
+            </defs>
+            <circle
+              cx={center}
+              cy={y + (depth - d.gravelDepth / 2) * scale}
+              r={(d.pipeDiameter * scale) / 2}
+              fill="#f2eee4"
+              stroke="#2f2b26"
+            />
+            <rect
+              clipPath={'url(#pipe-section-' + config.id + ')'}
+              x={center - (d.pipeDiameter * scale) / 2}
+              y={
+                y +
+                (depth -
+                  d.gravelDepth / 2 +
+                  d.pipeDiameter / 2 -
+                  (frame?.pipeFill ?? 0) * d.pipeDiameter) *
+                  scale
+              }
+              width={d.pipeDiameter * scale}
+              height={(frame?.pipeFill ?? 0) * d.pipeDiameter * scale}
+              fill="#88afa5"
+            />
+          </g>
         )}
       </svg>
       <figcaption>

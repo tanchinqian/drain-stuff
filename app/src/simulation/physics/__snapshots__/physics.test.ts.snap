@@ -2,54 +2,54 @@
 
 exports[`reduced-order hydraulic engine (SI units) > Blocked inlet is deterministic and has a stable checkpoint 1`] = `
 [
-  0.2719985,
+  0.2719753,
   0,
-  30.2794439,
-  10.9530077,
+  33.5201817,
+  12.0753163,
 ]
 `;
 
 exports[`reduced-order hydraulic engine (SI units) > Clogged sock is deterministic and has a stable checkpoint 1`] = `
 [
-  0.2719985,
+  0.2719753,
   0,
-  30.2794439,
-  10.9530077,
+  33.5201817,
+  12.0753163,
 ]
 `;
 
 exports[`reduced-order hydraulic engine (SI units) > High tailwater is deterministic and has a stable checkpoint 1`] = `
 [
-  0.8218294,
+  0.8218652,
   0,
-  9.1068823,
-  32.1181509,
+  12.074308,
+  33.5211899,
 ]
 `;
 
 exports[`reduced-order hydraulic engine (SI units) > Normal is deterministic and has a stable checkpoint 1`] = `
 [
-  0.2719985,
+  0.2719762,
   0,
-  30.434404,
-  10.797686,
+  33.6759911,
+  11.9195069,
 ]
 `;
 
 exports[`reduced-order hydraulic engine (SI units) > Sensor drift is deterministic and has a stable checkpoint 1`] = `
 [
-  0.2719985,
+  0.2719762,
   0,
-  30.434404,
-  10.797686,
+  33.6759911,
+  11.9195069,
 ]
 `;
 
 exports[`reduced-order hydraulic engine (SI units) > Silted underdrain is deterministic and has a stable checkpoint 1`] = `
 [
-  0.2719985,
+  0.2719762,
   0,
-  30.434404,
-  10.797686,
+  33.6759911,
+  11.9195069,
 ]
 `;

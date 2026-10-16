@@ -1,0 +1,13 @@
+{
+  "metrics": [
+    {
+      "id": "S3",
+      "computeMs": 454.70000000298023,
+      "peak": 3060,
+      "duration": 2700,
+      "maxLedgerError": 6.011415406817126e-8,
+      "soilBytes": 4988928
+    }
+  ],
+  "errors": []
+}

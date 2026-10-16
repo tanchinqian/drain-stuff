@@ -157,7 +157,18 @@
         "name": "phone",
         "value": "580px"
       }
-    ]
+    ],
+    "round6Water": {
+      "scope": "User-approved water-only realism exception; radar and interface unchanged",
+      "materials": {
+        "shallow": "#a7c8bf",
+        "depth": "#78a99c",
+        "section": "#88afa5"
+      },
+      "soil": "Cached Richards S; albedo dry*(1-0.5S), roughness 0.9 to 0.35; same field on caps/2D",
+      "effects": "Engine-gated rain/flow/overflow; real-time visual motion independent of playback",
+      "fallback": "Reduced motion static; low quality omits transmission and reduces instances/pixel ratio"
+    }
   },
   "components": [
     {
@@ -221,14 +232,14 @@
       "kind": "custom",
       "refersTo": "radar-legend",
       "description": "Seven approved radar swatches with written mm/h intervals for dated zone rainfall interpolation.",
-      "html": "<div class=\"ds-radar-legend\" aria-label=\"Simulated rainfall intensity in mm/h\"><span><i style=\"background:#61cce9\" aria-hidden=\"true\"></i>Under 10</span><span><i style=\"background:#44bf65\" aria-hidden=\"true\"></i>10–20</span><span><i style=\"background:#b9df38\" aria-hidden=\"true\"></i>20–40</span><span><i style=\"background:#f3d431\" aria-hidden=\"true\"></i>40–50</span><span><i style=\"background:#f28b27\" aria-hidden=\"true\"></i>50–60</span><span><i style=\"background:#de452e\" aria-hidden=\"true\"></i>60–80</span><span><i style=\"background:#aa40b6\" aria-hidden=\"true\"></i>Over 80 mm/h</span></div>",
+      "html": "<div class=\"ds-radar-legend\" aria-label=\"Simulated rainfall intensity in mm/h\"><span><i style=\"background:#61cce9\" aria-hidden=\"true\"></i>Under 10</span><span><i style=\"background:#44bf65\" aria-hidden=\"true\"></i>10\u201320</span><span><i style=\"background:#b9df38\" aria-hidden=\"true\"></i>20\u201340</span><span><i style=\"background:#f3d431\" aria-hidden=\"true\"></i>40\u201350</span><span><i style=\"background:#f28b27\" aria-hidden=\"true\"></i>50\u201360</span><span><i style=\"background:#de452e\" aria-hidden=\"true\"></i>60\u201380</span><span><i style=\"background:#aa40b6\" aria-hidden=\"true\"></i>Over 80 mm/h</span></div>",
       "css": ".ds-radar-legend { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:12px; color:var(--ink, #2f2b26); font:400 13px/1.45 'Archivo Variable', Archivo, sans-serif; } .ds-radar-legend i { display:inline-block; width:22px; height:8px; margin-right:5px; }"
     },
     {
       "name": "Shared Record Table",
       "kind": "custom",
       "description": "Compact searchable records with native mutually exclusive filter/Columns menus, 10/20/25 pagination, 40px or 32px rows, plain monospace IDs, no row selection and panel-contained horizontal scrolling.",
-      "html": "<div class=\"ds-table\"><label class=\"ds-search\">Search records <input type=\"search\"></label><table><thead><tr><th>Sensor</th><th>Latest reading</th></tr></thead><tbody><tr><td class=\"ds-id\">S1-INLET</td><td>0.07 cm</td></tr></tbody></table><button>Export CSV</button><p>10 rows · Page 1 of 1</p></div>",
+      "html": "<div class=\"ds-table\"><label class=\"ds-search\">Search records <input type=\"search\"></label><table><thead><tr><th>Sensor</th><th>Latest reading</th></tr></thead><tbody><tr><td class=\"ds-id\">S1-INLET</td><td>0.07 cm</td></tr></tbody></table><button>Export CSV</button><p>10 rows \u00b7 Page 1 of 1</p></div>",
       "css": ".ds-table {color:var(--ink,#2f2b26);font:400 14px/1.45 Archivo,sans-serif;min-width:0;overflow-x:auto}.ds-table table {border-collapse:collapse;width:100%}.ds-table th {height:36px;background:var(--well2,#e2dccb)}.ds-table th,.ds-table td {padding:4px 10px;text-align:left;border-bottom:1px solid var(--border,#cfc7b4);white-space:nowrap}.ds-table td {height:40px}.ds-table .ds-id {font:13px ui-monospace,Consolas,monospace}.ds-table input,.ds-table button {background:var(--panel,#f2eee4);color:var(--ink,#2f2b26);border:1px solid var(--border,#cfc7b4);height:36px;padding:0 10px;border-radius:3px}.ds-table button:hover {background:var(--well2,#e2dccb)}.ds-table input:focus-visible,.ds-table button:focus-visible {outline:2px solid var(--ink,#2f2b26);outline-offset:3px}"
     },
     {

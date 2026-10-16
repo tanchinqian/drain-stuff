@@ -13,7 +13,7 @@ export default function FlowStrip({ ownerId }: { ownerId: string }) {
           { name: 'Chamber', rate: f.flux.inlet, detail: formatValue(f.ponding * 1000, 'mm') },
           {
             name: 'Outlet',
-            rate: f.flux.drain,
+            rate: f.flux.outfall,
             detail: formatValue(Math.min(1, f.ponding / v.pipeDiameter.value) * 100, '%'),
           },
           { name: 'Bypass', rate: f.flux.overflow, detail: formatValue(f.ponding * 1000, 'mm') },
@@ -43,18 +43,11 @@ export default function FlowStrip({ ownerId }: { ownerId: string }) {
           {
             name: 'Pipe',
             rate: f.flux.drain,
-            detail:
-              formatValue(
-                Math.min(
-                  1,
-                  Math.max(0, f.gravelHead - v.drainOffset.value) / v.pipeDiameter.value,
-                ) * 100,
-                '%',
-              ) + ' fill',
+            detail: formatValue(f.pipeFill * 100, '%') + ' fill',
           },
           {
             name: 'Outfall',
-            rate: f.flux.drain,
+            rate: f.flux.outfall,
             detail: formatValue(v.tailwater.value * 1000, 'mm') + ' tailwater',
           },
           { name: 'Overflow', rate: f.flux.overflow, detail: formatValue(f.ponding * 1000, 'mm') },

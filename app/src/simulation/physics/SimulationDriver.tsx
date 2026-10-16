@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '../../api/client';
 import { testMean } from '../../utils';
 import { featureIds, runConfig, useSimulation } from './store';
-import type { PhysicsRun } from './engine';
+import { peakFrame, type PhysicsRun } from './engine';
 export default function SimulationDriver() {
   const trials = useQuery({ queryKey: ['simulation-trials'], queryFn: api.trials });
   const ready = !trials.isPending;
@@ -50,7 +50,7 @@ export default function SimulationDriver() {
     const timeout = window.setTimeout(() => {
       worker.terminate();
       fail('The model took too long. Try a shorter storm or retry.');
-    }, 45000);
+    }, 180000);
     worker.onerror = () => {
       clearTimeout(timeout);
       fail('The simulation worker could not start. Retry the model.');
@@ -69,7 +69,13 @@ export default function SimulationDriver() {
       results[id] = event.data.result;
       if (Object.keys(results).length === featureIds.length) {
         clearTimeout(timeout);
-        useSimulation.setState({ runs: results, busy: false, error: null });
+        const peak = peakFrame(results.S1);
+        useSimulation.setState({
+          runs: results,
+          busy: false,
+          error: null,
+          second: state.second === 0 ? peak.second : state.second,
+        });
         worker.terminate();
       }
     };

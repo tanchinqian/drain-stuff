@@ -47,6 +47,12 @@ export function runCsv(run: PhysicsRun) {
       'overflow m3/s',
       'seepage m3/s',
       'ET m3/s',
+      'outfall m3/s',
+      'native storage change m3',
+      'pipe y/D',
+      'pipe mean velocity m/s',
+      'soil residual m3',
+      'pipe storage m3',
     ],
   );
   for (const f of run.frames)
@@ -71,6 +77,11 @@ export function runCsv(run: PhysicsRun) {
       f.balanceResidual,
       f.relativeError,
       ...Object.values(f.flux),
+      f.cell.native ?? 0,
+      f.pipeFill,
+      f.pipeVelocity,
+      f.soilResidual,
+      f.cell.pipe ?? 0,
     ]);
   rows.push([], ['second', 'node', 'volume m3', 'depth m']);
   for (const f of run.frames)

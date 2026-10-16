@@ -19,6 +19,20 @@ import { generateMock } from '../../api/mock/seed';
 import { nearestConnection } from './network';
 
 describe('reduced-order hydraulic engine (SI units)', () => {
+  it('keeps water in a flowing inlet pipe and derives velocity from its circular area', () => {
+    const run = simulatePhysics(featureConfig('I1'));
+    const flowing = run.frames.filter((f) => f.flux.outfall > 1e-9);
+    expect(flowing.length).toBeGreaterThan(0);
+    for (const f of flowing) {
+      expect(f.cell.pipe).toBeGreaterThan(0);
+      expect(f.pipeFill).toBeGreaterThan(0);
+      expect(f.pipeVelocity).toBeCloseTo(
+        f.flux.outfall / circularSection(run.config.values.pipeDiameter.value, f.pipeFill).area,
+        8,
+      );
+      expect(f.relativeError).toBeLessThan(1e-6);
+    }
+  });
   it('matches independent hand calculations and invertible stage storage', () => {
     expect(circularSection(1, 0.5).area).toBeCloseTo(Math.PI / 8, 12);
     expect(manning(1, 1, 0.01, 0.013)).toBeCloseTo(2.3975805208, 8);
@@ -50,7 +64,9 @@ describe('reduced-order hydraulic engine (SI units)', () => {
         expect(f.relativeError).toBeLessThan(1e-6);
         expect(f.ponding).toBeGreaterThanOrEqual(0);
         expect(f.moisture).toBeLessThanOrEqual(c.values.porosity.value + 1e-9);
-        expect(f.moisture).toBeGreaterThanOrEqual(c.values.wilting.value - 1e-9);
+        expect(f.moisture).toBeGreaterThanOrEqual(
+          c.kind === 'inlet' ? c.values.wilting.value - 1e-9 : 0.065 - 1e-9,
+        );
         expect(f.dt).toBeLessThanOrEqual(10);
         expect(f.network.every((n) => n.volume >= -1e-12)).toBe(true);
       }
@@ -61,7 +77,11 @@ describe('reduced-order hydraulic engine (SI units)', () => {
     c.values.peak.value = 0;
     expect(
       simulatePhysics(c).frames.every(
-        (f) => f.storage === 0 && f.cumulative.input === 0 && f.flux.drain === 0,
+        (f) =>
+          f.ponding === 0 &&
+          f.cumulative.input === 0 &&
+          f.flux.drain === 0 &&
+          Math.abs(f.storage + f.cumulative.seepage + f.cumulative.et) < 1e-8,
       ),
     ).toBe(true);
     c.values.peak.value = 63 / 3.6e6;

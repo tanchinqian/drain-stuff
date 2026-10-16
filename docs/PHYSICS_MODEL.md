@@ -1,5 +1,23 @@
 # Reduced-order physics model
 
+## Current Round 6 soil and rendering model
+
+This section supersedes the bulk-media, equivalent wet-depth, static rain/arrow and fixed observation-clock descriptions below. Historical sections remain for equation provenance. The mock observation clock is load-relative (BACKEND_HANDOFF.md).
+
+`design.ts` supplies the shared [DrainDesign](DRAIN_DESIGN_SPEC.md). `richards.ts` solves the mixed form `d(theta)/dt = div(K(h) grad(h+z))` with cell-centred finite volumes, diagonal/lumped storage and modified Picard iteration. Internally depth increases downward, so face flux is `Kface * (1 - (hbelow-habove)/dz)`. Arithmetic face conductivity and van Genuchten–Mualem curves are used. Vertical Thomas line solves and lateral line iteration solve asymmetric fields. Uniform transverse forcing/initial conditions preserve symmetry exactly and are solved in that invariant subspace before expansion to the full cached 48 × 32 grid. Nonconverged steps bisect to 0.02 s before reporting an error; engine steps split at rainfall changes and minute boundaries.
+
+Top flux switches between ponded head and available-water-limited supply. Direct bed rainfall is added explicitly to input/surface storage, alongside external catchment runoff. The domain spans bed width, media/transition/gravel and 0.3 m native soil unless lined. Bank infiltration is not separately solved. A distributed underdrain sink at pipe depth uses the existing gravel-head discharge relation, tailwater factor and available-water limit. Bottom flux is free drainage K(h), or zero when lined; side boundaries are no flux. Media Ks remains trial-record/entered conductivity. Compost dose never changes a hydraulic parameter.
+
+All layers initialize at pressure head -3 m through their retention curves. Event soil storage is **change from the initialized field**, including native soil. Small background drainage can therefore make zero-rain storage change negative, balanced by seepage. ET is a donor-limited top-cell sink. The nonlinear residual is reported, never silently forced to zero. `soilResidual` accumulates Richards residuals; the combined ledger retains its 1e-6 relative-error acceptance check.
+
+Every output minute caches Float32 theta/S fields, grid metadata and surface wetness memory; worker buffers are transferred. Playback samples cached output. Inlet chambers have no soil field. Probes at 10 and 30 cm sample different field rows. Underdrain/chamber discharge enters a finite pipe reservoir, with donor/capacity limits. Its stored volume determines circular-segment y/D. Outfall release is limited by partial-pipe Manning capacity, a travel reservoir and tailwater; the actual release gives `pipeVelocity=Qoutfall/A(y/D)`. Pipe storage participates in the event ledger. This is a single lumped conduit, not a longitudinal/dynamic-wave solution.
+
+WebGL2 renders closed depression/layer solids and stencil caps. A linearly filtered DataTexture maps S to albedo `dry*(1-0.5S)` and roughness 0.9→0.35; the 2D section uses the same samples. The optical endpoint and 30-minute surface drying memory are illustrative. Physical water material uses transmission, attenuation, sky Fresnel response and procedural normal perturbations; low quality omits transmission. Jittered instanced rain falls at about 7 m/s in real rendering time; count follows engine rain and terrain/water ray intersections place impacts. Pipe motion follows Q/A and stops at Q=0; seepage/overflow are flow-gated. Reduced motion uses static samples. A low-quality control and automatic slow-render fallback are available.
+
+This field is **uncalibrated, 2D, isothermal, without hysteresis or macropores**. No surveyed heterogeneity, reverse river flow, sediment transport or separate forebay/sock chamber solution is supplied. See [Round 6 results](ROUND6_WATER_REALISM.md) for acceptance and limits.
+
+Sources: [Celia, Bouloutas & Zarba (1990)](https://agupubs.onlinelibrary.wiley.com/doi/10.1029/WR026i007p01483); [EPA RETC report, Carsel & Parrish texture table](https://nepis.epa.gov/Exe/ZyPURL.cgi?Dockey=30000I52.txt); [Lekner & Dorf (1988), wet-surface optics](https://opg.optica.org/ao/abstract.cfm?uri=ao-27-7-1278); [three.js stencil clipping](https://threejs.org/examples/webgl_clipping_stencil.html).
+
 Reduced-order model, placeholder parameters, not calibrated, not a design tool, not a forecast.
 
 ## Implementation boundary

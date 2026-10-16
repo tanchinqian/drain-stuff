@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, type ComponentRef } from 'react';
-import { Canvas, useThree } from '@react-three/fiber';
+import { useEffect, useMemo, useRef, useState, type ComponentRef } from 'react';
+import { Canvas, useThree, useFrame } from '@react-three/fiber';
 import { DragControls, Html, OrbitControls, Edges } from '@react-three/drei';
 import { Box3, Line, Material, Matrix4, Mesh, MeshStandardMaterial, Plane, Vector3 } from 'three';
 import type { Config, Part, PartId, Sensor } from '../api/types';
@@ -13,10 +13,15 @@ import PartHighlight from './PartHighlight';
 import SensorMarkers from './SensorMarkers';
 import { createCompostParts } from './compostGeometry';
 import { sensorMarkers } from '../api/sensorViews';
+import SectionCaps from './SectionCaps';
+import { moistureTexture, wetMaterial } from './soilMaterial';
+import { rainCount } from './WaterEffects';
+import { drainDesign } from '../simulation/physics/design';
 export type Assembly = 'exploded' | 'assembled' | 'section';
 export type ViewMode = 'Operator' | 'Debug' | 'Troubleshoot';
 export type Offsets = Partial<Record<PartId, [number, number, number]>>;
 export interface Props {
+  lowQuality?: boolean;
   physics?: ModelPhysics;
   dimensionsVisible?: boolean;
   kind?: 'drainage' | 'compost';
@@ -70,6 +75,7 @@ export const shifts = (id: PartId, e: number): [number, number, number] => {
   return offsets[id].map((v) => v * e) as [number, number, number];
 };
 function Model(props: Props) {
+  const design = props.physics ? drainDesign(props.physics.config) : undefined;
   const invalidate = useThree((s) => s.invalidate);
   const select = useSelection((s) => s.selectPart),
     selected = useSelection((s) => s.partId);
@@ -104,9 +110,41 @@ function Model(props: Props) {
     },
     [groups],
   );
-  const plane = useMemo(() => new Plane(), []),
+  const plane = useMemo(
+      () =>
+        new Plane(
+          new Vector3(
+            props.cutAxis === 'X' ? -1 : 0,
+            props.cutAxis === 'Y' ? -1 : 0,
+            props.cutAxis === 'Z' ? -1 : 0,
+          ),
+          props.cutPosition,
+        ),
+      [props.cutAxis, props.cutPosition],
+    ),
     controls = useRef<ComponentRef<typeof OrbitControls>>(null);
   const e = props.assembly === 'exploded' ? props.explode / 100 : 0;
+  const field = props.physics?.frame?.soil;
+  const texture = useMemo(() => (field ? moistureTexture(field) : undefined), [field]);
+  useEffect(() => {
+    if (!texture || !field) return;
+    for (const id of ['media', 'mulch', 'transition', 'drainage'] as const)
+      groups[id]?.traverse((o) => {
+        if (o instanceof Mesh && o.material instanceof MeshStandardMaterial)
+          wetMaterial(o.material, texture, field.width, field.depth);
+      });
+    invalidate();
+    return () => texture.dispose();
+  }, [field, texture, groups, invalidate]);
+  useEffect(() => {
+    const clog = props.physics?.frame?.cell.clog ?? 0;
+    groups.sock?.traverse((o) => {
+      if (o instanceof Mesh && o.material instanceof MeshStandardMaterial) {
+        o.material.userData.dryColor ??= o.material.color.clone();
+        o.material.color.copy(o.material.userData.dryColor).multiplyScalar(1 - 0.5 * clog);
+      }
+    });
+  }, [props.physics?.frame?.cell.clog, groups]);
   useEffect(() => {
     plane.normal.set(
       props.cutAxis === 'X' ? -1 : 0,
@@ -174,15 +212,19 @@ function Model(props: Props) {
       <ambientLight intensity={1.35} />
       <directionalLight position={[-6, 13, 8]} intensity={1.65} />
       <directionalLight position={[9, 5, -6]} intensity={0.35} />
-      <mesh position={[1.2, -1.12, 0]}>
-        <boxGeometry args={[10.35, 0.05, 4.55]} />
+      <mesh
+        position={design ? [0.5, design.bottomY - design.nativeDepth - 0.03, 0] : [1.2, -1.12, 0]}
+      >
+        <boxGeometry
+          args={design ? [design.length + 3, 0.05, design.topWidth + 0.8] : [10.35, 0.05, 4.55]}
+        />
         <meshStandardMaterial color={palette.ground} />
         <Edges color={palette.ink3} />
       </mesh>
       {props.physics && props.dimensionsVisible && props.assembly !== 'exploded' && (
         <DimensionLines config={props.physics.config} />
       )}
-      {props.parts.map((part) => {
+      {props.parts.map((part, partIndex) => {
         const id = part.partId,
           base = shifts(id, e),
           offset = props.offsets[id] || [0, 0, 0],
@@ -202,11 +244,22 @@ function Model(props: Props) {
                 select(id);
               }}
             />
+            {props.assembly === 'section' &&
+              part.installed &&
+              ['media', 'transition', 'drainage', 'mulch', 'liner', 'inlet'].includes(id) && (
+                <SectionCaps
+                  group={geometry}
+                  plane={plane}
+                  physics={props.physics}
+                  orderBase={10 + partIndex * 100}
+                />
+              )}
             {props.physics && part.installed && (
               <PhysicsWater
                 id={id}
                 physics={props.physics}
                 plane={props.assembly === 'section' ? plane : undefined}
+                low={props.lowQuality}
               />
             )}
             {props.showSensors && part.installed && (props.mode === 'Debug' || selected === id) && (
@@ -290,6 +343,8 @@ function SelectedBounds({
   );
 }
 export default function DrainScene(props: Props) {
+  const [automaticLow, setAutomaticLow] = useState(false);
+  const low = props.lowQuality || automaticLow;
   return (
     <div
       className="scene cad-scene"
@@ -303,14 +358,20 @@ export default function DrainScene(props: Props) {
       data-ponding-mm={(props.physics?.frame?.ponding ?? 0) * 1000}
       data-explode={props.explode}
       data-part-count={props.parts.length}
+      data-quality={low ? 'low' : 'high'}
+      data-rain-count={rainCount(props.physics?.frame?.rain ?? 0, low)}
+      data-pipe-fill={props.physics?.frame?.pipeFill ?? 0}
+      data-pipe-velocity={props.physics?.frame?.pipeVelocity ?? 0}
+      data-underdrain-flow={props.physics?.frame?.flux.drain ?? 0}
+      data-overflow-visible={(props.physics?.frame?.flux.overflow ?? 0) > 0}
     >
       <Canvas
         key={props.reset}
         orthographic
         camera={{ position: [19, 15, 23], zoom: 32, near: 0.1, far: 180 }}
-        dpr={[1, 2]}
+        dpr={low ? 1 : [1, 1.5]}
         frameloop="demand"
-        gl={{ antialias: true, localClippingEnabled: true }}
+        gl={{ antialias: !low, localClippingEnabled: true, stencil: true }}
         fallback={
           props.physics ? (
             <PhysicsSection {...props.physics} />
@@ -319,8 +380,51 @@ export default function DrainScene(props: Props) {
           )
         }
       >
-        <Model {...props} />
+        <RenderBudget
+          active={
+            !!props.physics?.frame &&
+            (props.physics.frame.ponding > 0 ||
+              props.physics.frame.rain > 0 ||
+              props.physics.frame.flux.outfall > 0)
+          }
+          onSlow={() => setAutomaticLow(true)}
+        />
+        <Model {...props} lowQuality={low} />
       </Canvas>
     </div>
   );
+}
+
+function RenderBudget({ onSlow, active }: { onSlow: () => void; active: boolean }) {
+  const gl = useThree((s) => s.gl),
+    elapsed = useRef(0),
+    count = useRef(0);
+  useFrame(({ scene }, delta) => {
+    const surface = scene.getObjectByName('ponded-water');
+    const element = gl.domElement.closest<HTMLElement>('.cad-scene');
+    if (element) {
+      element.dataset.waterSurfaceHeight = surface
+        ? new Box3().setFromObject(surface).max.y.toString()
+        : '0';
+      const pipe =
+        scene.getObjectByName('pipe-water-underdrain') ??
+        scene.getObjectByName('pipe-water-outfall');
+      element.dataset.renderedPipeFill = String(pipe?.userData.fill ?? 0);
+      element.dataset.renderedPipeSpeed = String(pipe?.userData.velocity ?? 0);
+    }
+    if (!active) {
+      elapsed.current = 0;
+      count.current = 0;
+      return;
+    }
+    elapsed.current += Math.min(delta, 2);
+    count.current++;
+    if (elapsed.current < 2) return;
+    const fps = count.current / elapsed.current;
+    gl.domElement.dataset.renderFps = fps.toFixed(1);
+    if (fps < 45) onSlow();
+    elapsed.current = 0;
+    count.current = 0;
+  });
+  return null;
 }
