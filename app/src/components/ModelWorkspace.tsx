@@ -42,7 +42,9 @@ export default function ModelWorkspace({
     [sourceParts, sensors],
   );
   const [flat, setFlat] = useState(false),
-    [dimensionsVisible, setDimensionsVisible] = useState(true);
+    [dimensionsVisible, setDimensionsVisible] = useState(false);
+  const [inspectionActive, setInspectionActive] = useState(kind === 'compost');
+  const [quality, setQuality] = useState('High');
   const [lowQuality, setLowQuality] = useState(false);
 
   const [params] = useSearchParams();
@@ -70,6 +72,7 @@ export default function ModelWorkspace({
         parts.find((p) => p.installed && p.status !== 'ok')?.partId ??
         parts.find((p) => p.installed)!.partId,
     );
+    setInspectionActive(kind === 'compost');
     setOffsets({});
     setHidden([]);
     setIsolate(false);
@@ -114,7 +117,10 @@ export default function ModelWorkspace({
         <SearchableSelect
           label="Model part"
           value={selected}
-          onChange={(e) => select(e.target.value as PartId)}
+          onChange={(e) => {
+            select(e.target.value as PartId);
+            setInspectionActive(true);
+          }}
         >
           {parts.map((p) => (
             <option key={p.partId} value={p.partId}>
@@ -152,7 +158,10 @@ export default function ModelWorkspace({
                     : undefined
                 }
                 aria-pressed={selected === p.partId}
-                onClick={() => select(p.partId)}
+                onClick={() => {
+                  select(p.partId);
+                  setInspectionActive(true);
+                }}
               >
                 <span className={'status-mark ' + p.status} />
                 {p.name}
@@ -162,6 +171,9 @@ export default function ModelWorkspace({
         </aside>
         <section className="panel model-card">
           <div className="model-mode">
+            {physics && (
+              <output className="quality-status">{lowQuality ? 'Low' : quality} quality</output>
+            )}
             <div className="segments">
               {(['Operator', 'Debug', 'Troubleshoot'] as const).map((value) => (
                 <button
@@ -184,6 +196,12 @@ export default function ModelWorkspace({
           ) : (
             <DrainScene
               physics={physics}
+              inspectionActive={inspectionActive}
+              onInspect={(id) => {
+                setInspectionActive(!!id);
+                if (id) select(id);
+              }}
+              onPerformance={(_, value) => setQuality(value)}
               lowQuality={lowQuality}
               dimensionsVisible={dimensionsVisible}
               featureId={ownerId}

@@ -264,3 +264,8 @@ All six feature links and labelled pins provide destinations. Only pilot houses 
 - **Don't** make colour the sole indicator of status or selection.
 - **Don't** restore movable map houses, particle droplets or the persistent data badge.
 - **Don't** present schematic geometry, generated records or model scenarios as surveyed/calibrated evidence.
+
+
+## Round 7 model visibility
+
+Feature models use Cutaway by default, an inlet-side camera and a canvas at least 60vh tall. Fault colour is reserved for thin selected/Troubleshoot geometry edges and fault annotations; it never colours rain. Neutral streaks extend around the contextual road/roof edges. Soil's local S=.5 contour and allocation-depth band supplement the warm-dry/cool-dark saturation response. The shared screen-space annotation layout permits three labels, with leaders and selection priority; dimensions start off. Stage labels include L/min. Debug exposes FPS and current adaptive quality. Existing UI and radar tokens remain unchanged.

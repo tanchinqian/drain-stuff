@@ -24,6 +24,21 @@ export function drainDesign(config: PhysicsConfig) {
     pipeY:
       config.kind === 'inlet' ? v.pipeDiameter.value / 2 : -0.05 - media - transition - gravel / 2,
     pipeDiameter: v.pipeDiameter.value,
+    catchment: {
+      pavedArea: v.pavedArea.value,
+      roofArea: v.roofArea.value,
+      gutterLength: v.length.value + 1,
+      // Schematic context edge only; catchment areas remain the full hydraulic inputs.
+      roadWidth: Math.min(
+        2.4,
+        v.length.value * 0.5,
+        v.pavedArea.value / Math.max(1, v.length.value),
+      ),
+      roofEdgeDepth: Math.min(1.2, v.roofArea.value / Math.max(1, v.length.value)),
+      gutterSlope: v.pipeSlope.value,
+      footpathWidth: 0.65,
+      kerbHeight: 0.12,
+    },
   };
 }
 export type DrainDesign = ReturnType<typeof drainDesign>;
