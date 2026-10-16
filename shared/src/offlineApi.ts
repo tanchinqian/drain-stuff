@@ -5,6 +5,7 @@ import {
   caseInput,
   diagnosisInput,
   feedbackInput,
+  escalationInput, type Escalation,
   type StormResult,
   type CaseRecord,
   type Suggestion,
@@ -25,6 +26,7 @@ export function createOfflineApi(store: ReturnType<typeof createDataStore>) {
     actor: string;
   };
   const caseFaultIds = new Set<string>();
+  const escalations:Escalation[]=[];
   const snapshots = new Map<
     string,
     { faults: Fault[]; trials: TrialDetail[] }
@@ -53,6 +55,19 @@ export function createOfflineApi(store: ReturnType<typeof createDataStore>) {
     const u = new URL(path, "https://mock.local"),
       p = u.pathname.split("/").filter(Boolean),
       actor = "Local operator";
+    if(p[0]==='evidence') throw new Error('Photo evidence requires the local API. Use a sensor check or storm rerun in local demo mode.');
+    if(p[0]==='escalations') {
+      if(method==='GET') return clone(escalations);
+      if(p[1]) {
+        const item=escalations.find(e=>e.id===p[1]); if(!item) throw new Error('Escalation not found');
+        const input=raw as {status:string;note:string};
+        if(!['acknowledged','resolved'].includes(input.status)||!input.note?.trim()||item.status==='resolved'||item.status===input.status) throw new Error('Choose the next escalation status and add a note');
+        item.status=input.status as Escalation['status'];item.history.push({status:input.status,note:input.note,actor,at:now()});return clone(item);
+      }
+      const input=escalationInput.parse(raw),result=job(input.stormRunId).result?.rows.find(r=>r.asset===input.asset);
+      if(!result?.capacityLimited) throw new Error('Choose a capacity-limited asset from a completed run');
+      const entry:Escalation={...input,id:id(),status:'recorded',evidence:clone(result),actor,at:now(),history:[]};escalations.push(entry);return clone(entry);
+    }
     if (method === "POST" && p[0] === "storm-runs") {
       const input = stormInput.parse(raw),
         row: Job = {

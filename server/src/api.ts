@@ -4,7 +4,7 @@ import { bodyLimit } from "hono/body-limit";
 import { secureHeaders } from "hono/secure-headers";
 import { serveStatic } from "@hono/node-server/serve-static";
 import { createHash, randomUUID, timingSafeEqual } from "node:crypto";
-import { existsSync } from "node:fs";
+import { existsSync, mkdirSync, writeFileSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { z, ZodError } from "zod";
 import { Repository } from "./db";
@@ -17,6 +17,7 @@ import {
   caseInput,
   diagnosisInput,
   feedbackInput,
+  escalationInput, type Escalation,
   type CaseRecord,
   type GuidanceRecord,
 } from "../../shared/src/contract";
@@ -70,20 +71,19 @@ export function createApi(repo: Repository, options: ApiOptions) {
     }),
   );
   app.use(
-    "/api/*",
-    bodyLimit({
-      maxSize: 128 * 1024,
+    "/api/*", (c,next) => bodyLimit({
+      maxSize: c.req.path === '/api/v1/evidence' ? 7*1024*1024 : 128 * 1024,
       onError: (c) =>
         c.json(
           {
             error: {
               code: "PAYLOAD_TOO_LARGE",
-              message: "Request exceeds 128 KiB.",
+              message: "Request exceeds the route's size limit.",
             },
           },
           413,
         ),
-    }),
+    })(c,next),
   );
   app.get("/health", (c) =>
     c.json({
@@ -317,7 +317,7 @@ export function createApi(repo: Repository, options: ApiOptions) {
         );
       if (
         input.evidence.type === "photo" &&
-        !existsSync(resolve("data", input.evidence.path.slice(1)))
+        !existsSync(resolve(repo.uploadsDir, input.evidence.path.split('/').at(-1)!))
       )
         throw new ApiError(422, "Upload the evidence photo first");
       if (input.evidence.type === "sensor") {
@@ -408,6 +408,43 @@ export function createApi(repo: Repository, options: ApiOptions) {
       return fault;
     })();
     return c.json(saved);
+  });
+  app.post('/api/v1/evidence', async c => {
+    const input = z.object({data:z.string().max(7*1024*1024)}).strict().parse(await c.req.json());
+    if (!/^[A-Za-z0-9+/]+={0,2}$/.test(input.data)) throw new ApiError(422,'Choose a JPEG, PNG or WebP photo');
+    const bytes = Buffer.from(input.data,'base64');
+    const ext = bytes.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10])) ? 'png' : bytes[0]===255 && bytes[1]===216 && bytes[2]===255 ? 'jpg' : bytes.toString('ascii',0,4)==='RIFF' && bytes.toString('ascii',8,12)==='WEBP' ? 'webp' : null;
+    if (!ext || bytes.length > 5*1024*1024) throw new ApiError(422,'Choose a JPEG, PNG or WebP photo under 5 MB');
+    mkdirSync(repo.uploadsDir,{recursive:true});
+    const name = uuid()+'.'+ext;
+    writeFileSync(resolve(repo.uploadsDir,name),bytes,{flag:'wx'});
+    repo.audit(c.get('actor'),'Evidence uploaded',name,'',{bytes:bytes.length});
+    return c.json({path:'/uploads/'+name},201);
+  });
+  app.get('/api/v1/evidence/:name',c=>{
+    const name=z.string().regex(/^[a-f0-9-]{36}\.(png|jpg|webp)$/).parse(c.req.param('name'));
+    const path=resolve(repo.uploadsDir,name);
+    if(!existsSync(path)) throw new ApiError(404,'Photo not found');
+    return c.body(readFileSync(path),200,{'Content-Type':name.endsWith('.jpg')?'image/jpeg':name.endsWith('.png')?'image/png':'image/webp','Cache-Control':'private, no-store','Content-Disposition':'inline'});
+  });
+  app.get('/api/v1/escalations',c=>c.json((repo.sql.prepare('SELECT body FROM escalations').all() as {body:string}[]).map(r=>JSON.parse(r.body))));
+  app.post('/api/v1/escalations',async c=>{
+    const input=escalationInput.parse(await c.req.json()), run=runOrThrow(input.stormRunId);
+    const row=run.result?.rows.find(r=>r.asset===input.asset);
+    if(!row?.capacityLimited) throw new ApiError(422,'Choose a capacity-limited asset from a completed run');
+    const entry:Escalation={...input,id:uuid(),status:'recorded',evidence:row,actor:c.get('actor'),at:new Date().toISOString(),history:[]};
+    repo.sql.transaction(()=>{repo.sql.prepare('INSERT INTO escalations VALUES (?,?)').run(entry.id,JSON.stringify(entry));repo.audit(c.get('actor'),'Escalated to owner',input.asset,input.note,{escalationId:entry.id,recipient:input.recipient,stormRunId:run.id});})();
+    return c.json(entry,201);
+  });
+  app.post('/api/v1/escalations/:id/status',async c=>{
+    const input=z.object({status:z.enum(['acknowledged','resolved']),note:z.string().trim().min(1).max(2000)}).strict().parse(await c.req.json());
+    const saved=repo.sql.prepare('SELECT body FROM escalations WHERE id=?').get(c.req.param('id')) as {body:string}|undefined;
+    if(!saved) throw new ApiError(404,'Escalation not found');
+    const entry=JSON.parse(saved.body) as Escalation;
+    if(entry.status==='resolved' || entry.status===input.status) throw new ApiError(409,'Choose the next escalation status');
+    entry.status=input.status;entry.history.push({...input,actor:c.get('actor'),at:new Date().toISOString()});
+    repo.sql.transaction(()=>{repo.sql.prepare('UPDATE escalations SET body=? WHERE id=?').run(JSON.stringify(entry),entry.id);repo.audit(c.get('actor'),'Escalation '+input.status,entry.asset,input.note,{escalationId:entry.id});})();
+    return c.json(entry);
   });
   app.get("/api/v1/cases", (c) => c.json(repo.jsonRows<CaseRecord>("cases")));
   app.get("/api/v1/cases/:id", (c) => {

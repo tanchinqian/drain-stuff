@@ -119,6 +119,7 @@ import type {
   Suggestion,
   CaseRecord,
   GuidanceRecord,
+  Escalation,
 } from '../../../shared/src/contract';
 interface StormJob {
   id: string;
@@ -128,6 +129,10 @@ interface StormJob {
   error: string | null;
 }
 export const api = {
+  uploadPhoto: (data:string)=>request<{path:string}>('/evidence',{data}),
+  escalations: ()=>request<Escalation[]>('/escalations'),
+  escalate: (input:{stormRunId:string;asset:string;recipient:string;note:string})=>request<Escalation>('/escalations',input),
+  escalationStatus: (id:string,status:'acknowledged'|'resolved',note:string)=>request<Escalation>('/escalations/'+id+'/status',{status,note}),
   stormRun: (input: StormRequest) => request<StormJob>('/storm-runs', input),
   stormResult: (id: string) => request<StormJob>('/storm-runs/' + encodeURIComponent(id)),
   triage: (id: string) =>

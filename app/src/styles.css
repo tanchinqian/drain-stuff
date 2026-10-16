@@ -2466,3 +2466,7 @@ main > .about {
 .warning-data { max-height: 180px; overflow: auto; white-space: pre-wrap; }
 .empty-note { padding: 20px 0; max-width: 65ch; }
 @media(max-width:1000px) { .triage-layout { grid-template-columns: 1fr; } .triage-map { position: static; } }
+
+.workflow-steps { display:flex; flex-wrap:wrap; gap:8px 18px; padding-left:20px; font-size:13px; margin:16px 0; }
+.workflow-steps .current { font-weight:700; text-decoration:underline; text-underline-offset:4px; }
+.work-order { margin-block:20px; }

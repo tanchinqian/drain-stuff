@@ -103,6 +103,8 @@ export const feedbackInput = z
   })
   .strict();
 export const diagnosisInput = z.object({ faultId: text }).strict();
+export const escalationInput = z.object({stormRunId:z.string().uuid(),asset:assetId,recipient:actor,note:text}).strict();
+export interface Escalation {id:string;asset:string;recipient:string;note:string;status:'recorded'|'acknowledged'|'resolved';stormRunId:string;evidence:TriageRow;actor:string;at:string;history:{status:string;note:string;actor:string;at:string}[]}
 export interface RunSummary {
   peakPondingM: number;
   hoursAboveLimit: number;

@@ -19,6 +19,14 @@ The owner authorised continuing through the remaining stages without routine app
 - Done: inlet restriction banks water on the roadside context using computed upstream node depth; restricted socks darken; existing pipe fill and gravel water levels follow engine outputs. Sensor-suspect/detected faults leave configs unchanged.
 - Done: DrainDesign exposes the same part IDs as the feature list; unit checks cover the five assets, changed water for confirmed faults, and identical configs for sensor/detected-only faults. Registered sensor markers are completed alongside the Stage G registry.
 
+## Stage C — work orders
+
+- Done: fault drawer uses the six-state lifecycle, searchable/free-text crew names, required notes, and the recorded audit history. Existing status shortcuts are replaced by workflow controls.
+- Done: verification offers trusted registered sensor/unit, saved storm re-run with before/after overflow, or a bounded uploaded photo. Photos are stored beside the configured database, require operator auth to retrieve, accept PNG/JPEG/WebP signatures only, and have a 5 MB limit. No photo upload is claimed in standalone mock mode.
+- Done: capacity-limited assets open owner escalation with saved three-mode evidence, recipient, note, acknowledgement/resolution and immutable audit. This records a hand-off; it sends no email or message.
+- Done: unconfirmed preview is explicit on the board; changes affect subsequent runs, not past snapshots. Re-run after workflow changes to refresh the board's calculated evidence.
+- Verification: 38 backend/shared tests pass, covering photo rejection/storage, escalation persistence/status audit, lifecycle and rerun verification. App TypeScript passes.
+
 ## Subsequent stages
 
-C, G, D, E and F follow in that order. This log is updated at each stage commit. No cloud deployment is claimed.
+G, D, E and F follow in that order. This log is updated at each stage commit. No cloud deployment is claimed.

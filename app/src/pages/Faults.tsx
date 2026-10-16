@@ -8,7 +8,8 @@ import { useWrite } from '../hooks';
 import DataTable from '../components/DataTable';
 import Drawer from '../components/Drawer';
 import AssetList from '../components/AssetList';
-import RecordHistory from '../components/RecordHistory';
+import WorkOrderPanel from '../components/WorkOrderPanel';
+import EscalationPanel from '../components/EscalationPanel';
 import Timestamp from '../components/Timestamp';
 import Chip from '../components/Chip';
 import { QueryState } from '../components/QueryState';
@@ -31,16 +32,11 @@ export default function Faults() {
   const faults = useQuery({ queryKey: ['faults'], queryFn: () => api.faults() }),
     rules = useQuery({ queryKey: ['fault-rules'], queryFn: api.faultRules }),
     features = useQuery({ queryKey: ['features'], queryFn: api.features });
-  const save = useWrite(
-    (input: { id: string; status: Fault['status'] }) =>
-      api.faultStatus(input.id, { status: input.status, note, user }),
-    (input) => `${input.id} moved to ${displayName(input.status)}${note ? ' · Note: ' + note : ''}`,
-  );
   const create = useWrite(
     () => api.reportFault({ ...entry, note, user }),
     'Saved report to the fault register',
   );
-  const active = selected ? (faults.data?.find((f) => f.id === selected.id) ?? selected) : null;
+  const active = selected ? (faults.data?.find((f) => f.id === selected.id) ?? selected) : faults.data?.find(f=>f.id===params.get('fault')) ?? null;
   const rows = (faults.data ?? [])
     .filter(
       (f) =>
@@ -66,6 +62,7 @@ export default function Faults() {
         </button>
       </div>
       <p>Faults appear when a rule fires on a reading or an operator reports a problem.</p>
+      {asset && <EscalationPanel asset={asset}/>}
       <div className="segments register-tabs" role="tablist" aria-label="Fault registers">
         {(['faults', 'rules'] as const).map((t) => (
           <button
@@ -140,21 +137,7 @@ export default function Faults() {
                   label: 'Status',
                   value: (f) => f.status,
                   render: (f) => (
-                    <select
-                      className="status-select"
-                      aria-label={'Status for ' + f.id}
-                      value={f.status}
-                      disabled={save.isPending}
-                      onChange={(e) =>
-                        save.mutate({ id: f.id, status: e.target.value as Fault['status'] })
-                      }
-                    >
-                      {['open', 'inspected', 'closed'].map((v) => (
-                        <option key={v} value={v}>
-                          {displayName(v)}
-                        </option>
-                      ))}
-                    </select>
+                    <button onClick={()=>setSelected(f)}>{displayName(f.workOrder?.state ?? 'detected')}</button>
                   ),
                 },
                 {
@@ -214,7 +197,7 @@ export default function Faults() {
       {active && (
         <Drawer
           title={active.id + ' · ' + displayName(active.type)}
-          onClose={() => setSelected(null)}
+          onClose={() => { setSelected(null); const next=new URLSearchParams(params); next.delete('fault'); setParams(next); }}
         >
           <Chip value={active.status} />
           <p>
@@ -232,31 +215,7 @@ export default function Faults() {
           >
             Inspect this part
           </Link>
-          <h3>Update status</h3>
-          <label className="field">
-            Who
-            <input value={user} onChange={(e) => setUser(e.target.value)} />
-          </label>
-          <label className="field">
-            Optional note
-            <textarea value={note} onChange={(e) => setNote(e.target.value)} />
-          </label>
-          <div className="actions">
-            {(['open', 'inspected', 'closed'] as const).map((status) => (
-              <button
-                disabled={active.status === status || save.isPending || !user.trim()}
-                key={status}
-                onClick={() => save.mutate({ id: active.id, status })}
-              >
-                {status === 'open'
-                  ? 'Reopen'
-                  : status === 'closed'
-                    ? 'Close fault'
-                    : 'Mark inspected'}
-              </button>
-            ))}
-          </div>
-          <RecordHistory entries={active.history ?? []} title="Audit trail" />
+          <WorkOrderPanel key={active.id} fault={active}/>
           <h3>Diagnosing inputs</h3>
           {active.sensorIds.map((id) => (
             <p key={id}>

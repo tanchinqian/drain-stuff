@@ -1,6 +1,6 @@
 import Database from "better-sqlite3";
 import { mkdirSync, readFileSync, readdirSync } from "node:fs";
-import { dirname } from "node:path";
+import { dirname, resolve } from "node:path";
 import { randomUUID } from "node:crypto";
 import { createDataStore } from "../../shared/src/api/store";
 import {
@@ -8,8 +8,10 @@ import {
   type Database as AppState,
 } from "../../shared/src/api/mock/seed";
 export class Repository {
+  readonly uploadsDir: string;
   readonly sql: Database.Database;
   constructor(path: string) {
+    this.uploadsDir = resolve(path === ':memory:' ? 'data' : dirname(path), 'uploads');
     if (path !== ":memory:") mkdirSync(dirname(path), { recursive: true });
     this.sql = new Database(path);
     this.sql.pragma("journal_mode = WAL");

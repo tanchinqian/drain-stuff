@@ -586,3 +586,25 @@ test("server reads preserve saved sensor values and observation times", async ()
   expect(saved.data.lastAt).toBe("2026-01-01T00:00:00.000Z");
   expect(repo.load().faults.map(f=>f.workOrder?.state)).toEqual(state.faults.map(f=>f.workOrder?.state));
 });
+test('photo evidence stores bounded images and rejects active content',async()=>{
+  expect((await request('/evidence',{data:Buffer.from('<svg/>').toString('base64')})).response.status).toBe(422);
+  const image='iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jO1sAAAAASUVORK5CYII=';
+  const saved=await request('/evidence',{data:image});
+  expect(saved.response.status).toBe(201);
+  const name=saved.data.path.split('/').at(-1),path=resolve(repo.uploadsDir,name);
+  expect(dirname(path)).toBe(repo.uploadsDir);
+  try { const photo=await api.app.request('/api/v1/evidence/'+name,{headers:auth});expect(photo.status).toBe(200);expect(photo.headers.get('Content-Type')).toBe('image/png'); }
+  finally { rmSync(path); }
+});
+test('capacity escalation stores evidence, recipient and auditable status',async()=>{
+  const {runStorm}=await import('../../shared/src/physics/triage');
+  const input={preset:'heavy' as const,assets:['S2' as const],options:{robustness:false,previewUnconfirmed:false,recoveryMinutes:0}},state=repo.load();
+  const result=runStorm(input,state.faults,state.trials),id=crypto.randomUUID(),now=new Date().toISOString();
+  repo.sql.prepare('INSERT INTO storm_runs VALUES (?,?,?,?,?,?,?,?,?)').run(id,'completed',JSON.stringify(input),'[]',JSON.stringify(result),null,'Test',now,now);
+  const saved=await request('/escalations',{stormRunId:id,asset:'S2',recipient:'Owner',note:'Capacity review'});
+  expect(saved.response.status).toBe(201);expect(saved.data.evidence.capacityLimited).toBe(true);
+  expect((await request('/escalations')).data).toHaveLength(1);
+  expect((await request('/escalations/'+saved.data.id+'/status',{status:'acknowledged',note:'Review received'})).data.status).toBe('acknowledged');
+  expect((await request('/escalations/'+saved.data.id+'/status',{status:'resolved',note:'Review complete'})).data.history).toHaveLength(2);
+  expect(repo.sql.prepare("SELECT COUNT(*) n FROM audit WHERE action LIKE 'Escala%'").get()).toMatchObject({n:3});
+});
