@@ -9,6 +9,7 @@ const env = serverEnv.parse(process.env);
 const repo = new Repository(env.DB_PATH);
 const api = createApi(repo, {
   token: env.OPERATOR_TOKEN,
+  deviceSecret:env.LORAWAN_INGEST_SECRET,simSecret:env.LORAWAN_SIM_SECRET,
   seed: env.SEED_DEMO === "1",
   corsOrigins: env.CORS_ORIGIN.split(",")
     .map((s) => s.trim())

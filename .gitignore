@@ -18,3 +18,4 @@ data/
 .env.local
 *.sqlite*
 *.db
+firmware/node/secrets.h

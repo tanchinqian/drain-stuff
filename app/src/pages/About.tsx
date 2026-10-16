@@ -3,6 +3,7 @@ import { api, isMock, showDataNotice } from '../api/client';
 import { QueryState } from '../components/QueryState';
 export default function About() {
   const config = useQuery({ queryKey: ['config'], queryFn: api.config });
+  const sensors=useQuery({queryKey:['provenance-sensors'],queryFn:()=>api.sensors()});
   return (
     <QueryState loading={config.isPending} error={config.error}>
       <div className="page-heading">
@@ -41,6 +42,8 @@ export default function About() {
           are excluded; human smell checks remain.
         </p>
         <h2>Data</h2>
+        <p>Sensor nodes are a design with a working ingest path and simulator. No hardware has been built, bench-tested or deployed. Battery life is an unmeasured estimate; coverage, frequency allocation and equipment approval remain unverified.</p>
+        <p>Latest registered readings: {sensors.data?.filter(s=>s.readingSource==='simulated').length??0} from the device simulator; {sensors.data?.filter(s=>s.readingSource==='device').length??0} from authenticated device integrations. The database retains this source on every ingested reading. A device integration label alone is not evidence of field validation.</p>
         {config.data?.synthetic && (
           <p>
             This database includes seeded demonstration records. No field hardware is connected in

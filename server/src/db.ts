@@ -44,8 +44,11 @@ export class Repository {
       .run(new Date().toISOString());
   }
   seed() {
-    if (this.sql.prepare("SELECT 1 FROM app_state WHERE id = 1").get())
+    if (this.sql.prepare("SELECT 1 FROM app_state WHERE id = 1").get()) {
+      const state=this.load();
+      if(!state.features.some(f=>f.id==='R1')) this.save(createDataStore(state,undefined,false).snapshot());
       return false;
+    }
     this.save(createDataStore(generateMock()).snapshot());
     return true;
   }

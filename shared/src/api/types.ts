@@ -30,6 +30,8 @@ export type BayPartId =
 export type PartId = DrainPartId | BayPartId;
 export type SensorStatus = "ok" | "suspect" | "offline";
 export interface Sensor extends Synthetic {
+  deviceId?: string;
+  readingSource?: 'simulated'|'device';
   sensorId: string;
   type: string;
   ownerId: string;
@@ -104,6 +106,7 @@ export interface Feature extends Synthetic {
   status: Status;
 }
 export interface Reading extends Synthetic {
+  source?: 'simulated'|'device';
   t: string;
   metric: Metric;
   value: number;

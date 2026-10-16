@@ -4,6 +4,7 @@ import type { PhysicsConfig } from "./config";
 import type { CompostFrame } from "./compost";
 export type InputDriver = "hydraulic" | "thermal" | "human/seeded";
 export function inputDriver(s: Sensor): InputDriver {
+  if (s.deviceId) return 'human/seeded';
   if (
     /Manual|Visual|checklist|scale|stock|Soil temperature/i.test(s.type) ||
     /INF-P|POND-DURATION|VIS-|MANUAL|INTAKE|BULKING/.test(s.sensorId)

@@ -1,0 +1,13 @@
+# Limits and claims
+
+- The storage/Richards/drainage engine is uncalibrated. Model geometries, catchments, upstream spill levels, fault multipliers and thresholds are entered illustrative parameters, not a survey of Bandar Bukit Raja or its network.
+- Rainfall is an operator scenario, not a numeric forecast. Official warning data only guides preset selection. Relative ranking is not a prediction, dispatch order, inundation probability or flood-reduction claim.
+- Independent asset scenarios do not solve a township sewer network, reverse river flow, debris transport, biological causes or measured maintenance effectiveness.
+- Suggested steps are from a draft library requiring practitioner review. Diagnosis supports an operator; it cannot confirm a fault, change severity, dispatch a crew or create repair instructions. Case-library size, guidance-derived examples and retrieval evaluation limits are documented separately.
+- Compost benefit is a hypothesis under a small pilot. Soil loosening may explain most of a measured change. Dose does not set conductivity. No flood-reduction percentage or compost-efficacy claim is supported.
+- Sensor nodes are **design-level, bench test pending**. A working ingest path and device simulator exist. No node has been built, field-deployed or hardware-tested. Simulator readings are tagged `source: simulated` in the database; a registered integration alone is not evidence of a physical deployment.
+- Battery budget values and lifetimes are **estimates, unmeasured**. Coverage, operating frequency, antenna/power settings and equipment approvals remain unverified. Confirm with MCMC/SIRIM and the network operator before deployment.
+- Firmware is an unflashed reference sketch. Only the host-side encoder is compiled/tested. Session/DevNonce persistence, rejoin energy, radio configuration, environmental temperature and electrical protection need bench work.
+- Sensor trust flags are conservative indicators, not definitive diagnoses. Flat readings can be real; missed checks run when records are read. A reading raises Detected only and never auto-confirms. Operators perform independent reference checks and verification.
+- The local API uses a shared token and self-entered name, not individual identity accounts. SQLite assumes one server instance and a persistent backed-up disk. Cloud hosting/Docker deployment has not been verified.
+- Safety: follow the township's authorised traffic, cover and confined-space procedures. This application never authorises chamber entry or lifting a cover alone.

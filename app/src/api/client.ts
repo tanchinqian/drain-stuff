@@ -129,6 +129,8 @@ interface StormJob {
   error: string | null;
 }
 export const api = {
+  devices:()=>request<import('../../../shared/src/iot').Device[]>('/devices'),
+  commission:(input:import('zod').input<typeof import('../../../shared/src/iot').deviceInput>)=>request<import('../../../shared/src/iot').Device>('/devices',input),
   uploadPhoto: (data:string)=>request<{path:string}>('/evidence',{data}),
   escalations: ()=>request<Escalation[]>('/escalations'),
   escalate: (input:{stormRunId:string;asset:string;recipient:string;note:string})=>request<Escalation>('/escalations',input),

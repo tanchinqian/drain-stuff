@@ -27,6 +27,16 @@ The owner authorised continuing through the remaining stages without routine app
 - Done: unconfirmed preview is explicit on the board; changes affect subsequent runs, not past snapshots. Re-run after workflow changes to refresh the board's calculated evidence.
 - Verification: 38 backend/shared tests pass, covering photo rejection/storage, escalation persistence/status audit, lifecycle and rerun verification. App TypeScript passes.
 
+## Stage G — sensor design and ingest
+
+- G1 done: reference design, editable generated system/wiring/chamber SVGs, pin-level netlist, BOM with no prices, network/commissioning/maintenance plan. Every document labels design-level/bench-test-pending. Sources and unverified regulatory/coverage conditions are explicit.
+- G2 done: 12-byte encoder/decoder, TTN and ChirpStack raw webhook shapes, separate network/simulator integration secrets, registry/commissioning UI, raw distance-to-depth conversion, counter idempotency, range/stuck/rate/battery/float/missed checks, stored provenance, sensor history and Detected-only faults. Board rows show registered sensor trust; 3D markers use commissioned registry sensors and matching mounted-part coordinates. Actual readings are never overwritten by virtual model overlays.
+- G2 done: `npm run sim:device` registers a fresh R1 device and writes a ten-sample backdated event ramp and failure cases to the local API. Whole-path run completed. Physical hardware/radio is not tested. Optional moisture values need a later payload version.
+- G2 firmware: reference Arduino sketch and host encoder test supplied. Host C++ test compiled/passed, vector `010000140320fd0ce4010203` matches canonical JavaScript decoder. Arduino toolchain compilation, OTAA/session persistence, actual temperature measurement and hardware testing are not claimed.
+- G3 done: About and LIMITS describe source and hardware limits. Operational pages do not badge source. No measured battery life or coverage is claimed.
+- All proposed/estimated figures: 0.3 m minimum clearance (larger sensor blind zone wins), 15/2 minute periods, 3.2 V/4000 mAh pack and 70% usable capacity, assumed 0.08/45/120 mA states and 893/2/5 second normal timings, estimated 138/20 day budgets, all resistor/capacitor values, 3.3/5 V rails, pin assignments, 3000 mV battery threshold, four identical reports, 0.15 m/min trust threshold and 1 mm float comparison tolerance. These are documented design inputs, not measurements. Exact module variant, procurement prices, coverage, radio band/power and approvals remain unverified.
+- Checks: 44 backend/shared tests pass, including protocol parity, auth, idempotency, conversion, trust rules, marker registry links and no automatic confirmation. Whole-path simulator and host C++ check also passed. Mobile/browser evidence follows Stage F.
+
 ## Subsequent stages
 
-G, D, E and F follow in that order. This log is updated at each stage commit. No cloud deployment is claimed.
+D, E and F follow in that order. This log is updated at each stage commit. No cloud deployment is claimed.

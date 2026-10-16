@@ -1,3 +1,4 @@
+import DeviceRegistry from '../components/DeviceRegistry';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip } from 'recharts';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -112,6 +113,8 @@ export default function Sensors() {
       <div className="page-heading">
         <h1>Sensors</h1>
       </div>
+      <DeviceRegistry/>
+
       <p>
         Where each sensor and manual input is installed, its latest reading, and whether it can be
         trusted.

@@ -4,6 +4,7 @@ import { frameAt, runConfig, useSimulation } from './store';
 import { virtualInput } from './sensors';
 import type { PhysicsConfig } from './config';
 import type { PhysicsFrame } from './engine';
+import {sensorMountPosition} from '../../../../shared/src/iot';
 export type ModelSensor = Sensor & { modelSource?: string };
 export function usePhysics(id: string) {
   const run = useSimulation((s) => s.runs[id]),
@@ -17,6 +18,7 @@ export function usePhysics(id: string) {
   return { run, config, frame: frameAt(run, second) };
 }
 export function positionSensor(s: Sensor, c: PhysicsConfig): Sensor {
+  if(s.deviceId) return {...s,location:sensorMountPosition(c,s.partId,s.mountHeightM??c.values.mountHeight.value)};
   const v = c.values,
     l = v.length.value,
     base = -v.mediaDepth.value - v.transitionDepth.value - v.gravelDepth.value - 0.05;

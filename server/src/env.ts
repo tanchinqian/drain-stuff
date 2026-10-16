@@ -12,5 +12,7 @@ export const serverEnv = z
       .default("none"),
     LLM_API_KEY: z.string().optional(),
     LLM_MODEL: z.string().optional(),
+    LORAWAN_INGEST_SECRET:z.string().min(24).optional(),
+    LORAWAN_SIM_SECRET:z.string().min(24).optional(),
   })
   .passthrough();

@@ -19,7 +19,7 @@ export default function StormBoard() {
     [override, setOverride] = useState<TriageRow | null>(null),
     [position, setPosition] = useState(1), [reason, setReason] = useState('');
   const navigate = useNavigate(), cache = useQueryClient();
-  const data = useQuery({ queryKey: ['board-assets'], queryFn: async () => {
+  const data = useQuery({ queryKey: ['board-assets'], refetchInterval:30000, queryFn: async () => {
     const [features, houses, zones, sensors] = await Promise.all([api.features(), api.houses(), api.zones(), api.sensors()]);
     return { features: features.filter(f => assets.includes(f.id as typeof assets[number])), houses, zones, sensors };
   }});
@@ -74,7 +74,7 @@ export default function StormBoard() {
               <div className="mode-comparison" aria-label={row.asset+' overflow comparison'}>{[['As installed', row.asInstalled], ['If cleared', row.ifCleared], ['Capacity limit', row.capacityLimit]].map(([name, raw]) => { const m = raw as TriageRow['asInstalled']; return <div className="mode-line" key={String(name)}><span>{String(name)}</span><span className="mode-track"><span style={{ width: `${m.summary.overflowM3/max*100}%` }}/></span><strong>{m.summary.overflowM3.toFixed(3)} m³</strong></div>; })}</div>
               <p className="small">Peak ponding {(row.asInstalled.summary.peakPondingM*1000).toFixed(0)} mm · Above limit {row.asInstalled.summary.hoursAboveLimit.toFixed(2)} h · {label}</p>
               <div className="fault-chips">{related.length ? related.map(f => <Link className="button" key={f.id} to={'/faults?fault='+f.id}>{f.id} · {f.workOrder?.state ?? 'detected'}{f.workOrder?.assignee ? ' · '+f.workOrder.assignee : ''}{(f.workOrder?.state ?? 'detected') === 'detected' ? ' · Unconfirmed' : ''}</Link>) : <span>No open faults</span>}</div>
-              <div className="actions"><button onClick={() => { choose(row.asset); navigate(`/feature/${row.asset}?stormRunId=${jobId}&mode=installed`); }}>Replay in 3D</button><Link className="button" to={row.capacityLimited ? '/faults?asset='+row.asset+'&escalate=1' : '/faults?asset='+row.asset}>{row.capacityLimited ? 'Escalate to owner' : 'Review work orders'}</Link></div>
+              <p className="small">{data.data?.sensors.filter(s=>s.ownerId===row.asset&&s.deviceId).map(s=>s.sensorId+' · '+s.status).join(' / ')}</p><div className="actions"><button onClick={() => { choose(row.asset); navigate(`/feature/${row.asset}?stormRunId=${jobId}&mode=installed`); }}>Replay in 3D</button><Link className="button" to={row.capacityLimited ? '/faults?asset='+row.asset+'&escalate=1' : '/faults?asset='+row.asset}>{row.capacityLimited ? 'Escalate to owner' : 'Review work orders'}</Link></div>
             </article>;
           })}</div>
           {triage.data?.robustness.evaluated && <details><summary>Sensitivity orders</summary><p className="small">{label}</p><ul>{triage.data.robustness.orders.map(o => <li key={o.parameter+o.multiplier}>{o.parameter === 'ks' ? 'Conductivity' : o.parameter === 'peak' ? 'Rainfall peak' : 'Outlet capacity'} × {o.multiplier}: {o.assets.join(' → ')}</li>)}</ul></details>}

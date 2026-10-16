@@ -36,7 +36,9 @@ import {
   deterministicDiagnosis,
 } from "../../shared/src/diagnosis";
 import { transitions } from "../../shared/src/workflow";
+import { deviceApi } from './iot';
 export interface ApiOptions {
+  deviceSecret?:string;simSecret?:string;
   token: string;
   corsOrigins?: string[];
   seed?: boolean;
@@ -93,6 +95,7 @@ export function createApi(repo: Repository, options: ApiOptions) {
     }),
   );
   app.use("/api/*", async (c, next) => {
+    if(c.req.path==='/api/v1/ingest/lorawan') return next();
     const origin = c.req.header("Origin") ?? "";
     if (!originAllowed(origin, c.req.url))
       throw new ApiError(403, "Origin is not allowed");
@@ -109,6 +112,8 @@ export function createApi(repo: Repository, options: ApiOptions) {
     c.set("actor", actor || "Operator");
     await next();
   });
+  const iot=deviceApi(repo,{device:options.deviceSecret,simulated:options.simSecret});
+  app.route('/api/v1',iot.app);
   const buckets = new Map<string, { count: number; until: number }>();
   app.use("/api/v1/*", async (c, next) => {
     if (
@@ -556,6 +561,7 @@ export function createApi(repo: Repository, options: ApiOptions) {
     const path = c.req.path.slice("/api/v1".length),
       method = c.req.method;
     if (method === "GET" && legacyReads.some((pattern) => pattern.test(path))) {
+      if(path.startsWith('/sensors'))iot.refreshMissing();
       const query = c.req.query();
       for (const key of ["from", "to"])
         if (query[key] && !Number.isFinite(Date.parse(query[key])))

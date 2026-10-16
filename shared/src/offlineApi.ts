@@ -55,6 +55,7 @@ export function createOfflineApi(store: ReturnType<typeof createDataStore>) {
     const u = new URL(path, "https://mock.local"),
       p = u.pathname.split("/").filter(Boolean),
       actor = "Local operator";
+    if(p[0]==='devices') {if(method==='GET')return [];throw new Error('Device commissioning requires the local API. Start npm run dev:all.');}
     if(p[0]==='evidence') throw new Error('Photo evidence requires the local API. Use a sensor check or storm rerun in local demo mode.');
     if(p[0]==='escalations') {
       if(method==='GET') return clone(escalations);

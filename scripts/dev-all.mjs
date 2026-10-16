@@ -1,5 +1,5 @@
 import { spawn, spawnSync } from "node:child_process";
-import { existsSync, writeFileSync } from "node:fs";
+import { existsSync, writeFileSync, readFileSync, appendFileSync } from "node:fs";
 import { randomBytes } from "node:crypto";
 import { loadEnvFile } from "node:process";
 import { createServer } from "node:net";
@@ -10,6 +10,7 @@ if (!existsSync(".env.local"))
     `OPERATOR_TOKEN=${randomBytes(32).toString("hex")}\nDB_PATH=data/drain.sqlite\nLLM_PROVIDER=none\n`,
     { mode: 0o600 },
   );
+if(!/^LORAWAN_SIM_SECRET=.+$/m.test(readFileSync('.env.local','utf8'))) appendFileSync('.env.local',`\nLORAWAN_SIM_SECRET=${randomBytes(32).toString('hex')}\n`);
 loadEnvFile(".env.local");
 if (!existsSync("app/node_modules/vite/bin/vite.js")) {
   console.error("Install frontend packages first: npm --prefix app ci");

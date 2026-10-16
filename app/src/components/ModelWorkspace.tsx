@@ -207,7 +207,7 @@ export default function ModelWorkspace({
               featureId={ownerId}
               kind={kind}
               dimensions={config.schematic}
-              sensors={sensors}
+                sensors={sensors.filter(s=>kind==='compost'||!!s.deviceId)}
               showSensors={showSensors}
               parts={parts}
               mode={mode}
@@ -268,7 +268,7 @@ export default function ModelWorkspace({
           {showSensors && (
             <SensorPositions
               showPositions={mode === 'Debug'}
-              sensors={sensorMarkers(sensors).filter(
+              sensors={sensorMarkers(sensors.filter(s=>kind==='compost'||!!s.deviceId)).filter(
                 (s) => mode === 'Debug' || s.partId === selected,
               )}
             />

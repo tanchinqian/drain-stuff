@@ -2470,3 +2470,5 @@ main > .about {
 .workflow-steps { display:flex; flex-wrap:wrap; gap:8px 18px; padding-left:20px; font-size:13px; margin:16px 0; }
 .workflow-steps .current { font-weight:700; text-decoration:underline; text-underline-offset:4px; }
 .work-order { margin-block:20px; }
+
+.device-form { display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:14px; margin-block:18px; }
