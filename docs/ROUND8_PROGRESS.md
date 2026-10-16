@@ -37,6 +37,14 @@ The owner authorised continuing through the remaining stages without routine app
 - All proposed/estimated figures: 0.3 m minimum clearance (larger sensor blind zone wins), 15/2 minute periods, 3.2 V/4000 mAh pack and 70% usable capacity, assumed 0.08/45/120 mA states and 893/2/5 second normal timings, estimated 138/20 day budgets, all resistor/capacitor values, 3.3/5 V rails, pin assignments, 3000 mV battery threshold, four identical reports, 0.15 m/min trust threshold and 1 mm float comparison tolerance. These are documented design inputs, not measurements. Exact module variant, procurement prices, coverage, radio band/power and approvals remain unverified.
 - Checks: 44 backend/shared tests pass, including protocol parity, auth, idempotency, conversion, trust rules, marker registry links and no automatic confirmation. Whole-path simulator and host C++ check also passed. Mobile/browser evidence follows Stage F.
 
+## Stage D — sourced diagnosis
+
+- D1/D2 done: nine source-labelled cases (one reported incident, eight guidance examples), three sourced passages and deterministic structured/TF-IDF top-three retrieval shared with offline mode. No maintenance outcome is invented for the incident.
+- D3/D4/D5 done: Anthropic Messages and OpenAI-compatible adapters; model from env, low temperature, timeout/retry/cache, strict schema/step/citation checks and delimited untrusted text. Missing configuration, unreliable evidence or rejected/provider-failed output uses deterministic matching. Provider calls are mocked; no paid/live model test is claimed.
+- D6 done: fault suggestion panel with unchanged draft steps, confidence/mode/source disclosures and logged Accept/Edit/Reject; deterministic one-line board hints and About prompt information. No chatbot or automatic work-order action.
+- D7/D8 done: reproducible leave-one-out sanity check, 8 of 9 cause labels found in top three; small paired example set, not accuracy. Adversarial/timeout/cache/provider-envelope tests and prompt snapshot included. Current backend/shared count is 54 passing.
+- Prompt addendum done: versioned behavior file loaded at startup, required JSON/limits/safety rules and three format-only examples. Every server suggestion carries the loaded version; the offline template is explicitly identified separately.
+
 ## Subsequent stages
 
-D, E and F follow in that order. This log is updated at each stage commit. No cloud deployment is claimed.
+E and F follow in that order. This log is updated at each stage commit. No cloud deployment is claimed.

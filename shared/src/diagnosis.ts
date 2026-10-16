@@ -25,14 +25,14 @@ export function deterministicDiagnosis(
   const matched = retrieve(query, cases),
     passages = retrieve(query, guidance);
   const insufficient =
-    !matched.length ||
+    !matched.length || matched[0].score < 6 || fault.diagnosingInput.trim().length < 10 ||
     Object.values(fault.sensorStatusesAtAlert).some((s) => s !== "ok");
   return {
     id: crypto.randomUUID(),
     faultId: fault.id,
     diagnosis: insufficient
       ? "Not enough information. Record a trusted inspection and a sourced comparable case."
-      : matched[0].item.cause,
+      : "Comparable sourced cases suggest checking the recorded drainage condition. Confirm the cause with an independent inspection.",
     confidence: "low",
     rankedStepIds: insufficient
       ? []
@@ -43,9 +43,9 @@ export function deterministicDiagnosis(
     citedGuidanceIds: passages.map((r) => r.item.id),
     insufficientInformation: insufficient,
     notes:
-      "Stage A deterministic retrieval. Provider explanations and the sourced example library are scheduled for Stage D.",
+      "Deterministic retrieval from a small, partly guidance-based library. This is supporting evidence, not a verified diagnosis or dispatch decision.",
     mode: "Matched from cases",
-    promptVersion: "stage-a-deterministic-v1",
+    promptVersion: "offline-deterministic-v2",
     sources: [...matched.map((r) => r.item), ...passages.map((r) => r.item)],
     draftBanner,
   };

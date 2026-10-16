@@ -3,6 +3,7 @@ import { mkdirSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { randomUUID } from "node:crypto";
 import { createDataStore } from "../../shared/src/api/store";
+import {referenceCases,referenceGuidance} from '../../shared/src/caseLibrary';
 import {
   generateMock,
   type Database as AppState,
@@ -44,6 +45,10 @@ export class Repository {
       .run(new Date().toISOString());
   }
   seed() {
+    this.sql.transaction(()=>{
+      for(const item of referenceCases)this.sql.prepare('INSERT OR IGNORE INTO cases VALUES (?,?,?)').run(item.id,'REFERENCE-'+item.id,JSON.stringify(item));
+      for(const item of referenceGuidance)this.sql.prepare('INSERT OR IGNORE INTO guidance VALUES (?,?)').run(item.id,JSON.stringify(item));
+    })();
     if (this.sql.prepare("SELECT 1 FROM app_state WHERE id = 1").get()) {
       const state=this.load();
       if(!state.features.some(f=>f.id==='R1')) this.save(createDataStore(state,undefined,false).snapshot());

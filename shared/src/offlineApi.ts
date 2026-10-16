@@ -11,6 +11,7 @@ import {
   type Suggestion,
 } from "./contract";
 import { runStorm } from "./physics/triage";
+import {referenceCases,referenceGuidance} from './caseLibrary';
 import { deterministicDiagnosis, stepLibrary } from "./diagnosis";
 import { transitionAllowed } from "./workflow";
 import type { Fault, TrialDetail } from "./api/types";
@@ -37,7 +38,7 @@ export function createOfflineApi(store: ReturnType<typeof createDataStore>) {
       actor: string;
       t: string;
     })[] = [],
-    cases: CaseRecord[] = [],
+    cases: CaseRecord[] = structuredClone(referenceCases),
     suggestions = new Map<string, Suggestion>();
   const clone = <T>(v: T) => structuredClone(v),
     now = () => new Date().toISOString(),
@@ -242,7 +243,7 @@ export function createOfflineApi(store: ReturnType<typeof createDataStore>) {
     }
     if (p[0] === "cases") {
       if (method === "GET")
-        return p[1] ? clone(cases.find((c) => c.id === p[1])) : clone(cases);
+        return p[1] ? clone(cases.find((c) => c.id === p[1])) : clone([...cases].sort((a,b)=>a.id.localeCompare(b.id)));
       if (method === "POST") {
         const input = caseInput.parse(raw),
           state = store.snapshot(),
@@ -278,7 +279,11 @@ export function createOfflineApi(store: ReturnType<typeof createDataStore>) {
         return clone(item);
       }
     }
-    if (p[0] === "guidance" && method === "GET") return [];
+    if(p[0]==='ai'&&p[1]==='config')return {promptVersion:'offline-deterministic-v2',provider:'none',mode:'Matched from cases'};
+    if(p[0]==='ai'&&p[1]==='hints') {
+      const state=store.snapshot();return Object.fromEntries(state.features.map(asset=>{const f=state.faults.find(f=>f.featureId===asset.id&&f.status!=='closed');return [asset.id,f?deterministicDiagnosis(f,asset.kind,cases,referenceGuidance).diagnosis:'No open fault for diagnosis'];}));
+    }
+    if (p[0] === "guidance" && method === "GET") return clone(referenceGuidance);
     if (p[0] === "ai" && p[1] === "diagnose" && method === "POST") {
       const input = diagnosisInput.parse(raw),
         state = store.snapshot(),
@@ -288,7 +293,7 @@ export function createOfflineApi(store: ReturnType<typeof createDataStore>) {
         fault,
         state.features.find((f) => f.id === fault.featureId)?.kind ?? "inlet",
         cases,
-        [],
+        referenceGuidance,
       );
       suggestions.set(result.id, result);
       return clone(result);

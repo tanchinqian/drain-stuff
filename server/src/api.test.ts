@@ -340,11 +340,11 @@ test("six-state lifecycle, evidence, audit, case, fallback diagnosis and feedbac
   });
   expect(recorded.response.status).toBe(201);
   expect(recorded.data.sourceUrl).toContain("/cases/");
-  expect((await request("/cases")).data).toHaveLength(1);
+  expect((await request("/cases")).data).toHaveLength(10);
   expect((await request("/cases/" + recorded.data.id)).response.status).toBe(
     200,
   );
-  expect((await request("/guidance")).data).toEqual([]);
+  expect((await request("/guidance")).data).toHaveLength(3);
   const suggestion = await request("/ai/diagnose", { faultId: fault.id });
   expect(suggestion.response.status).toBe(200);
   expect(suggestion.data.mode).toBe("Matched from cases");
@@ -377,7 +377,7 @@ test("six-state lifecycle, evidence, audit, case, fallback diagnosis and feedbac
   ).toBe("detected");
 });
 test("rate limits, safety of missing diagnosis and failed writes", async () => {
-  const suggestion = await request("/ai/diagnose", { faultId: "F-001" });
+  const suggestion = await request("/ai/diagnose", { faultId: "F-002" });
   expect(suggestion.data.insufficientInformation).toBe(true);
   expect(suggestion.data.rankedStepIds).toEqual([]);
   expect(

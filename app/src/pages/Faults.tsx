@@ -10,6 +10,7 @@ import Drawer from '../components/Drawer';
 import AssetList from '../components/AssetList';
 import WorkOrderPanel from '../components/WorkOrderPanel';
 import EscalationPanel from '../components/EscalationPanel';
+import DiagnosisPanel from '../components/DiagnosisPanel';
 import Timestamp from '../components/Timestamp';
 import Chip from '../components/Chip';
 import { QueryState } from '../components/QueryState';
@@ -216,6 +217,7 @@ export default function Faults() {
             Inspect this part
           </Link>
           <WorkOrderPanel key={active.id} fault={active}/>
+          <DiagnosisPanel key={'diagnosis-'+active.id} faultId={active.id}/>
           <h3>Diagnosing inputs</h3>
           {active.sensorIds.map((id) => (
             <p key={id}>

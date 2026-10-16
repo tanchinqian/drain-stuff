@@ -37,7 +37,9 @@ import {
 } from "../../shared/src/diagnosis";
 import { transitions } from "../../shared/src/workflow";
 import { deviceApi } from './iot';
+import {createDiagnosisService,type ProviderConfig} from './diagnosis';
 export interface ApiOptions {
+  llm?:ProviderConfig;diagnosisFetch?:typeof fetch;
   deviceSecret?:string;simSecret?:string;
   token: string;
   corsOrigins?: string[];
@@ -112,6 +114,7 @@ export function createApi(repo: Repository, options: ApiOptions) {
     c.set("actor", actor || "Operator");
     await next();
   });
+  const diagnosis=createDiagnosisService(options.llm??{provider:'none'},options.diagnosisFetch);
   const iot=deviceApi(repo,{device:options.deviceSecret,simulated:options.simSecret});
   app.route('/api/v1',iot.app);
   const buckets = new Map<string, { count: number; until: number }>();
@@ -502,16 +505,21 @@ export function createApi(repo: Repository, options: ApiOptions) {
   app.get("/api/v1/guidance", (c) =>
     c.json(repo.jsonRows<GuidanceRecord>("guidance")),
   );
+  app.get('/api/v1/ai/config',c=>c.json({promptVersion:diagnosis.version,provider:diagnosis.provider,mode:options.llm?.key&&options.llm.model&&diagnosis.provider!=='none'?'Provider adapter configured':'Matched from cases'}));
+  app.get('/api/v1/ai/hints',c=>{
+    const state=repo.load();return c.json(Object.fromEntries(state.features.map(asset=>{const f=state.faults.find(f=>f.featureId===asset.id&&f.status!=='closed');return [asset.id,f?deterministicDiagnosis(f,asset.kind,repo.jsonRows<CaseRecord>('cases'),repo.jsonRows<GuidanceRecord>('guidance')).diagnosis:'No open fault for diagnosis'];})));
+  });
   app.post("/api/v1/ai/diagnose", async (c) => {
     const { faultId } = diagnosisInput.parse(await c.req.json()),
       state = repo.load(),
       fault = state.faults.find((f) => f.id === faultId);
     if (!fault) throw new ApiError(404, "Fault not found");
-    const suggestion = deterministicDiagnosis(
+    const suggestion = await diagnosis.diagnose(
       fault,
       state.features.find((f) => f.id === fault.featureId)?.kind ?? "inlet",
       repo.jsonRows<CaseRecord>("cases"),
       repo.jsonRows<GuidanceRecord>("guidance"),
+      state.sensors,
     );
     repo.sql.transaction(() => {
       repo.sql

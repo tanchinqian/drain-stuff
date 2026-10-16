@@ -129,6 +129,8 @@ interface StormJob {
   error: string | null;
 }
 export const api = {
+  aiInfo:()=>request<{promptVersion:string;provider:string;mode:string}>('/ai/config'),
+  diagnosisHints:()=>request<Record<string,string>>('/ai/hints'),
   devices:()=>request<import('../../../shared/src/iot').Device[]>('/devices'),
   commission:(input:import('zod').input<typeof import('../../../shared/src/iot').deviceInput>)=>request<import('../../../shared/src/iot').Device>('/devices',input),
   uploadPhoto: (data:string)=>request<{path:string}>('/evidence',{data}),
@@ -158,7 +160,7 @@ export const api = {
     ),
   cases: () => request<CaseRecord[]>('/cases'),
   guidance: () => request<GuidanceRecord[]>('/guidance'),
-  diagnose: (faultId: string) => request<Suggestion>('/ai/diagnose', { faultId }),
+  diagnose: (faultId: string) => request<Suggestion>('/ai/diagnose', { faultId },30000),
   diagnosisFeedback: (input: {
     suggestionId: string;
     choice: 'accept' | 'edit' | 'reject';
