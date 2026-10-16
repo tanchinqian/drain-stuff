@@ -1,3 +1,4 @@
+import SearchableSelect from './SearchableSelect';
 import { useState, type ReactNode } from 'react';
 import { Search, ChevronDown, ArrowUp, ArrowDown, ChevronsUpDown } from 'lucide-react';
 import { exportCsv, displayName, formatValue } from '../utils';
@@ -45,6 +46,7 @@ export default function DataTable<T>({
   actions?: (row: T) => ReactNode;
   loading?: boolean;
 }) {
+  const [menuSearch, setMenuSearch] = useState<Record<string, string>>({});
   const [search, setSearch] = useState(''),
     [sort, setSort] = useState({ key: '', direction: 1 }),
     [picks, setPicks] = useState<Record<string, string[]>>({}),
@@ -123,8 +125,20 @@ export default function DataTable<T>({
             </summary>
             <fieldset>
               <legend>{f.label}</legend>
+              <input
+                type="search"
+                aria-label={'Search ' + f.label + ' options'}
+                placeholder={'Search ' + f.label.toLowerCase()}
+                value={menuSearch[f.key] ?? ''}
+                onChange={(e) => setMenuSearch((s) => ({ ...s, [f.key]: e.target.value }))}
+              />
               {Array.from(new Set(rows.map((row) => f.value(row))))
                 .sort()
+                .filter((value) =>
+                  displayName(value || 'Unassigned')
+                    .toLowerCase()
+                    .includes((menuSearch[f.key] ?? '').toLowerCase()),
+                )
                 .map((value) => (
                   <label key={value}>
                     <input
@@ -145,27 +159,38 @@ export default function DataTable<T>({
           </summary>
           <fieldset>
             <legend>Visible columns</legend>
-            {columns.map((c) => (
-              <label key={c.key}>
-                <input
-                  type="checkbox"
-                  checked={visible.includes(c.key)}
-                  disabled={visible.length === 1 && visible.includes(c.key)}
-                  onChange={() => {
-                    const next = visible.includes(c.key)
-                      ? visible.filter((k) => k !== c.key)
-                      : [...visible, c.key];
-                    setVisible(next);
-                    try {
-                      localStorage.setItem('columns-' + id, JSON.stringify(next));
-                    } catch {
-                      /* Preferences are optional. */
-                    }
-                  }}
-                />
-                {c.label}
-              </label>
-            ))}
+            <input
+              type="search"
+              aria-label="Search visible columns"
+              placeholder="Search columns"
+              value={menuSearch.columns ?? ''}
+              onChange={(e) => setMenuSearch((s) => ({ ...s, columns: e.target.value }))}
+            />
+            {columns
+              .filter((c) =>
+                c.label.toLowerCase().includes((menuSearch.columns ?? '').toLowerCase()),
+              )
+              .map((c) => (
+                <label key={c.key}>
+                  <input
+                    type="checkbox"
+                    checked={visible.includes(c.key)}
+                    disabled={visible.length === 1 && visible.includes(c.key)}
+                    onChange={() => {
+                      const next = visible.includes(c.key)
+                        ? visible.filter((k) => k !== c.key)
+                        : [...visible, c.key];
+                      setVisible(next);
+                      try {
+                        localStorage.setItem('columns-' + id, JSON.stringify(next));
+                      } catch {
+                        /* Preferences are optional. */
+                      }
+                    }}
+                  />
+                  {c.label}
+                </label>
+              ))}
           </fieldset>
         </details>
         <button aria-pressed={compact} onClick={() => setCompact(!compact)}>
@@ -279,7 +304,8 @@ export default function DataTable<T>({
             <span>{sorted.length} records</span>
             <label>
               Rows per page{' '}
-              <select
+              <SearchableSelect
+                label="Choose option"
                 aria-label={'Rows per page for ' + label}
                 value={pageSize}
                 onChange={(e) => {
@@ -290,7 +316,7 @@ export default function DataTable<T>({
                 {[10, 20, 25].map((n) => (
                   <option key={n}>{n}</option>
                 ))}
-              </select>
+              </SearchableSelect>
             </label>
             <button disabled={current === 0} onClick={() => setPage(current - 1)}>
               Previous page

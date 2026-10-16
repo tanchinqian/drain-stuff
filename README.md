@@ -1,10 +1,10 @@
-# Local startup — Round 8 Stage A
+# Local startup — Round 8
 
 From this folder, run `npm ci`, `npm --prefix app ci`, then **`npm run dev:all`**. It starts the local API and React app and seeds an empty SQLite database. Enter your name and the token from ignored `.env.local` on first connection. The terminal prints the app URL; it never prints the token. Existing database records are preserved. Node 20.12+ is required.
 
 `npm run build:all` builds both; `npm run start:server` serves the built app/API together. Standalone `npm --prefix app run dev` still supports the original offline mock when no API base is configured.
 
-See [local setup and optional deployment](docs/DEPLOY.md), [Stage A status](docs/ROUND8_STAGE_A.md), and [contract 4.0.0](docs/BACKEND_HANDOFF.md). Stage A is complete before starting the triage board or other Round 8 stages. No live sensor feed or LLM explanation is enabled yet.
+See [local setup](docs/DEPLOY.md), [stage progress and checks](docs/ROUND8_PROGRESS.md), [contract 4.1.0](docs/BACKEND_HANDOFF.md), [AI evaluation](docs/AI_EVALUATION.md), and [honest limits](docs/LIMITS.md). Run storms from Overview; inspect a row to replay its saved 3D scenario. Faults provides verification and cited diagnosis. Register nodes on Sensors or run `npm run sim:device` for an explicitly simulated feed. The local LLM provider remains disabled unless a separate key/model is configured.
 
 ---
 
@@ -42,11 +42,11 @@ Round 6 uses a shared depression design and cached 48 × 32 mixed-form Richards 
 
 ## Data and API
 
-Contract **3.0.0** is defined in `app/src/api/types.ts`, with transport in `app/src/api/client.ts`. Set `VITE_API_BASE` before starting/building Vite to prefer a backend; `VITE_DATA_SOURCE=mock` forces local mode. Startup probes `/config`; network, timeout or server failure falls back to mock for that page session. Authentication errors remain visible. After API discovery succeeds, failures remain errors and failed writes do not silently save locally.
+Contract **4.1.0** is defined in `app/src/api/types.ts`, with transport in `app/src/api/client.ts`. Set `VITE_API_BASE` before starting/building Vite to prefer a backend; `VITE_DATA_SOURCE=mock` forces local mode. Startup probes `/config`; network, timeout or server failure falls back to mock for that page session. Authentication errors remain visible. Later read connection failures fall back with a visible notice; failed writes are never replayed into local storage.
 
 `VITE_SHOW_DATA_NOTICE` controls one small notice on About; unset shows it only in mock mode. Operational screens have no persistent data badge. No backend, authenticated identity provider or real probe integration is bundled. Read [BACKEND_HANDOFF.md](docs/BACKEND_HANDOFF.md), [contract changelog](docs/CONTRACT_CHANGELOG.md) and [JSON examples](docs/contract-examples.v3.json) for endpoints, flags, errors, gates, audits and production responsibilities.
 
-Mock values use deterministic seed 2026; newly generated observation dates and `dataThrough` anchor to app load time. Persisted user writes and actual histories retain saved timestamps. New writes/audits use wall-clock time; new tests schedule the next re-test seven days later. Overdue status uses today's Singapore calendar day. Storage key `drain-trial-console-v1` retains schema version 2 while the wire contract is 3.0.0; migration preserves records and refreshes fixed house placement. Unavailable storage allows in-memory use without reload persistence. Source switching does not upload local data.
+Mock values use deterministic seed 2026; newly generated observation dates and `dataThrough` anchor to app load time. Persisted user writes and actual histories retain saved timestamps. New writes/audits use wall-clock time; new tests schedule the next re-test seven days later. Overdue status uses today's Singapore calendar day. Storage key `drain-trial-console-v1` retains schema version 2 while the wire contract is 4.1.0; migration preserves records and refreshes fixed house placement. Unavailable storage allows in-memory use without reload persistence. Source switching does not upload local data.
 
 ## Checks and review
 

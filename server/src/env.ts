@@ -12,8 +12,17 @@ export const serverEnv = z
       .default("none"),
     LLM_API_KEY: z.string().optional(),
     LLM_MODEL: z.string().optional(),
-    LLM_BASE_URL:z.string().url().optional(),
-    LORAWAN_INGEST_SECRET:z.string().min(24).optional(),
-    LORAWAN_SIM_SECRET:z.string().min(24).optional(),
+    LLM_BASE_URL: z.preprocess(
+      (v) => (v === "" ? undefined : v),
+      z.string().url().optional(),
+    ),
+    LORAWAN_INGEST_SECRET: z.preprocess(
+      (v) => (v === "" ? undefined : v),
+      z.string().min(24).optional(),
+    ),
+    LORAWAN_SIM_SECRET: z.preprocess(
+      (v) => (v === "" ? undefined : v),
+      z.string().min(24).optional(),
+    ),
   })
   .passthrough();

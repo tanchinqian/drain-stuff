@@ -14,7 +14,10 @@ export default function PlanMap({
   sensors,
   showSensors,
   cloudOpacity,
-  ranks = {}, selectedAsset, onSelectAsset,
+  ranks = {},
+  selectedAsset,
+  onSelectAsset,
+  showHouseList = true,
 }: {
   houses: House[];
   zones: Zone[];
@@ -24,7 +27,10 @@ export default function PlanMap({
   sensors: Sensor[];
   showSensors: boolean;
   cloudOpacity: number;
-  ranks?: Record<string, number>; selectedAsset?: string; onSelectAsset?: (id: string) => void;
+  ranks?: Record<string, number>;
+  selectedAsset?: string;
+  onSelectAsset?: (id: string) => void;
+  showHouseList?: boolean;
 }) {
   const selectHouse = useSelection((s) => s.selectHouse),
     selected = useSelection((s) => s.houseId),
@@ -174,18 +180,34 @@ export default function PlanMap({
               onClick={(e) => {
                 e.stopPropagation();
                 selectHouse(null);
-                if (onSelectAsset) onSelectAsset(f.id); else navigate('/feature/' + f.id);
+                if (onSelectAsset) onSelectAsset(f.id);
+                else navigate('/feature/' + f.id);
               }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
-                  if (onSelectAsset) onSelectAsset(f.id); else navigate('/feature/' + f.id);
+                  if (onSelectAsset) onSelectAsset(f.id);
+                  else navigate('/feature/' + f.id);
                 }
               }}
             >
-              <rect x="-22" y="-22" width="44" height="44" rx="2" fill={selectedAsset === f.id ? 'var(--ink)' : 'var(--panel)'} stroke="var(--ink)" strokeWidth={ranks[f.id] ? Math.max(1, 5-ranks[f.id]*0.7) : 1} />
-              <text textAnchor="middle" y="5" fill={selectedAsset === f.id ? 'var(--panel)' : 'var(--ink)'}>
-                {ranks[f.id] ? ranks[f.id]+'·' : ''}{f.id}
+              <rect
+                x="-22"
+                y="-22"
+                width="44"
+                height="44"
+                rx="2"
+                fill={selectedAsset === f.id ? 'var(--ink)' : 'var(--panel)'}
+                stroke="var(--ink)"
+                strokeWidth={ranks[f.id] ? Math.max(1, 5 - ranks[f.id] * 0.7) : 1}
+              />
+              <text
+                textAnchor="middle"
+                y="5"
+                style={{ fill: selectedAsset === f.id ? 'var(--panel)' : 'var(--ink)' }}
+              >
+                {ranks[f.id] ? ranks[f.id] + '·' : ''}
+                {f.id}
               </text>
             </g>
           );
@@ -214,32 +236,34 @@ export default function PlanMap({
           North ↑
         </text>
       </svg>
-      <div className="plan-grid">
-        {zones
-          .filter((z) => !zoneId || z.id === zoneId)
-          .map((z) => (
-            <section key={z.id} className="plan-zone">
-              <h3>
-                Zone {z.id} · {(rain.find((r) => r.zone === z.id)?.peakMmPerHr ?? 0).toFixed(1)}{' '}
-                mm/h
-              </h3>
-              <div className="plan-houses">
-                {houses
-                  .filter((h) => h.zone === z.id)
-                  .map((h) => (
-                    <button
-                      key={h.id}
-                      aria-label={'House ' + h.id}
-                      aria-pressed={selected === h.id}
-                      onClick={() => selectHouse(h.id)}
-                    >
-                      {h.id}
-                    </button>
-                  ))}
-              </div>
-            </section>
-          ))}
-      </div>
+      {showHouseList && (
+        <div className="plan-grid">
+          {zones
+            .filter((z) => !zoneId || z.id === zoneId)
+            .map((z) => (
+              <section key={z.id} className="plan-zone">
+                <h3>
+                  Zone {z.id} · {(rain.find((r) => r.zone === z.id)?.peakMmPerHr ?? 0).toFixed(1)}{' '}
+                  mm/h
+                </h3>
+                <div className="plan-houses">
+                  {houses
+                    .filter((h) => h.zone === z.id)
+                    .map((h) => (
+                      <button
+                        key={h.id}
+                        aria-label={'House ' + h.id}
+                        aria-pressed={selected === h.id}
+                        onClick={() => selectHouse(h.id)}
+                      >
+                        {h.id}
+                      </button>
+                    ))}
+                </div>
+              </section>
+            ))}
+        </div>
+      )}
     </>
   );
 }

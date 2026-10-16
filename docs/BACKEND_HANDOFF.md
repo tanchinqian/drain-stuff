@@ -1,10 +1,10 @@
-# Backend handoff — contract 4.0.0
+# Backend handoff — contract 4.1.0
 
-## Stage A local production path
+## Current local production path
 
 The implemented API is `server/src/api.ts` (Hono + better-sqlite3). Canonical types, schemas, record/rule logic and engine modules are in `shared/src`; `app/src/api/types.ts` and the original engine paths are compatibility exports. `npm run dev:all` starts the local app and server with an idempotently seeded database. This is the required outcome under the user's local-first instruction; cloud deployment is optional and has not occurred. See [DEPLOY.md](DEPLOY.md) and [ROUND8_STAGE_A.md](ROUND8_STAGE_A.md).
 
-All `/api/v1` routes require `Authorization: Bearer <OPERATOR_TOKEN>`; POST also requires `X-Operator-Name`. The server stamps audit actor/time and ignores body user/appliedBy as identity. The entered name is self-asserted under a shared token. Bodies are capped at 128 KiB; unknown/invalid fields fail validation. CORS allows the same host or configured exact origins. SQLite uses one writer process, WAL and numbered transactional migrations. An append-only audit table rejects update/delete; this is not protection against an administrator replacing the database file.
+Operator `/api/v1` routes require `Authorization: Bearer <OPERATOR_TOKEN>`; POST also requires `X-Operator-Name`. The server stamps audit actor/time and ignores body user/appliedBy as identity. The entered name is self-asserted under a shared token. Ordinary bodies are capped at 128 KiB; photo JSON allows 7 MiB base64 for up to 5 MB decoded PNG/JPEG/WebP. The ingest webhook uses a separate integration credential rather than the operator token; unknown/invalid fields fail validation. CORS allows the same host or configured exact origins. SQLite uses one writer process, WAL and numbered transactional migrations. An append-only audit table rejects update/delete; this is not protection against an administrator replacing the database file.
 
 ### New endpoints
 
@@ -20,7 +20,7 @@ All `/api/v1` routes require `Authorization: Bearer <OPERATOR_TOKEN>`; POST also
 | GET `/cases`, GET `/cases/:id` | Source-labelled operator cases. No fabricated public incident seed. |
 | POST `/cases` | `{faultId,cause,outcome,stepsTaken[]}`; only a verified closed fault, known draft step IDs; one case per fault. |
 | GET `/guidance` | Source-bearing guidance records; empty until Stage D seeds the reviewed public-source library. |
-| POST `/ai/diagnose` | `{faultId}`; deterministic retrieval suggestion, sources, draft banner, mode and `stage-a-deterministic-v1`. Missing/untrusted evidence gives insufficientInformation and no steps. No LLM call in Stage A, regardless of key. |
+| POST `/ai/diagnose` | `{faultId}`; deterministic retrieval suggestion, sources, draft banner, mode and `stage-a-deterministic-v1`. Missing/untrusted evidence gives insufficientInformation and no steps. Optional constrained provider adapter; no key/model, unreliable evidence, timeout or rejected output uses deterministic matching. Every server suggestion stamps the loaded system-prompt version. |
 | POST `/ai/feedback` | `{suggestionId,choice:"accept|edit|reject",note,rankedStepIds?}`; validates draft step IDs; persists feedback/audit. |
 
 Verification evidence is one of `{type:"sensor",sensorId,value,unit}`, `{type:"photo",path:"/uploads/name.jpg"}`, or `{type:"storm-rerun",stormRunId}`. Sensor must be registered on the asset, trusted, and use its unit. A photo must already exist under local `data/uploads`; upload UI belongs to Stage C. Re-runs compare the original job's installed summary with the same storm/fault snapshot after removing only this confirmed fault. A concurrent lifecycle change fails with 409. Stage C's attachment/escalation UI and Stage D's provider adapters are not delivered early.
@@ -77,7 +77,7 @@ Every response shape below has a JSON example in `contract-examples.v3.json`; `G
 
 | Method and path | Query parameters | Response / behavior |
 | --- | --- | --- |
-| GET `/config` | None | `Config`; contractVersion `4.0.0`, thresholds and observation horizon |
+| GET `/config` | None | `Config`; contractVersion `4.1.0`, thresholds and observation horizon |
 | GET `/zones` | None | `Zone[]`: id, name, peakMmPerHr, housesHoldingWater6h, housesTotal |
 | GET `/houses` | Optional `zone` in mock | `House[]`: 24 pilot records, fixed x/y, drainId, zone, nearestFeature, ownerOfRecord, lastReadingAt, holdsWater6h |
 | GET `/features` | None | `Feature[]`: six feature records |
@@ -195,7 +195,7 @@ None of these numerical defaults have been confirmed against field calibration o
 
 | Keys | Current value | Status / meaning |
 | --- | --- | --- |
-| contractVersion, dataThrough | 4.0.0; seeded observation horizon | Software version; fixed mock observation horizon, not a live station timestamp |
+| contractVersion, dataThrough | 4.1.0; seeded observation horizon | Software version; fixed mock observation horizon, not a live station timestamp |
 | doseCapLPerM2 | 25 | Provisional guardrail, not application target |
 | pilotDoses | A 10, B 15, C 20 L/m² | Provisional labelled trial doses |
 | drainDownLimitH | 6 | Provisional comparison target |
@@ -234,10 +234,27 @@ The physics engine's separate typed parameter register is [PHYSICS_PARAMETERS.md
 
 Deterministic seed 2026 supplies values; newly generated observation dates, sensor times, rainfall and dataThrough anchor to app load time. The historical reference 12 Oct 2026 09:40 Singapore is a seed construction reference, not the current observation clock. Persisted writes and actual audit/check histories retain their saved timestamps. New user writes/audits use wall clock; next re-test is seven days after a new test. Client due status uses the earlier of the recorded due day and latest test plus seven days, compared as a Singapore calendar day. Mock zone rainfall scales a common ten-minute storm by zone peaks 52/68/34/18 relative to 63 mm/h. Pilot assignments, owners and trial outcomes are invented; OSM buildings supply context geometry only.
 
-Browser storage key `drain-trial-console-v1` holds schema version 2. Migration preserves tests, checks, allocations, trust and calibration while refreshing fixed map coordinates, filling missing checklist fields, normalizing fault IDs/rule IDs, adding histories and setting contract version 4.0.0. Old Batches with missing prompt snapshots are backfilled once using available current checks; these are not genuine historical check snapshots. New readings store their prompt snapshot at save time. Existing allocations without a mixing depth display “not recorded” until an operator records one. The static default S1 allocation includes 150 mm depth.
+Browser storage key `drain-trial-console-v1` holds schema version 2. Migration preserves tests, checks, allocations, trust and calibration while refreshing fixed map coordinates, filling missing checklist fields, normalizing fault IDs/rule IDs, adding histories and setting contract version 4.1.0. Old Batches with missing prompt snapshots are backfilled once using available current checks; these are not genuine historical check snapshots. New readings store their prompt snapshot at save time. Existing allocations without a mixing depth display “not recorded” until an operator records one. The static default S1 allocation includes 150 mm depth.
 
 Reload retains saved mock data; source switching does not upload or merge it into an API. Corrupt/incompatible storage starts a seed; unavailable/full storage leaves the in-memory mock usable but cannot guarantee reload persistence. No multi-user synchronization, concurrency control, durable photo service or production audit security exists in local mode. Back up required records before clearing browser data. Reset helpers are test utilities, not operational reset controls.
 
 ## Contract changes
 
 See [CONTRACT_CHANGELOG.md](CONTRACT_CHANGELOG.md). Version 3 adds sensor detail/history, fault registry/status/manual reporting, dated audits, range-driven zone rainfall, trial checks alias, compost check history/prompt snapshots, minTests/dataThrough and recorded amendment depth. Existing response arrays and legacy compatibility fields remain. Future authenticated write identities, rule-version snapshots, batch inventory and server pagination require coordinated changes rather than inferred support.
+
+## Contract 4.1 additions and current ownership
+
+| Method/path | Contract |
+|---|---|
+| POST `/evidence` | `{data:base64}`; image signature/5 MB decoded cap; returns `{path:"/uploads/<uuid>.<ext>"}`. Files sit beside DB; local API only. |
+| GET `/evidence/:name` | Authenticated image retrieval, private/no-store/nosniff. |
+| GET/POST `/escalations` | List or `{stormRunId,asset,recipient,note}` for a capacity-limited result; record includes original three-mode evidence, actor/time/status. It sends no message. |
+| POST `/escalations/:id/status` | `{status:"acknowledged|resolved",note}`; appended status history and immutable audit. |
+| GET/POST `/devices` | List / commission validated EUI, asset, mounted part, height/calibration, maximum level and thresholds. Device ID cannot be silently reused/reset. |
+| POST `/ingest/lorawan` | TTN v3/ChirpStack raw base64 webhook; `X-Ingest-Key` selects physical vs simulated integration. Counter idempotency, trust, depth/history and Detected-only faults. See `iot/PAYLOAD.md`. |
+| GET `/ai/config` | Prompt version, provider name and mode description; no key or private configuration. |
+| GET `/ai/hints` | Deterministic per-asset hints; reading the board makes no paid LLM request. |
+
+Server-only model/key selection, constrained schema/citations/steps, safe fallback and prompt version rules are detailed in `AI_EVALUATION.md`. The source library is idempotently seeded; examples are labelled and carry URLs. Three-mode board calculations use entered illustrative catchments/upstream spill levels; missing measured trials use placeholder conductivity, never treatment rank. Replay uses saved configs, and verification uses the original fault/trial snapshot.
+
+Entered tests add `origin: operator`; old synthetic example tests are archived under `exampleTrialArchive` and excluded from active trial baselines/results. Legacy Test saved histories and non-synthetic imports preserve operator observations. Registered sensors add optional `deviceId`/`readingSource`; ingested readings add `source: device|simulated`. Registered readings are not replaced by virtual model overlays. Device, reading and escalation tables use migrations 002/003. Sources/hardware/calibration limits remain explicit in About and `LIMITS.md`.

@@ -1,10 +1,16 @@
 import { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../api/client';
 import { testMean } from '../../utils';
 import { featureIds, runConfig, useSimulation } from './store';
 import { peakFrame, type PhysicsRun } from './engine';
 export default function SimulationDriver() {
+  const { pathname } = useLocation(),
+    active =
+      pathname.startsWith('/feature/') ||
+      pathname === '/observations' ||
+      pathname.startsWith('/batches/');
   const trials = useQuery({ queryKey: ['simulation-trials'], queryFn: api.trials });
   const ready = !trials.isPending;
   useEffect(() => {
@@ -42,7 +48,7 @@ export default function SimulationDriver() {
     playing = useSimulation((s) => s.playing),
     speed = useSimulation((s) => s.speed);
   useEffect(() => {
-    if (!ready) return;
+    if (!ready || !active) return;
     const state = useSimulation.getState(),
       results: Record<string, PhysicsRun> = {};
     const worker = new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' });
@@ -92,9 +98,9 @@ export default function SimulationDriver() {
       clearTimeout(timeout);
       worker.terminate();
     };
-  }, [revision, ready]);
+  }, [revision, ready, active]);
   useEffect(() => {
-    if (!playing) return;
+    if (!playing || !active) return;
     const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
     if (motion.matches) {
       useSimulation.setState({ playing: false });
@@ -114,6 +120,6 @@ export default function SimulationDriver() {
       clearInterval(timer);
       motion.removeEventListener('change', stop);
     };
-  }, [playing, speed]);
+  }, [playing, speed, active]);
   return null;
 }

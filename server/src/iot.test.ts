@@ -8,6 +8,9 @@ beforeEach(()=>{repo=new Repository(':memory:');api=createApi(repo,{token,simSec
 afterEach(()=>api.close());
 async function post(path:string,body:unknown,headers:Record<string,string>={Authorization:'Bearer '+token,'X-Operator-Name':'Test'}) {const r=await api.app.request('/api/v1'+path,{method:'POST',headers:{...headers,'Content-Type':'application/json'},body:JSON.stringify(body)});return {status:r.status,data:await r.json() as any};}
 const input={id:'0102030405060708',assetId:'R1',part:'inlet',mountingHeightM:1,overflowLevelM:.45};
+test('non-object uplinks are rejected without a server error',async()=>{
+ for(const body of [null,[],42,'uplink']) expect((await post('/ingest/lorawan',body,{'X-Ingest-Key':secret})).status).toBe(422);
+});
 function wire(counter=1,distanceMm=800,at=new Date(Date.now()-300000).toISOString()) {return {deviceInfo:{devEui:input.id},time:at,data:Buffer.from(encodeUplink({flags:0,counter,distanceMm,offsetMinutes:counter*2,temperatureC:29,batteryMv:3300})).toString('base64')};}
 test('integration auth, commissioning, source, duplicate and old-counter handling',async()=>{
  expect((await post('/devices',input)).status).toBe(201);

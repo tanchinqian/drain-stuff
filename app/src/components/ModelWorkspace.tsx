@@ -72,7 +72,7 @@ export default function ModelWorkspace({
         parts.find((p) => p.installed && p.status !== 'ok')?.partId ??
         parts.find((p) => p.installed)!.partId,
     );
-    setInspectionActive(kind === 'compost');
+    setInspectionActive(kind === 'compost'||!!params.get('part'));
     setOffsets({});
     setHidden([]);
     setIsolate(false);

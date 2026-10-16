@@ -1,5 +1,14 @@
 # API contract changelog
 
+## 4.1.0 — 16 October 2026, remaining Round 8 stages
+
+- Added photo evidence storage/retrieval, recorded owner escalations, commissioned devices, authenticated TTN/ChirpStack ingest and explicit reading provenance.
+- Added constrained provider diagnosis adapters, sourced case/guidance seed, prompt-version/config/hint endpoints and safe deterministic fallback.
+- Added optional device/source fields and operator test origin. Old illustrative trial outcomes move to a preserved archive; active measured comparisons/baseline readiness exclude them.
+- Board and 3D share exact saved configs. Upstream spills in entered board scenarios contribute to overflow and water balance. Sensor trust faults never alter physics.
+- Existing endpoint shapes remain compatible, with documented auth/workflow policies. Cloud and hardware deployment are not claimed.
+
+
 ## 4.0.0 — 16 October 2026, Stage A
 
 - Added local Hono/SQLite server, shared contract/rule/engine package, migrations, durable audit and seeded `dev:all` startup.

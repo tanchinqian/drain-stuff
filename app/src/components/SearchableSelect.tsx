@@ -69,6 +69,9 @@ export default function SearchableSelect({
         value={open ? query : (selected?.label ?? '')}
         disabled={props.disabled}
         onFocus={() => {
+          document
+            .querySelectorAll('details[name="record-table-menu"][open]')
+            .forEach((menu) => menu.removeAttribute('open'));
           setOpen(true);
           setQuery('');
           setActive(0);
@@ -80,6 +83,7 @@ export default function SearchableSelect({
         }}
         onKeyDown={(e) => {
           if (e.key === 'Escape') {
+            if (open) e.stopPropagation();
             setOpen(false);
             setQuery('');
           }

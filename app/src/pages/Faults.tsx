@@ -1,3 +1,4 @@
+import SearchableSelect from '../components/SearchableSelect';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -37,7 +38,9 @@ export default function Faults() {
     () => api.reportFault({ ...entry, note, user }),
     'Saved report to the fault register',
   );
-  const active = selected ? (faults.data?.find((f) => f.id === selected.id) ?? selected) : faults.data?.find(f=>f.id===params.get('fault')) ?? null;
+  const active = selected
+    ? (faults.data?.find((f) => f.id === selected.id) ?? selected)
+    : (faults.data?.find((f) => f.id === params.get('fault')) ?? null);
   const rows = (faults.data ?? [])
     .filter(
       (f) =>
@@ -63,7 +66,7 @@ export default function Faults() {
         </button>
       </div>
       <p>Faults appear when a rule fires on a reading or an operator reports a problem.</p>
-      {asset && <EscalationPanel asset={asset}/>}
+      {asset && <EscalationPanel asset={asset} />}
       <div className="segments register-tabs" role="tablist" aria-label="Fault registers">
         {(['faults', 'rules'] as const).map((t) => (
           <button
@@ -138,7 +141,9 @@ export default function Faults() {
                   label: 'Status',
                   value: (f) => f.status,
                   render: (f) => (
-                    <button onClick={()=>setSelected(f)}>{displayName(f.workOrder?.state ?? 'detected')}</button>
+                    <button onClick={() => setSelected(f)}>
+                      {displayName(f.workOrder?.state ?? 'detected')}
+                    </button>
                   ),
                 },
                 {
@@ -198,7 +203,12 @@ export default function Faults() {
       {active && (
         <Drawer
           title={active.id + ' · ' + displayName(active.type)}
-          onClose={() => { setSelected(null); const next=new URLSearchParams(params); next.delete('fault'); setParams(next); }}
+          onClose={() => {
+            setSelected(null);
+            const next = new URLSearchParams(params);
+            next.delete('fault');
+            setParams(next);
+          }}
         >
           <Chip value={active.status} />
           <p>
@@ -216,8 +226,8 @@ export default function Faults() {
           >
             Inspect this part
           </Link>
-          <WorkOrderPanel key={active.id} fault={active}/>
-          <DiagnosisPanel key={'diagnosis-'+active.id} faultId={active.id}/>
+          <WorkOrderPanel key={active.id} fault={active} />
+          <DiagnosisPanel key={'diagnosis-' + active.id} faultId={active.id} />
           <h3>Diagnosing inputs</h3>
           {active.sensorIds.map((id) => (
             <p key={id}>
@@ -273,18 +283,20 @@ export default function Faults() {
           >
             <label className="field">
               Asset
-              <select
+              <SearchableSelect
+                label="Fault asset"
                 value={entry.featureId}
                 onChange={(e) => setEntry({ ...entry, featureId: e.target.value })}
               >
                 {features.data?.map((f) => (
                   <option key={f.id}>{f.id}</option>
                 ))}
-              </select>
+              </SearchableSelect>
             </label>
             <label className="field">
               Part
-              <select
+              <SearchableSelect
+                label="Fault part"
                 value={entry.partId}
                 onChange={(e) => setEntry({ ...entry, partId: e.target.value })}
               >
@@ -293,11 +305,12 @@ export default function Faults() {
                     {p.name}
                   </option>
                 ))}
-              </select>
+              </SearchableSelect>
             </label>
             <label className="field">
               Problem
-              <select
+              <SearchableSelect
+                label="Fault problem"
                 value={entry.type}
                 onChange={(e) => setEntry({ ...entry, type: e.target.value as Fault['type'] })}
               >
@@ -315,11 +328,12 @@ export default function Faults() {
                     {displayName(v)}
                   </option>
                 ))}
-              </select>
+              </SearchableSelect>
             </label>
             <label className="field">
               Severity
-              <select
+              <SearchableSelect
+                label="Fault severity"
                 value={entry.severity}
                 onChange={(e) =>
                   setEntry({ ...entry, severity: Number(e.target.value) as 1 | 2 | 3 })
@@ -328,7 +342,7 @@ export default function Faults() {
                 <option value="1">Low</option>
                 <option value="2">Medium</option>
                 <option value="3">High</option>
-              </select>
+              </SearchableSelect>
             </label>
             <label className="field">
               Description

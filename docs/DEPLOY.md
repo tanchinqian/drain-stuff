@@ -14,7 +14,7 @@ npm run dev:all
 
 First connection: enter your name and copy `OPERATOR_TOKEN` from the root `.env.local` into the password field. It stays in this tab's session storage. The server audits the entered name; the shared token does **not** independently verify a person's identity. Do not put this token in a `VITE_*` variable. Use Ctrl+C in the launcher terminal to stop both processes. Restart `dev:all` after server/shared-code edits; Vite handles frontend edits.
 
-The seed contains illustrative records and no connected hardware. SQLite lives at `data/drain.sqlite` unless `DB_PATH` is set. The database and local environment file are ignored by Git. `npm run seed` fills an empty database and is a no-op when records already exist. It never resets or deletes existing records.
+The seed contains illustrative records and no connected hardware. SQLite lives at `data/drain.sqlite` unless `DB_PATH` is set. The database and local environment file are ignored by Git. `npm run seed` fills an empty database, adds missing sourced reference cases/guidance, and applies idempotent record upgrades. Old illustrative trial results are retained in an example archive; entered tests and other records are preserved. It never resets the database.
 
 ## Checks and built app
 
@@ -28,7 +28,7 @@ npm run start:server
 
 `build:all` bundles the app with `/api/v1`, then bundles the server/worker/seed entry points. `start:server` serves the API and built React app on the same origin. Open its printed server URL. The local development launcher serves React separately through Vite, with an authenticated proxy to the API.
 
-For API-only testing, `/health` is public; every `/api/v1` endpoint needs `Authorization: Bearer <operator token>`. Writes also need `X-Operator-Name`. No token is printed in examples or request logs. See `BACKEND_HANDOFF.md` for all paths.
+For API-only testing, `/health` is public; every operator `/api/v1` endpoint needs `Authorization: Bearer <operator token>`. Writes also need `X-Operator-Name`. No token is printed in examples or request logs. The ingest webhook instead needs its separate `X-Ingest-Key`. Photo uploads allow up to 5 MB decoded images; ordinary JSON is capped at 128 KiB. See `BACKEND_HANDOFF.md` for all paths.
 
 ## Environment
 
@@ -41,9 +41,12 @@ For API-only testing, `/health` is public; every `/api/v1` endpoint needs `Autho
 | `HOST` | `127.0.0.1` | API bind address; container template uses `0.0.0.0`. |
 | `SEED_DEMO` | `0`; launcher sets `1` | Seed only if the database has no application state. |
 | `CORS_ORIGIN` | Empty | Comma-separated exact allowed origins. Same-origin works without it. Launcher adds its own Vite origin. |
-| `LLM_PROVIDER` | `none` | Reserved `none`, `anthropic`, `openai-compatible`. Stage A does not call an LLM. |
-| `LLM_API_KEY` | Unset | Server-only, unused until Stage D. Never a Vite variable. |
-| `LLM_MODEL` | Unset | Server-only provider model setting, implemented in Stage D. |
+| `LLM_PROVIDER` | `none` | `none`, `anthropic`, `openai-compatible`. None/missing key/model gives deterministic matching. |
+| `LLM_API_KEY` | Unset | Optional provider credential, server-only. Never a Vite variable. |
+| `LLM_MODEL` | Unset | Provider model name; no model is hard-coded. |
+| `LLM_BASE_URL` | `https://api.openai.com/v1` | HTTPS base URL for a compatible provider; server-only. |
+| `LORAWAN_INGEST_SECRET` | Unset | Distinct real network integration key, at least 24 characters. |
+| `LORAWAN_SIM_SECRET` | Launcher generates if absent | Separate simulator key, at least 24 characters; fixes source provenance. |
 | `VITE_API_BASE` | Unset in standalone app; launcher/build use `/api/v1` | Public API address. Unset keeps the local mock working. |
 | `VITE_DATA_SOURCE` | Unset | `mock` explicitly selects the mock. |
 | `VITE_SHOW_DATA_NOTICE` | Unset | Existing About-page notice preference. |
@@ -58,3 +61,9 @@ For Docker: build from the repository root, supply a new `OPERATOR_TOKEN` at run
 For Render: connect the repository and this branch as a Docker web service using `render.yaml`; review any paid plan/disk cost before creating a service. Keep `DB_PATH=/var/data/drain.sqlite`, mount a persistent disk at `/var/data`, set an operator token, and use `/health`. `LLM_*` can remain unset/none in Stage A. For an empty persistent database, the container seed command is `node server/dist/seed.js`. Existing records are preserved.
 
 An ephemeral filesystem loses SQLite data on redeploy. Back up the complete SQLite database consistently, including WAL handling; do not copy only a live main file while writes continue. The single-file database path supports one server process/instance, not replicas sharing a disk. A Render service with a disk has deployment/scaling restrictions. See [Render's disk documentation](https://render.com/docs/disks) and [Blueprint reference](https://render.com/docs/blueprint-spec) before enabling hosting.
+
+## Provider and device demonstration
+
+Set `LLM_PROVIDER`, `LLM_API_KEY` and `LLM_MODEL` only in root `.env.local`, then restart. No provider key/model was supplied or inferred from the operator token. Both provider envelopes are checked with mocks; a live paid provider call is not verified. Eight-second timeouts and one retry fall back to sourced matching. Prompt rules/version live in `server/ai/prompts/diagnosis.system.md`.
+
+Run `npm run sim:device` after `dev:all`. It registers a fresh R1 node and sends a backdated ramp plus fault cases. Set `SIM_API_BASE` if the API port differs from 8080. Real TTN/ChirpStack installations need their own integration credential and commissioned device; no hardware is assumed. See `docs/iot/` for payload, electrical design and unverified conditions.

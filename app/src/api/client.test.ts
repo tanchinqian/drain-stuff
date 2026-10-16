@@ -36,7 +36,7 @@ test('a network failure during initial discovery selects the local adapter', asy
   const client = await import('./client');
   const config = await client.api.config();
   expect(client.isMock).toBe(true);
-  expect(config.contractVersion).toBe('4.0.0');
+  expect(config.contractVersion).toBe(client.CONTRACT_VERSION);
   expect(client.showDataNotice()).toBe(true);
 });
 test('an authenticated API write error is reported and never retried against the local adapter', async () => {
@@ -74,7 +74,7 @@ test('read failure after discovery falls back, but a disconnected write is never
   );
   vi.resetModules();
   let client = await import('./client');
-  expect((await client.api.config()).contractVersion).toBe('4.0.0');
+  expect((await client.api.config()).contractVersion).toBe(client.CONTRACT_VERSION);
   expect(client.isMock).toBe(true);
   vi.stubGlobal(
     'fetch',

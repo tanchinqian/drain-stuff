@@ -1,5 +1,5 @@
 import { z } from "zod";
-export const CONTRACT_VERSION = "4.0.0";
+export const CONTRACT_VERSION = "4.1.0";
 export const assets = ["S1", "S2", "S3", "I1", "R1"] as const;
 export const assetId = z.enum(assets);
 const text = z.string().trim().min(1).max(2000);
@@ -103,8 +103,26 @@ export const feedbackInput = z
   })
   .strict();
 export const diagnosisInput = z.object({ faultId: text }).strict();
-export const escalationInput = z.object({stormRunId:z.string().uuid(),asset:assetId,recipient:actor,note:text}).strict();
-export interface Escalation {id:string;asset:string;recipient:string;note:string;status:'recorded'|'acknowledged'|'resolved';stormRunId:string;evidence:TriageRow;actor:string;at:string;history:{status:string;note:string;actor:string;at:string}[]}
+export const escalationInput = z
+  .object({
+    stormRunId: z.string().uuid(),
+    asset: assetId,
+    recipient: actor,
+    note: text,
+  })
+  .strict();
+export interface Escalation {
+  id: string;
+  asset: string;
+  recipient: string;
+  note: string;
+  status: "recorded" | "acknowledged" | "resolved";
+  stormRunId: string;
+  evidence: TriageRow;
+  actor: string;
+  at: string;
+  history: { status: string; note: string; actor: string; at: string }[];
+}
 export interface RunSummary {
   peakPondingM: number;
   hoursAboveLimit: number;
