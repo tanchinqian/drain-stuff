@@ -1,0 +1,18 @@
+{
+  "metrics": [
+    {
+      "id": "S1",
+      "computeMs": 684.5999999940395,
+      "peak": 2940,
+      "duration": 2700,
+      "maxLedgerError": 2.128132180267242e-8,
+      "soilBytes": 4988928
+    },
+    {
+      "headlessRafFps1440": 7.9679290854134015,
+      "renderFps": "7.3",
+      "quality": "low"
+    }
+  ],
+  "errors": []
+}

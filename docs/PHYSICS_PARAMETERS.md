@@ -2,6 +2,22 @@
 
 All values are placeholders. SI engine values are shown; IDF shape coefficients explicitly use minutes and years. No conductivity default is evidence of an arm effect.
 
+## Round 6 retention functions
+
+Texture means follow Carsel & Parrish (1988), as tabulated in the [EPA RETC report](https://nepis.epa.gov/Exe/ZyPURL.cgi?Dockey=30000I52.txt). These are **placeholder texture classes**, not measured local properties. Transition/gravel use sand retention as a proxy; saturated contents use the entered layer porosities. Media Ks always uses trial-record/entered conductivity, native Ks uses entered native conductivity. Class Ks values below are references, never automatic treatment assignments.
+
+| Class / role | alpha (1/m) | n | theta-r | theta-s class | Ks class (m/s) |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Sandy loam / media | 7.5 | 1.89 | 0.065 | 0.41 | 1.228e-5 |
+| Sand / transition and gravel proxy | 14.5 | 2.68 | 0.045 | 0.43 | 8.25e-5 |
+| Loam / native soil | 3.6 | 1.56 | 0.078 | 0.43 | 2.889e-6 |
+
+`m=1-1/n`; `Se=[1+(alpha*abs(h))^n]^-m` for h<0, otherwise 1; `theta=theta-r+(theta-s-theta-r)Se`; `K=Ks sqrt(Se)[1-(1-Se^(1/m))^m]^2`. Transition uses class sand Ks; gravel Ks is an illustrative 0.001 m/s. Initial pressure head is -3 m; native depth 0.3 m; grid 48 × 32; nonlinear theta tolerance 1e-9 and pressure tolerance 1e-5 m; minimum adaptive substep 0.02 s. Capacity has a numerical floor. These choices require calibration/sensitivity analysis for engineering use.
+
+Wet albedo factor `1-0.5S`, roughness 0.9→0.35 and surface wet-memory decay 1800 s are **illustrative rendering parameters**, motivated by [Lekner & Dorf](https://opg.optica.org/ao/abstract.cfm?uri=ao-27-7-1278), not a universal measured halving law. Visual rain speed is about 7 m/s, independent of playback.
+
+Legacy suction/HCO/field-capacity controls below no longer drive Richards transport; wilting is retained for legacy/inlet display rather than the new retention residual. Compost thermal parameters are unchanged.
+
 | Parameter | Value | Unit | Source | Equation |
 |---|---:|---|---|---|
 | step | 10 | s | placeholder | explicit finite-volume update |

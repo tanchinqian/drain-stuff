@@ -1268,6 +1268,25 @@ th {
 .physics-speed {
   max-width: 190px;
 }
+.physics-playback .actions {
+  gap: 6px;
+  align-items: center;
+}
+.physics-playback .actions button,
+.physics-playback .actions .button {
+  min-height: 32px;
+  padding: 5px 9px;
+  font-size: 13px;
+}
+.physics-playback > .field {
+  margin: 8px 0;
+}
+.physics-playback .physics-speed {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 230px;
+}
 .physics-analysis svg:not(.lucide) {
   width: 100%;
   height: auto;

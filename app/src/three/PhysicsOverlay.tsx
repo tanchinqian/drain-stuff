@@ -1,10 +1,48 @@
 import { useMemo, useEffect } from 'react';
-import { Edges, Html, Line } from '@react-three/drei';
-import { ExtrudeGeometry, Shape, DoubleSide, type Plane } from 'three';
+import { Html, Line } from '@react-three/drei';
+import {
+  ExtrudeGeometry,
+  Shape,
+  Group,
+  Mesh,
+  MeshStandardMaterial,
+  type BufferGeometry,
+  type Plane,
+} from 'three';
 import type { PartId } from '../api/types';
 import type { PhysicsConfig } from '../simulation/physics/config';
 import type { PhysicsFrame } from '../simulation/physics/engine';
+import { drainDesign } from '../simulation/physics/design';
 import { channelPrism } from './physicsGeometry';
+import { StormRain, WaterMaterial, Seepage } from './WaterEffects';
+import SectionCaps from './SectionCaps';
+function FluidCap({
+  geometry,
+  plane,
+  position = [0, 0, 0],
+  order,
+}: {
+  geometry: BufferGeometry;
+  plane: Plane;
+  position?: [number, number, number];
+  order: number;
+}) {
+  const group = useMemo(() => {
+    const group = new Group(),
+      material = new MeshStandardMaterial({ color: '#88afa5', roughness: 0.4 });
+    const mesh = new Mesh(geometry, material);
+    mesh.position.set(...position);
+    group.add(mesh);
+    return group;
+  }, [geometry, position[0], position[1], position[2]]);
+  useEffect(
+    () => () => {
+      (group.children[0] as Mesh<BufferGeometry, MeshStandardMaterial>).material.dispose();
+    },
+    [group],
+  );
+  return <SectionCaps group={group} plane={plane} orderBase={order} />;
+}
 export interface ModelPhysics {
   config: PhysicsConfig;
   frame?: PhysicsFrame;
@@ -14,45 +52,37 @@ export function PhysicsWater({
   id,
   physics,
   plane,
+  low = false,
 }: {
   id: PartId;
   physics: ModelPhysics;
   plane?: Plane;
+  low?: boolean;
 }) {
-  const v = physics.config.values,
-    f = physics.frame,
-    l = v.length.value,
-    w = v.width.value,
-    h = f?.ponding ?? 0,
-    inlet = physics.config.kind === 'inlet';
-  const pipeY = inlet
-      ? v.pipeDiameter.value / 2
-      : -v.mediaDepth.value - v.transitionDepth.value - v.gravelDepth.value / 2 - 0.05,
-    r = v.pipeDiameter.value / 2;
-  const fill = Math.min(
-    1,
-    Math.max(
-      0,
-      (inlet ? (f?.ponding ?? 0) : (f?.gravelHead ?? 0) - v.drainOffset.value) /
-        v.pipeDiameter.value,
-    ),
-  );
+  const d = drainDesign(physics.config),
+    v = physics.config.values,
+    f = physics.frame;
+  const h = f?.ponding ?? 0,
+    fill = f?.pipeFill ?? 0,
+    r = d.pipeDiameter / 2;
+  const pipeLength = id === 'outfall' ? 1.5 : d.length;
   const geometry = useMemo(
     () =>
-      id === 'ponding' ? channelPrism(l, w, Math.max(0.00001, h), v.sideSlope.value) : undefined,
-    [id, l, w, h, v.sideSlope.value],
+      id === 'ponding'
+        ? channelPrism(d.length, d.bedWidth, Math.max(0.000001, h), d.sideSlope)
+        : undefined,
+    [id, d.length, d.bedWidth, h, d.sideSlope],
   );
-  const pipeLength = id === 'outfall' ? 1.5 : l;
   const pipeGeometry = useMemo(() => {
     if (id !== 'underdrain' && id !== 'outfall') return;
-    const angle = Math.acos(1 - 2 * Math.max(0.00001, fill)),
+    const angle = Math.acos(1 - 2 * Math.max(0.000001, fill)),
       shape = new Shape();
     for (let i = 0; i <= 32; i++) {
-      const a = -angle + (2 * angle * i) / 32,
-        x = r * Math.sin(a),
+      const a = -angle + (2 * angle * i) / 32;
+      const z = r * Math.sin(a),
         y = -r * Math.cos(a);
-      if (i === 0) shape.moveTo(x, y);
-      else shape.lineTo(x, y);
+      if (!i) shape.moveTo(z, y);
+      else shape.lineTo(z, y);
     }
     shape.closePath();
     const g = new ExtrudeGeometry(shape, { depth: pipeLength, bevelEnabled: false });
@@ -68,102 +98,91 @@ export function PhysicsWater({
     [geometry, pipeGeometry],
   );
   if (!f) return null;
+  const water = (depth: number, velocity = 0) => (
+    <WaterMaterial
+      depth={depth}
+      design={d}
+      rain={id === 'ponding' ? f.rain : 0}
+      plane={plane}
+      low={low}
+      velocity={velocity}
+      flow={
+        id === 'outfall' ||
+        id === 'underdrain' ||
+        id === 'overflow' ||
+        id === 'inlet' ||
+        id === 'sock' ||
+        id === 'pretreat'
+      }
+    />
+  );
   if (id === 'ponding')
     return (
       <group>
-        {f.rain > 0 && (
-          <group>
-            {Array.from({ length: 24 }, (_, i) => {
-              const x = ((i % 8) / 7 - 0.5) * l,
-                z = (Math.floor(i / 8) / 2 - 0.5) * w;
-              return (
-                <Line
-                  key={i}
-                  points={[
-                    [x - 0.035, 1.1, z],
-                    [x, 0.94, z],
-                  ]}
-                  color="#5e564b"
-                  lineWidth={0.8}
-                />
-              );
-            })}
-          </group>
-        )}
-        {h > 0.0001 && (
-          <>
-            <mesh geometry={geometry}>
-              <meshBasicMaterial
-                color="#61cce9"
-                transparent
-                opacity={0.38}
-                depthWrite={false}
-                side={DoubleSide}
-                clippingPlanes={plane ? [plane] : []}
-              />
-              <Edges color="#2f2b26" />
-            </mesh>
-            {Array.from({ length: 8 }, (_, i) => (
-              <Line
-                key={i}
-                points={[
-                  [-l / 2, h + 0.002, -w / 2 + (i * w) / 7],
-                  [l / 2, h + 0.002, -w / 2 + (i * w) / 7],
-                ]}
-                color="#2f2b26"
-                lineWidth={0.7}
-              />
-            ))}
-            {plane && Math.abs(plane.normal.z) > 0 && (
-              <mesh position={[0, h / 2, plane.constant / -plane.normal.z + 0.006]}>
-                <planeGeometry args={[l, h]} />
-                <meshBasicMaterial color="#61cce9" transparent opacity={0.5} side={DoubleSide} />
-              </mesh>
-            )}
-          </>
-        )}
-      </group>
-    );
-  if (id === 'media') {
-    const wetDepth =
-      v.mediaDepth.value *
-      Math.min(
-        1,
-        Math.max(0, (f.moisture - v.wilting.value) / (v.porosity.value - v.wilting.value)),
-      );
-    const cutZ = plane && Math.abs(plane.normal.z) > 0.99 ? -plane.constant / plane.normal.z : 0;
-    const amendment = physics.amendment,
-      depth = Math.min(v.mediaDepth.value, amendment?.depth ?? 0);
-    return (
-      <group>
-        {wetDepth > 0.001 && (
-          <mesh position={[0, -0.05 - wetDepth / 2, cutZ + 0.022]}>
-            <planeGeometry args={[l, wetDepth]} />
-            <meshBasicMaterial color="#79624a" transparent opacity={0.55} side={DoubleSide} />
+        <StormRain physics={physics} low={low} plane={plane} />
+        {h > 0.000001 && (
+          <mesh name="ponded-water" geometry={geometry}>
+            {water(h)}
           </mesh>
         )}
-        {depth > 0 && (
+        {h > 0 && plane && geometry && <FluidCap geometry={geometry} plane={plane} order={10000} />}
+      </group>
+    );
+  if (id === 'media' && physics.amendment)
+    return (
+      <Html position={[0, -0.05, d.bedWidth / 2 + 0.2]} center>
+        <span className="dimension-label">
+          Compost amended · {(physics.amendment.depth * 1000).toFixed(0)} mm ·{' '}
+          {physics.amendment.dose}
+        </span>
+      </Html>
+    );
+  if (id === 'drainage') return <Seepage physics={physics} low={low} />;
+  if (id === 'underdrain' || id === 'outfall') {
+    const x = id === 'outfall' ? d.length / 2 + 0.75 : 0;
+    const tail = Math.max(0, v.tailwater.value - v.outfallInvert.value);
+    return (
+      <group>
+        {fill > 0.000001 && (
+          <mesh
+            name={'pipe-water-' + id}
+            geometry={pipeGeometry}
+            position={[x, d.pipeY, 0]}
+            userData={{ fill, velocity: f.pipeVelocity }}
+          >
+            {water(fill * d.pipeDiameter, f.pipeVelocity)}
+          </mesh>
+        )}
+        {fill > 0 && plane && pipeGeometry && (
+          <FluidCap
+            geometry={pipeGeometry}
+            plane={plane}
+            position={[x, d.pipeY, 0]}
+            order={id === 'outfall' ? 10200 : 10100}
+          />
+        )}
+        {id === 'outfall' && f.flux.outfall > 0 && (
+          <mesh position={[d.length / 2 + 1.65, d.pipeY - 0.08, 0]} rotation={[0, 0, -0.45]}>
+            <cylinderGeometry
+              args={[
+                Math.min(r, Math.sqrt(f.flux.outfall / Math.max(0.01, f.pipeVelocity) / Math.PI)),
+                0.01,
+                0.28,
+                low ? 8 : 16,
+              ]}
+            />
+            {water(0.05, f.pipeVelocity)}
+          </mesh>
+        )}
+        {id === 'outfall' && tail > 0 && (
           <group>
-            {plane && Math.abs(plane.normal.z) > 0.99 && (
-              <mesh position={[0, -0.05 - depth / 2, cutZ + 0.018]}>
-                <planeGeometry args={[l, depth]} />
-                <meshBasicMaterial color="#b03a78" transparent opacity={0.45} side={DoubleSide} />
-              </mesh>
-            )}
-            <mesh position={[0, -0.05 - depth / 2, 0]}>
-              <boxGeometry args={[l, depth, w]} />
-              <meshStandardMaterial
-                color="#b03a78"
-                transparent
-                opacity={0.35}
-                depthWrite={false}
-                clippingPlanes={plane ? [plane] : []}
-              />
-              <Edges color="#5e564b" />
+            <mesh position={[d.length / 2 + 1.8, d.pipeY - r + tail / 2, 0]}>
+              <boxGeometry args={[0.7, tail, 0.9]} />
+              {water(tail)}
             </mesh>
-            <Html position={[0, -0.05 - depth / 2, w / 2 + 0.15]} center>
+            <Html position={[d.length / 2 + 1.8, d.pipeY + tail + 0.12, 0]}>
               <span className="dimension-label">
-                Compost amended · {(depth * 1000).toFixed(0)} mm · {amendment?.dose}
+                Tailwater {tail.toFixed(2)} m{tail >= d.pipeDiameter ? ' · submerged' : ''}
               </span>
             </Html>
           </group>
@@ -171,96 +190,37 @@ export function PhysicsWater({
       </group>
     );
   }
-  if (id === 'drainage' && f.gravelHead > 0.0001) {
-    const level = Math.min(v.gravelDepth.value, f.gravelHead);
+  if (id === 'overflow' && f.flux.overflow > 0)
     return (
-      <mesh position={[0, pipeY - v.gravelDepth.value / 2 + level / 2, 0.01]}>
-        <planeGeometry args={[l, level]} />
-        <meshBasicMaterial color="#61cce9" transparent opacity={0.5} side={DoubleSide} />
+      <mesh position={[d.length / 2 - 0.5, v.crest.value, -d.bedWidth / 3]}>
+        <cylinderGeometry args={[0.17, 0.14, Math.max(0.002, h - v.crest.value), 24, 1, true]} />
+        {water(Math.max(0.002, h - v.crest.value), f.flux.overflow / (0.32 * 0.01))}
       </mesh>
     );
-  }
-  const q =
-    id === 'inlet'
-      ? f.flux.inlet
-      : id === 'outfall' || id === 'underdrain'
-        ? f.flux.drain
-        : id === 'overflow'
-          ? f.flux.overflow
-          : 0;
-  const arrow = (x: number, y: number, length = 0.6, color = '#2f2b26') => (
-    <Line
-      points={[
-        [x, y, 0.08],
-        [x + length, y, 0.08],
-        [x + length - 0.12, y + 0.05, 0.08],
-        [x + length, y, 0.08],
-        [x + length - 0.12, y - 0.05, 0.08],
-      ]}
-      color={color}
-      lineWidth={Math.min(7, 1 + Math.sqrt(q * 60000) / 3)}
-    />
-  );
-  if (id === 'underdrain' || id === 'outfall') {
-    const x = id === 'outfall' ? l / 2 + 0.75 : 0;
-    return (
-      <group>
-        {fill > 0.001 && (
-          <>
-            <mesh geometry={pipeGeometry} position={[x, pipeY, 0]}>
-              <meshBasicMaterial color="#61cce9" clippingPlanes={plane ? [plane] : []} />
-            </mesh>
-            {plane && Math.abs(plane.normal.z) > 0 && (
-              <mesh position={[x, pipeY - r + fill * r, 0.009]}>
-                <planeGeometry args={[pipeLength, fill * r * 2]} />
-                <meshBasicMaterial color="#61cce9" side={DoubleSide} />
-              </mesh>
-            )}
-          </>
-        )}
-        {q > 1e-9 && arrow(id === 'outfall' ? l / 2 : 0, pipeY + 0.05, id === 'outfall' ? 1.5 : 1)}
-        {id === 'outfall' && v.tailwater.value > 0 && (
-          <Line
-            points={[
-              [l / 2 + 1.3, pipeY + v.tailwater.value, -0.5],
-              [l / 2 + 2, pipeY + v.tailwater.value, 0.5],
-            ]}
-            color="#2f2b26"
-            lineWidth={1}
-          />
-        )}
-      </group>
-    );
-  }
-  if (id === 'overflow')
-    return (
-      <group>
-        {f.ponding > 0 && (
-          <mesh position={[l / 2 - 0.5, Math.min(f.ponding, v.crest.value) / 2, -w / 3]}>
-            <cylinderGeometry args={[0.12, 0.12, Math.min(f.ponding, v.crest.value), 16]} />
-            <meshBasicMaterial
-              color="#61cce9"
-              transparent
-              opacity={0.6}
-              clippingPlanes={plane ? [plane] : []}
-            />
-          </mesh>
-        )}
-        {q > 1e-9 && arrow(l / 2 - 0.5, v.crest.value, 0.8, '#8e3a2e')}
-      </group>
-    );
   if (id === 'inlet' || id === 'pretreat' || id === 'sock') {
-    const level = f.network.find((n) => n.id === 'kerb flow')?.depth ?? 0,
-      x = id === 'inlet' ? -l / 2 - 0.4 : id === 'pretreat' ? -l / 2 + 0.35 : -l / 2 + 0.8;
+    const level = f.network.find((n) => n.id === 'kerb flow')?.depth ?? 0;
+    const x =
+      id === 'inlet'
+        ? -d.length / 2 - 0.4
+        : id === 'pretreat'
+          ? -d.length / 2 + 0.35
+          : -d.length / 2 + 0.8;
+    const q = f.flux.inlet,
+      width = Math.min(0.9, Math.max(0.02, Math.sqrt(q * 60000) * 0.08));
     return (
       <group>
-        {level > 0.0001 && (
-          <mesh position={[inlet ? 0 : x, level + 0.005, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-            <planeGeometry args={[id === 'sock' ? 0.12 : 0.65, id === 'sock' ? 1.2 : 0.9]} />
-            <meshBasicMaterial color="#61cce9" transparent opacity={0.5} side={DoubleSide} />
+        {level > 0 && id === 'inlet' && (
+          <mesh position={[x - 0.35, level / 2 - 0.12, 0]}>
+            <boxGeometry args={[0.7, level, 0.9]} />
+            {water(level)}
           </mesh>
         )}
-        {id === 'inlet' && q > 1e-9 && arrow(-l / 2 - 0.65, 0.15, 1.1)}
+        {q > 0 && (
+          <mesh position={[x, Math.max(0.002, h), 0]} rotation={[-Math.PI / 2, 0, 0]}>
+            <planeGeometry args={[id === 'inlet' ? 1.1 : 0.55, width]} />
+            {water(0.005, q / (width * 0.005))}
+          </mesh>
+        )}
       </group>
     );
   }

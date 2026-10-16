@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import SearchableSelect from './SearchableSelect';
 import { usePhysics } from '../simulation/physics/view';
+import { peakFrame } from '../simulation/physics/engine';
 import { useSimulation } from '../simulation/physics/store';
 export default function PhysicsControls({ ownerId }: { ownerId: string }) {
-  const { frame, run } = usePhysics(ownerId),
+  const { frame, run, config } = usePhysics(ownerId),
     second = useSimulation((s) => s.second),
     playing = useSimulation((s) => s.playing),
     busy = useSimulation((s) => s.busy),
@@ -20,6 +21,11 @@ export default function PhysicsControls({ ownerId }: { ownerId: string }) {
     return () => q.removeEventListener('change', change);
   }, []);
   const state = useSimulation.getState();
+  useEffect(() => {
+    if (!run) return;
+    const peak = peakFrame(run);
+    useSimulation.getState().seek(peak.second);
+  }, [run]);
   return (
     <div
       className="physics-playback"
@@ -34,6 +40,25 @@ export default function PhysicsControls({ ownerId }: { ownerId: string }) {
         <p role="status">Calculating all six feature models…</p>
       ) : null}
       <div className="actions">
+        {!!config?.values.tailwater.value && (
+          <span className="status-chip watch">
+            Tailwater {config.values.tailwater.value.toFixed(2)} m:{' '}
+            {config.values.tailwater.value >= config.values.pipeDiameter.value
+              ? 'outfall submerged'
+              : 'outfall partly submerged'}
+          </span>
+        )}
+        <a
+          className="button"
+          href="#storm-controls"
+          onClick={() =>
+            document
+              .querySelector<HTMLDetailsElement>('.storm-disclosure')
+              ?.setAttribute('open', '')
+          }
+        >
+          Storm settings
+        </a>
         {!reduced && (
           <button disabled={busy || !!error} onClick={state.play}>
             {playing ? 'Pause storm' : 'Play storm'}
@@ -50,10 +75,7 @@ export default function PhysicsControls({ ownerId }: { ownerId: string }) {
           disabled={!run || busy}
           onClick={() => {
             if (run) {
-              const peak = run.frames.reduce(
-                (best, f) => (f.ponding > best.ponding ? f : best),
-                run.frames[0],
-              );
+              const peak = peakFrame(run);
               state.seek(peak.second);
             }
           }}
@@ -94,9 +116,8 @@ export default function PhysicsControls({ ownerId }: { ownerId: string }) {
       <p className="small">
         {reduced
           ? 'Reduced motion: use the timeline or minute buttons. '
-          : 'Short strokes show rain; soil shading shows moisture; pipe fill and arrows show drainage. '}
-        Arrows are static; width shows flow. Playback is shared across the six feature pages. Speed
-        is simulated seconds per real second.
+          : 'Rain impacts the surface; soil darkening follows the moisture field; moving water follows discharge. '}
+        Playback is shared across the six feature pages. Speed is simulated seconds per real second.
       </p>
       {frame && (
         <div className="water-story" aria-live={playing ? 'off' : 'polite'}>
@@ -123,8 +144,7 @@ export default function PhysicsControls({ ownerId }: { ownerId: string }) {
             {frame.flux.overflow > 1e-9 ? 'Water is spilling over the overflow.' : ''}
           </p>
           <small>
-            The waterline shows surface depth. Soil shading follows moisture; arrow width follows
-            flow.
+            The waterline shows surface depth. Soil shading follows the calculated saturation field.
           </small>
         </div>
       )}

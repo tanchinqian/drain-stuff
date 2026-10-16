@@ -1,0 +1,13 @@
+{
+  "metrics": [
+    {
+      "id": "T1",
+      "computeMs": 511,
+      "peak": 3120,
+      "duration": 2700,
+      "maxLedgerError": 2.6795450866523993e-8,
+      "soilBytes": 4988928
+    }
+  ],
+  "errors": []
+}

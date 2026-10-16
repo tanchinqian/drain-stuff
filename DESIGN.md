@@ -25,6 +25,9 @@ colors:
   radar-50-60: "#f28b27"
   radar-60-80: "#de452e"
   radar-over-80: "#aa40b6"
+  water-shallow: "#a7c8bf"
+  water-depth: "#78a99c"
+  water-section: "#88afa5"
 typography:
   display:
     fontFamily: "'Archivo Variable', Archivo, sans-serif"
@@ -154,6 +157,8 @@ This merge documents durable patterns in `app/src/styles.css`, current shared co
 
 ## Colors
 
+**Round 6 water exception.** The supplied water-realism brief supersedes the earlier flat-cyan preservation rule for water only. Water now uses clear shallow transmission, a slight blue-green depth tint, Fresnel sky response and a muted solid section band. The three water tokens above are material inputs, not flat final pixel colours. Radar rainfall, trial colours and cream/brown controls remain unchanged. Earlier cyan references below document the prior state and are superseded for hydraulic water.
+
 The palette resembles a working map on a cream desk; stronger colours identify measurements, trial arms and conditions. Round 3 excludes every proposed recolouring under the user's explicit exception.
 
 ### Primary
@@ -178,7 +183,7 @@ Desk cream (`ground`) grounds the interface; paper cream (`panel`) fills panels/
 
 **The State Readability Rule.** Pair each status colour with its geometric marker and a written label; colour alone never carries trust or fault state.
 
-**The Data Colour Rule.** Retain the approved radar colours for rainfall and cyan for physical water. Keep controls and records in the established console palette, with trial colours identifying treatment and amendment.
+**The Data Colour Rule.** Retain the approved radar colours for rainfall and the Round 6 transmission/depth treatment for water. Keep controls and records in the established console palette, with trial colours identifying treatment and amendment.
 
 ## Typography
 
@@ -231,6 +236,8 @@ Inputs, selects and textareas retain native behavior, paper backgrounds, thin bo
 The shared detail drawer is an `aside` with dialog semantics and `aria-modal=false`. It focuses Close when opened, closes with Esc/Close and restores the previous focus; it does not trap focus or block the page. Pilot-house selection also closes on map background or changes with another selection. Sensor, fault/rule, trial logging, allocations and Model details use the same pattern.
 
 ### Model workspace
+
+Round 6: the shared dimension adapter builds the depression, closed layers and stencil caps; cached saturation fields drive wet albedo/roughness in 3D and 2D. Jittered instanced rain ends at terrain/water intersections. Water effects appear only for the corresponding engine quantity; pipe texture motion uses Q/A. Reduced motion freezes effects. A low-quality option and automatic slow-render fallback omit transmission and reduce instances/pixel ratio. Playback opens at peak water and includes a direct Storm settings link and explicit tailwater state. The descriptions of cyan slabs/static arrows below are historical.
 
 Part selection drives readings and fault context. Operator controls lead with model inspection; advanced settings stay in Debug. Shared storm playback sits beneath the model. Short rain strokes, an engine-depth cyan surface/waterline, soil moisture shading, partial pipe fill and discharge-width arrows replace particle droplets and visual depth exaggeration. The flow strip labels inlet through outfall/overflow. The pink amendment layer reflects recorded depth/dose. Model details groups Rainfall, Catchment, Surface, Soil, Drain and Overflow in collapsed sections, with equations and a source footer.
 

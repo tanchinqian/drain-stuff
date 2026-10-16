@@ -1,0 +1,21 @@
+{
+  "metrics": [
+    {
+      "id": "S1",
+      "computeMs": 581.7999999970198,
+      "peak": 2940,
+      "duration": 2700,
+      "maxLedgerError": 2.128132180267242e-8,
+      "soilBytes": 4988928
+    },
+    {
+      "id": "S3",
+      "computeMs": 585.7999999970198,
+      "peak": 3060,
+      "duration": 2700,
+      "maxLedgerError": 6.011415406817126e-8,
+      "soilBytes": 4988928
+    }
+  ],
+  "errors": []
+}

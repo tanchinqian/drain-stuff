@@ -36,14 +36,10 @@ const groups: Record<string, ParameterKey[]> = {
     'transitionDepth',
     'gravelDepth',
     'porosity',
-    'fieldCapacity',
-    'wilting',
     'gravelVoid',
     'transitionVoid',
     'ks',
     'nativeKs',
-    'suction',
-    'hco',
     'et',
     'liner',
   ],
@@ -133,6 +129,9 @@ export default function ModelDetails({ ownerId }: { ownerId: string }) {
       {open && (
         <Drawer title={'Model details · ' + ownerId} onClose={() => setOpen(false)}>
           <p>
+            {config.kind === 'inlet'
+              ? 'Inlet chamber model, uncalibrated.'
+              : '2D soil water model (Richards equation), uncalibrated.'}{' '}
             The storm model uses your entered settings to calculate storage and flow. A compost dose
             does not set soil conductivity.
           </p>

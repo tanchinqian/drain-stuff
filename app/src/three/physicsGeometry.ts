@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import type { PartId } from '../api/types';
 import type { PhysicsConfig } from '../simulation/physics/config';
 import { cadKit, palette, type ModelGroups } from './geometry';
+import { drainDesign } from '../simulation/physics/design';
 
 export function channelPrism(length: number, width: number, depth: number, side = 0) {
   const shape = new THREE.Shape();
@@ -81,13 +82,14 @@ export function createSwaleGeometry(c: PhysicsConfig): ModelGroups {
   ];
   const k = cadKit(ids),
     v = c.values,
-    l = v.length.value,
-    w = v.width.value,
-    m = v.mediaDepth.value,
-    t = v.transitionDepth.value,
-    g = v.gravelDepth.value,
-    bottom = -m - t - g - 0.05,
-    crest = v.crest.value;
+    d = drainDesign(c),
+    l = d.length,
+    w = d.bedWidth,
+    m = d.mediaDepth,
+    t = d.transitionDepth,
+    g = d.gravelDepth,
+    bottom = d.bottomY,
+    crest = d.depressionDepth;
   const layer = (
     id: PartId,
     depth: number,
@@ -95,23 +97,38 @@ export function createSwaleGeometry(c: PhysicsConfig): ModelGroups {
     color: number,
     kind: Parameters<typeof hatch>[0],
   ) => {
-    const mesh = k.box(id, [l, depth, w], [0, y, 0], color);
+    let mesh;
+    if (id === 'drainage') {
+      const shape = new THREE.Shape();
+      shape.moveTo(-w / 2, -depth / 2);
+      shape.lineTo(w / 2, -depth / 2);
+      shape.lineTo(w / 2, depth / 2);
+      shape.lineTo(-w / 2, depth / 2);
+      shape.closePath();
+      const bore = new THREE.Path();
+      bore.absarc(0, 0, d.pipeDiameter * 0.6, 0, Math.PI * 2, true);
+      shape.holes.push(bore);
+      const geometry = new THREE.ExtrudeGeometry(shape, { depth: l, bevelEnabled: false });
+      geometry.rotateY(Math.PI / 2);
+      geometry.translate(-l / 2, 0, 0);
+      mesh = k.mesh(id, geometry, color, [0, y, 0]);
+    } else mesh = k.box(id, [l, depth, w], [0, y, 0], color);
     mesh.material.map = hatch(kind, color);
-    const face = k.box(id, [l, depth, 0.002], [0, y, 0.002], color);
-    face.material.map = mesh.material.map;
-    face.userData.sectionFace = true;
   };
   layer('media', m, -m / 2 - 0.05, 0xc9b28e, 'soil');
   layer('transition', t, -m - t / 2 - 0.05, 0xe8dec6, 'sand');
   layer('drainage', g, bottom + g / 2, 0xc5beaa, 'gravel');
   layer('mulch', 0.05, -0.025, 0xbba07c, 'mulch');
+  if (d.nativeDepth > 0)
+    layer('media', d.nativeDepth, bottom - d.nativeDepth / 2, 0x9d8465, 'soil');
   // Banks define the 1:z section around the actual bottom width.
   for (const sign of [-1, 1]) {
     const shape = new THREE.Shape();
     shape.moveTo((sign * w) / 2, 0);
     shape.lineTo(sign * (w / 2 + v.sideSlope.value * crest), crest);
-    shape.lineTo(sign * (w / 2 + v.sideSlope.value * crest + 0.15), crest);
-    shape.lineTo(sign * (w / 2 + 0.15), 0);
+    shape.lineTo(sign * (w / 2 + d.sideSlope * crest + 0.3), crest);
+    shape.lineTo(sign * (w / 2 + d.sideSlope * crest + 0.3), bottom);
+    shape.lineTo((sign * w) / 2, bottom);
     shape.closePath();
     const geometry = new THREE.ExtrudeGeometry(shape, { depth: l, bevelEnabled: false });
     geometry.rotateY(Math.PI / 2);
@@ -126,6 +143,7 @@ export function createSwaleGeometry(c: PhysicsConfig): ModelGroups {
     0.035,
   );
   envelope.material.depthWrite = false;
+  envelope.visible = false;
   const inletX = -l / 2 - 0.4;
   for (const z of [-0.45, 0.45])
     k.box('inlet', [0.8, 0.35, 0.12], [inletX, 0.05, z], palette.well).material.map = hatch(

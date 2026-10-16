@@ -1,5 +1,9 @@
 # Drain Trial Console
 
+## Current Round 6 refinement
+
+The accepted water-realism brief adds the missing shared DrainDesign, real depression/closed sections, peak-opening and compact playback prerequisites, then a mixed-form 2D Richards soil field in the existing worker. Cached theta/saturation drives soil shading and section views; engine depth/discharge drives water, rain, inlet, pipe and overflow effects. The new water-only appearance exception supersedes flat cyan; the approved radar/UI identity remains. This remains uncalibrated and does not add forecast accuracy, field evidence, hysteresis or macropores. Media Ks comes from the trial/entered value, never compost dose. See `docs/ROUND6_WATER_REALISM.md` for measured acceptance and limitations. Earlier scope notes below are historical where superseded.
+
 ## Purpose and users
 
 An operator console for a small drainage and compost pilot. Operators inspect pilot houses, drainage parts, compost bays, sensor trust and faults, then record checks and compare untreated soil, loosened soil and soil loosened with compost at the same marked spots.
@@ -30,4 +34,4 @@ The console supports local ponding and drain upkeep decisions. It makes no flood
 
 Round 4 applies `CODEX_ROUND4_STABILISE_PROMPT.md` within the existing Map desk identity. The user-approved seven radar colours and cyan water are preserved, continuing the Round 3 colour override. Changes remain local; no push is authorized. Earlier addendum and physics stage records are historical where superseded by this scope.
 
-See `docs/BACKEND_HANDOFF.md` for the current transport/record contract, `docs/PHYSICS_MODEL.md` for equations and limitations, `docs/MAP_MODEL.md` for mapping behavior, and `docs/ROUND4_STABILISATION.md` for current stabilisation evidence and `docs/round3-review.md` for historical Round 3 evidence. The separately published Sites visualization remains an exact copy of its supplied attachment with separate source and hosting identity.
+See `docs/BACKEND_HANDOFF.md` for the current transport/record contract, `docs/PHYSICS_MODEL.md` for equations and limitations, `docs/MAP_MODEL.md` for mapping behavior, and `docs/ROUND4_STABILISATION.md` for current stabilisation evidence and `docs/round3-review.md` for historical Round 3 evidence. The current React app is published through a separate Sites source/hosting identity. Historical HTML previews remain separate artifacts.

@@ -31,7 +31,8 @@ test('timeline lookup holds the latest available frame without looking ahead', (
   c.values.recovery.value = 60;
   const run = simulatePhysics(c, 'uniform');
   expect(frameAt(run, 0)?.second).toBe(0);
-  expect(frameAt(run, 8)?.second).toBe(5);
+  expect(frameAt(run, 8)?.second).toBe(0);
+  expect(frameAt(run, 65)?.second).toBe(60);
   expect(frameAt(run, 999)?.second).toBe(120);
   expect(frameAt(undefined, 10)).toBeUndefined();
 });

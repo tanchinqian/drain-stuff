@@ -39,7 +39,7 @@ export default function PhysicsPanel({ ownerId, trial }: { ownerId: string; tria
     Number((f.second / 60).toFixed(2)),
     Number((f.rain * 3.6e6).toFixed(2)),
     Number((f.flux.inlet * 60000).toFixed(2)),
-    Number((f.flux.drain * 60000).toFixed(2)),
+    Number((f.flux.outfall * 60000).toFixed(2)),
     Number((f.flux.overflow * 60000).toFixed(2)),
     Number((f.ponding * 1000).toFixed(2)),
   ]);
