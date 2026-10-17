@@ -32,6 +32,13 @@ export function createDataStore(
 ) {
   let db = structuredClone(initial);
   archiveTrialExamples(db);
+  // Upgrade only the untouched original demo fault; preserve every entered lifecycle action.
+  const demoFault = db.faults.find(f=>f.id==='F-001'&&f.featureId==='S1'&&f.synthetic&&!f.raisedBy&&!f.history?.length&&f.workOrder?.state==='detected');
+  if(demoFault) {
+    demoFault.workOrder={state:'confirmed'};
+    demoFault.status='inspected';
+    demoFault.history=[{id:'demo-confirmed-inlet',t:db.clockAnchor??DEMO_NOW,user:'Demo fixture',action:'confirm',note:'Illustrative inlet obstruction confirmed for the demo comparison; not a field inspection.'}];
+  }
   if (!db.features.some(f => f.id === 'R1')) db.features.push({id:'R1',name:'Typical roadside kerb inlet and concrete drain',kind:'inlet',arm:null,zone:'D',x:18,y:8,status:'ok',synthetic:true});
   let currentActor = "Local operator";
   function persist() {
@@ -556,6 +563,13 @@ export function createDataStore(
     reset: () => {
       db = generateMock();
       archiveTrialExamples(db);
+  // Upgrade only the untouched original demo fault; preserve every entered lifecycle action.
+  const demoFault = db.faults.find(f=>f.id==='F-001'&&f.featureId==='S1'&&f.synthetic&&!f.raisedBy&&!f.history?.length&&f.workOrder?.state==='detected');
+  if(demoFault) {
+    demoFault.workOrder={state:'confirmed'};
+    demoFault.status='inspected';
+    demoFault.history=[{id:'demo-confirmed-inlet',t:db.clockAnchor??DEMO_NOW,user:'Demo fixture',action:'confirm',note:'Illustrative inlet obstruction confirmed for the demo comparison; not a field inspection.'}];
+  }
       db.features.push({id:'R1',name:'Typical roadside kerb inlet and concrete drain',kind:'inlet',arm:null,zone:'D',x:18,y:8,status:'ok',synthetic:true});
       refreshSensors();
       normalizeFaults();

@@ -10,7 +10,7 @@ The owner approved the full cleanup brief after completion of the selected-part 
 | 1 Shared drawers | Done | Native shared modal: dimmed scrim, outside/Escape/Back, dirty guard, focus trap/return, scroll lock, 540px desktop and full-height mobile. Shared footer for measurement/allocation/safety/report/commissioning. Three browser checks pass, including axe and saves. |
 | 2 Fault layout | Done | Status and asset/source header, six-step lifecycle, explicit note helper, sticky next action, summary/evidence sections and newest-first audit timeline. Three drawer/lifecycle browser checks pass. Three-viewport captures follow in section 8. |
 | 3 Suggested diagnosis | Done | Cached automatic retrieval, Refresh, concise state/mode chips, deduplicated numbered draft steps and source chips, collapsed citations/production details, amber insufficient state, reasoned edit/reject and timestamped feedback. Four browser checks and 57 backend/shared checks pass. |
-| 4 Board fixable case | Not started | Confirm seed/effects and explain computed differences. |
+| 4 Board fixable case | Done | Local DB F-001 was the older untouched detected fixture. Only that untouched fixture is upgraded; entered lifecycle history is preserved. Heavy physics test confirms S1 fixable, S2 capacity-limited and S3 clear. Computed differences, three bar styles/legend and stale-confirmation notice added. Two new unit checks pass. |
 | 5 R1 / 3D framing | Not started | Fit, controls, stage readings and device labels. |
 | 6 Page structure | Not started | Section navigation and three viewport review. |
 | 7 Live AI check tooling | Not started | User-run script and exact setup; no live call until the user runs it. |

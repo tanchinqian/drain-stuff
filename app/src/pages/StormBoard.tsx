@@ -2,6 +2,7 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
+import { confirmed } from '../../../shared/src/physics/faults';
 import { useBoard } from '../triage';
 import { warningTitle, warningScenario } from '../../../shared/src/warnings';
 import { assets, stormPresets, type TriageRow } from '../../../shared/src/contract';
@@ -304,6 +305,8 @@ export default function StormBoard() {
           <section className="panel triage-register">
             <h2>Upkeep priority</h2>
             <p className="sub">{label}. Capacity-limited assets need owner review.</p>
+            <p className="small comparison-legend"><span><i className="legend-installed"/>As installed</span><span><i className="legend-cleared"/>If cleared</span><span><i className="legend-capacity"/>Capacity limit</span></p>
+            {!!rows.length && rows.some(row => (faults.data ?? []).filter(f=>f.featureId===row.asset&&confirmed(f)).map(f=>f.id).sort().join()!==[...row.faultIds].sort().join()) && <p className="notice">Fault confirmations have changed since this saved run. Run the storm again to update the comparison.</p>}
             {!rows.length && (
               <p className="empty-note">
                 Results will compare As installed, If cleared and Capacity limit for S1, S2, S3, I1
@@ -355,6 +358,8 @@ export default function StormBoard() {
                           ? 'Upkeep opportunity â€” compare clearing'
                           : 'No overflow in this scenario'}
                     </p>
+                    <p className="comparison-difference">{row.capacityLimited ? 'Escalate: still overflows when cleared' : row.asInstalled.summary.overflowM3-row.ifCleared.summary.overflowM3 > 1e-8 ? `Clearing the fault removes ${(row.asInstalled.summary.overflowM3-row.ifCleared.summary.overflowM3).toFixed(3)} m³ of overflow` : 'No overflow to remove in this scenario'}</p>
+                    {row.capacityLimited && Math.abs(row.asInstalled.summary.overflowM3-row.ifCleared.summary.overflowM3)<1e-8 && <p className="small">No difference: capacity-limited</p>}
                     <div
                       className="mode-comparison"
                       aria-label={row.asset + ' overflow comparison'}
@@ -366,7 +371,7 @@ export default function StormBoard() {
                       ].map(([name, raw]) => {
                         const m = raw as TriageRow['asInstalled'];
                         return (
-                          <div className="mode-line" key={String(name)}>
+                          <div className={"mode-line mode-"+String(name).toLowerCase().replaceAll(" ","-")} key={String(name)}>
                             <span>{String(name)}</span>
                             <span className="mode-track">
                               <span style={{ width: `${(m.summary.overflowM3 / max) * 100}%` }} />

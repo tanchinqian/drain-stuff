@@ -2533,3 +2533,12 @@ main > .about {
 .diagnosis-evidence article { margin: 14px 0; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
 .insufficient { background: #eadcba; color: var(--ink); padding: 12px; }
 .diagnosis-review { margin-block: 18px; }
+
+.comparison-legend { display: flex; flex-wrap: wrap; gap: 16px; }
+.comparison-legend span { display: flex; align-items: center; gap: 7px; }
+.comparison-legend i { display: inline-block; width: 25px; height: 9px; }
+.legend-installed, .mode-as-installed .mode-track > span { background: var(--ink2); }
+.legend-cleared, .mode-if-cleared .mode-track > span { background: var(--border); }
+.legend-capacity, .mode-capacity-limit .mode-track > span { background: var(--ink2); height: 2px; }
+.mode-capacity-limit .mode-track { display: flex; align-items: center; }
+.comparison-difference { font-weight: 550; font-size: 14px; }
