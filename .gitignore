@@ -19,3 +19,5 @@ data/
 *.sqlite*
 *.db
 firmware/node/secrets.h
+
+server/.env

@@ -4,6 +4,7 @@ import { serve } from "@hono/node-server";
 import { Repository } from "./db";
 import { createApi } from "./api";
 import { serverEnv } from "./env";
+if (existsSync("server/.env")) loadEnvFile("server/.env");
 if (existsSync(".env.local")) loadEnvFile(".env.local");
 const env = serverEnv.parse(process.env);
 console.info('[diagnosis] CONFIG ' + JSON.stringify({

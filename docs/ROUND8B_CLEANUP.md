@@ -13,7 +13,7 @@ The owner approved the full cleanup brief after completion of the selected-part 
 | 4 Board fixable case | Done | Local DB F-001 was the older untouched detected fixture. Only that untouched fixture is upgraded; entered lifecycle history is preserved. Heavy physics test confirms S1 fixable, S2 capacity-limited and S3 clear. Computed differences, three bar styles/legend and stale-confirmation notice added. Two new unit checks pass. |
 | 5 R1 / 3D framing | Done | Bounds-based R1 camera and inlet close-up; three viewport checks confirm at least 70% width. High-first adaptive quality, quality/FPS only in Debug. Visible assembly modes; collapsed advanced controls. Compact flow legend and selected chamber flow. Human device labels retain IDs in details. |
 | 6 Page structure | Done | Sticky section navigation on Overview and feature pages links Overview, Replay, Parts, Sensors and Model details. Empty states provide next actions. Six-page containment/axe matrix passes at 390, 1440 and 1920 (3 browser tests). Existing single primary-action patterns retained. Final screenshot review follows. |
-| 7 Live AI check tooling | Not started | User-run script and exact setup; no live call until the user runs it. |
+| 7 Live AI check tooling | Done; live check pending user | server/.env setup and npm run check:ai added. Three seeded faults print mode/confidence/validation/IDs/latency/fallback reason and fail on rejected/fallback output. Mocked self-test passes with no live calls. Actual provider verification is explicitly not claimed. |
 | 8 Demo readiness | Not started | Fresh setup, explicit reset and five-minute runbook. |
 
 ## Initial verification notes

@@ -17,6 +17,7 @@
     "test:server": "node scripts/build-server.mjs && vitest run server shared",
     "test:all": "npm run test:server && npm --prefix app test",
     "check:server": "tsc -p server/tsconfig.json",
+    "check:ai": "tsx scripts/check-ai.ts",
     "sim:device": "tsx scripts/sim-device.ts"
   },
   "dependencies": {

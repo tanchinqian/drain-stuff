@@ -4,6 +4,7 @@ import { randomBytes } from "node:crypto";
 import { loadEnvFile } from "node:process";
 import { createServer } from "node:net";
 import { resolve } from "node:path";
+if (existsSync("server/.env")) loadEnvFile("server/.env");
 if (!existsSync(".env.local"))
   writeFileSync(
     ".env.local",
