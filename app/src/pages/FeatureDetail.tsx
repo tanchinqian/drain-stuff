@@ -1,3 +1,4 @@
+import SectionIndex from '../components/SectionIndex';
 import { useEffect } from 'react';
 import { useParams, useSearchParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -58,12 +59,12 @@ export default function FeatureDetail() {
                 Zone {data.feature.zone} · Installed {dateOnly(data.feature.installedAt)}
               </p>
             </div>
-            <ModelDetails ownerId={id} />
             <Link className="button" to="/">
               Back to Overview
             </Link>
           </div>
-          <div className="summary-strip">
+          <SectionIndex items={[["Overview","#feature-summary"],["Replay","#feature-replay"],["Parts","#feature-parts"],["Sensors","#feature-sensors"]]}><ModelDetails ownerId={id}/></SectionIndex>
+          <div className="summary-strip" id="feature-summary">
             <div>
               <small>Trial arm</small>
               {data.feature.arm ? armName[data.feature.arm] : 'No soil-treatment arm'}

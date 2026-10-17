@@ -112,7 +112,7 @@ export default function ModelWorkspace({
   const part = parts.find((p) => p.partId === selected);
   if (!part) return null;
   return (
-    <div className={'model-workspace ' + (kind === 'compost' ? 'compost-model' : '')}>
+    <div id="feature-parts" className={'model-workspace ' + (kind === 'compost' ? 'compost-model' : '')}>
       <div className="field mobile-part-picker">
         <span>Model part</span>
         <SearchableSelect
@@ -142,7 +142,7 @@ export default function ModelWorkspace({
           />
           {!parts.some((p) => p.name.toLowerCase().includes(partSearch.trim().toLowerCase())) && (
             <p className="small" role="status">
-              No matching parts.
+              No matching parts; clear the search to show the assembly.
             </p>
           )}
           {parts
@@ -170,7 +170,7 @@ export default function ModelWorkspace({
               </button>
             ))}
         </aside>
-        <section className="panel model-card">
+        <section className="panel model-card" id="feature-replay">
           <div className="model-mode">
             {physics && mode==='Debug' && (
               <output className="quality-status">{lowQuality ? 'Low' : quality} quality</output>

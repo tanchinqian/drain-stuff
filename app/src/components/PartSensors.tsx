@@ -4,6 +4,7 @@ import type { Sensor } from '../api/types';
 import { displayName, formatValue } from '../utils';
 import Chip from './Chip';
 export default function PartSensors({ sensors }: { sensors: Sensor[] }) {
+  if(!sensors.length) return <p className="small">No sensors on this part; record a visual inspection.</p>;
   return (
     <div className="sensor-readings">
       <table aria-label="Selected part sensors">

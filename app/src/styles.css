@@ -2548,3 +2548,10 @@ main > .about {
 .flow-legend > div { display: flex; flex-wrap: wrap; gap: 10px 20px; font-size: 13px; }
 .view-controls > summary { font-weight: 600; cursor: pointer; padding: 14px 0; }
 .camera-presets { margin-block: 12px; }
+
+.section-index { position: sticky; top: 0; z-index: 35; display: flex; flex-wrap: wrap; align-items: center; gap: 4px; padding: 6px 0; margin-bottom: 18px; background: var(--ground); border-bottom: 1px solid var(--border); }
+.section-index a, .section-index button { display: inline-flex; align-items: center; min-height: 44px; padding: 9px 12px; font-size: 14px; text-decoration: none; }
+.section-index a:hover { background: var(--well2); }
+[id^="feature-"], #storm-heading, #board-replay { scroll-margin-top: 120px; }
+.triage-map { top: 76px; }
+@media(max-width:600px) { .section-index { gap: 0; } .section-index a, .section-index button { padding: 8px 9px; font-size: 12px; } }

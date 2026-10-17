@@ -1,3 +1,5 @@
+import SectionIndex from '../components/SectionIndex';
+import ModelDetails from '../components/ModelDetails';
 import { sensorLabel } from '../utils';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -164,6 +166,7 @@ export default function StormBoard() {
           Observation history
         </Link>
       </div>
+      <SectionIndex items={[["Overview","#storm-heading"],["Replay","#board-replay"],["Parts",'/feature/'+selected+'#feature-parts'],["Sensors","/sensors"]]}><ModelDetails ownerId={selected}/></SectionIndex>
       <section className="panel storm-inputs" aria-labelledby="storm-heading">
         <div>
           <h2 id="storm-heading">Set the storm to compare</h2>
@@ -310,7 +313,7 @@ export default function StormBoard() {
             {!!rows.length && rows.some(row => (faults.data ?? []).filter(f=>f.featureId===row.asset&&confirmed(f)).map(f=>f.id).sort().join()!==[...row.faultIds].sort().join()) && <p className="notice">Fault confirmations have changed since this saved run. Run the storm again to update the comparison.</p>}
             {!rows.length && (
               <p className="empty-note">
-                Results will compare As installed, If cleared and Capacity limit for S1, S2, S3, I1
+                Run the storm to compare As installed, If cleared and Capacity limit for S1, S2, S3, I1
                 and the typical roadside inlet R1.
               </p>
             )}
@@ -456,7 +459,7 @@ export default function StormBoard() {
               </details>
             )}
           </section>
-          <section className="panel triage-map" id="storm-map" ref={mapRef}>
+          <section id="board-replay" className="panel triage-map" ref={mapRef}>
             <div className="panel-heading">
               <div>
                 <h2>Asset locations</h2>

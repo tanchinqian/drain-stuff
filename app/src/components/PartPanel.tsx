@@ -38,7 +38,7 @@ export default function PartPanel({
       `${fault?.id ?? 'Fault'} · ${value === 'cleaned' ? 'Clean logged' : value === 'inspected' ? 'Marked inspected' : 'Work order recorded'}`,
   );
   return (
-    <section className="panel detail-readings" aria-label="Selected part readings">
+    <section id="feature-sensors" className="panel detail-readings" aria-label="Selected part readings">
       <div className="panel-heading">
         <h2>{part.name}</h2>
         {part.installed ? <Status status={part.status} /> : <span>Not installed</span>}

@@ -34,7 +34,7 @@ export default function DeviceRegistry() {
         </button>
       </div>
       {rows.error && <p role="alert">{rows.error.message}</p>}
-      {!rows.data?.length && <p>No devices commissioned yet.</p>}
+      {!rows.data?.length && <p>Register a device after recording its mounting height and reference checks.</p>}
       {open && (
         <Drawer title="Commission a device" onClose={() => setOpen(false)}><form id="device-commission"
           className="device-form"
