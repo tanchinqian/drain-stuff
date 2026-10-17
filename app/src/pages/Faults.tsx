@@ -7,7 +7,7 @@ import { type Fault, type FaultRule } from '../api/types';
 import { displayName, timeLabel, faultOrder } from '../utils';
 import { useWrite } from '../hooks';
 import DataTable from '../components/DataTable';
-import Drawer from '../components/Drawer';
+import Drawer, { DrawerFooter } from '../components/Drawer';
 import AssetList from '../components/AssetList';
 import WorkOrderPanel from '../components/WorkOrderPanel';
 import EscalationPanel from '../components/EscalationPanel';
@@ -207,7 +207,7 @@ export default function Faults() {
             setSelected(null);
             const next = new URLSearchParams(params);
             next.delete('fault');
-            setParams(next);
+            setParams(next, {replace:true});
           }}
         >
           <Chip value={active.status} />
@@ -270,7 +270,7 @@ export default function Faults() {
       )}
       {report && (
         <Drawer title="Report a fault" onClose={() => setReport(false)}>
-          <form
+          <form id="fault-report"
             onSubmit={(e) => {
               e.preventDefault();
               create.mutate(undefined, {
@@ -353,7 +353,7 @@ export default function Faults() {
               <input required value={user} onChange={(e) => setUser(e.target.value)} />
             </label>
             <p className="small">Saves to the fault register.</p>
-            <button disabled={create.isPending}>Save fault report</button>
+            <DrawerFooter><button className="primary" form="fault-report" disabled={create.isPending}>Save fault report</button></DrawerFooter>
             {create.error && <p role="alert">{create.error.message}</p>}
           </form>
         </Drawer>

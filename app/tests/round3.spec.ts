@@ -36,11 +36,11 @@ test('fixed pilot map, selection, range and zone scoping', async ({ page }) => {
   await expect(page.locator('.plan-svg [role=button][aria-label^="Mapped house"]')).toHaveCount(0);
   await page.locator('.plan-svg [data-house-id="A01"]').click();
   await expect(page.getByRole('dialog')).toContainText('A01');
-  await expect(page.getByRole('dialog')).toHaveAttribute('aria-modal', 'false');
+  await expect(page.getByRole('dialog')).toHaveAttribute('aria-modal', 'true');
   await page.keyboard.press('Escape');
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await page.locator('.plan-svg [data-house-id="A01"]').click();
-  await page.locator('.plan-svg').click({ position: { x: 10, y: 10 } });
+  await page.mouse.click(10, 200);
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await page.getByRole('button', { name: '7 days', exact: true }).click();
   await expect(page.getByRole('heading', { name: /^Rainfall · 7 days/ })).toBeVisible();

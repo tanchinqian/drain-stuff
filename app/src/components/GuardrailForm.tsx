@@ -1,3 +1,4 @@
+import { DrawerFooter } from './Drawer';
 import SearchableSelect from './SearchableSelect';
 import { useState, type FormEvent } from 'react';
 import type { Config, Guardrails, TrialDetail } from '../api/types';
@@ -32,7 +33,7 @@ export default function GuardrailForm({ trial, config }: { trial: TrialDetail; c
         Nutrient check: did water leaving the soil carry extra nutrients? Keep compost away from
         open drains. After the first heavy rain, record washout, clogging, a photo and the result.
       </p>
-      <form onSubmit={submit}>
+      <form id="GuardrailForm" onSubmit={submit}>
         <div className="field" style={{ marginTop: 16 }}>
           <span>Nutrient-export check</span>
           <SearchableSelect
@@ -122,8 +123,8 @@ export default function GuardrailForm({ trial, config }: { trial: TrialDetail; c
         <p className="small">
           Standing-water watch if drain-down exceeds {config.drainDownLimitH} h.
         </p>
-        <button
-          type="submit"
+        <DrawerFooter>        <button
+          type="submit" form="GuardrailForm"
           disabled={
             write.isPending ||
             (checks.postStormCheck !== 'pending' &&
@@ -132,7 +133,7 @@ export default function GuardrailForm({ trial, config }: { trial: TrialDetail; c
           style={{ marginTop: 15 }}
         >
           Save safety checks
-        </button>
+        </button></DrawerFooter>
         {write.error && (
           <p className="error" role="alert">
             {write.error.message}

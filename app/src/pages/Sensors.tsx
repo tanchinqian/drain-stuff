@@ -181,7 +181,7 @@ export default function Sensors() {
           />
         </section>
       </div>
-      {selected && <SensorDetail id={selected} onClose={() => setParams({})} />}
+      {selected && <SensorDetail id={selected} onClose={() => setParams({}, {replace:true})} />}
     </QueryState>
   );
 }

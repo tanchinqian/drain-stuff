@@ -105,7 +105,7 @@ test('table menus are exclusive, filters persist and density and pagination have
   await page.getByRole('button', { name: 'Compact rows', exact: true }).click();
   expect((await batches.locator('tbody tr').first().boundingBox())!.height).toBe(32);
 });
-test('sensor assets are grouped and the wide detail drawer sits beside the register', async ({
+test('sensor assets are grouped and their detail uses the shared modal drawer', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1920, height: 1080 });
@@ -118,9 +118,8 @@ test('sensor assets are grouped and the wide detail drawer sits beside the regis
   await page.getByRole('searchbox', { name: 'Search sensor assets', exact: true }).fill('');
   const table = page.getByRole('table', { name: 'sensors', exact: true });
   await table.locator('tbody tr').first().locator('.row-open').click();
-  const drawer = (await page.getByRole('dialog').boundingBox())!,
-    register = (await page.locator('.sensor-workspace .master-content').boundingBox())!;
-  expect(register.x + register.width).toBeLessThan(drawer.x);
+  await expect(page.getByRole('dialog')).toHaveAttribute('aria-modal','true');
+  expect((await page.getByRole('dialog').boundingBox())!.width).toBe(540);
   await page.keyboard.press('Escape');
   await expect(page.getByRole('dialog')).toHaveCount(0);
 });

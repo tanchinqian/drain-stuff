@@ -1,3 +1,4 @@
+import Drawer, { DrawerFooter, drawerSaved } from './Drawer';
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../api/client';
@@ -35,7 +36,7 @@ export default function DeviceRegistry() {
       {rows.error && <p role="alert">{rows.error.message}</p>}
       {!rows.data?.length && <p>No devices commissioned yet.</p>}
       {open && (
-        <form
+        <Drawer title="Commission a device" onClose={() => setOpen(false)}><form id="device-commission"
           className="device-form"
           onSubmit={async (e) => {
             e.preventDefault();
@@ -54,6 +55,7 @@ export default function DeviceRegistry() {
                 stuckReports: stuck,
               });
               await cache.invalidateQueries();
+              drawerSaved();
               setOpen(false);
             } catch (e) {
               setError((e as Error).message);
@@ -171,10 +173,10 @@ export default function DeviceRegistry() {
             </span>
           </label>
           {error && <p role="alert">{error}</p>}
-          <button className="primary" disabled={busy}>
+          <DrawerFooter><button form="device-commission" className="primary" disabled={busy}>
             {busy ? 'Registering…' : 'Record commissioning'}
-          </button>
-        </form>
+          </button></DrawerFooter>
+        </form></Drawer>
       )}
       <div className="table-scroll">
         <table>

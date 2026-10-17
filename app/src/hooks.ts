@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { drawerSaved } from './components/Drawer';
 import { useSelection } from './state';
 export function useWrite<T>(
   mutationFn: (input: T) => Promise<unknown>,
@@ -9,6 +10,7 @@ export function useWrite<T>(
   return useMutation({
     mutationFn,
     onSuccess: (_data, input) => {
+      drawerSaved();
       void client.invalidateQueries();
       const saved =
         (typeof message === 'function' ? message(input) : message) +

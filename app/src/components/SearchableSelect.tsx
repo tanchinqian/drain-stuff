@@ -83,7 +83,7 @@ export default function SearchableSelect({
         }}
         onKeyDown={(e) => {
           if (e.key === 'Escape') {
-            if (open) e.stopPropagation();
+            if (open) { e.stopPropagation(); e.preventDefault(); }
             setOpen(false);
             setQuery('');
           }
