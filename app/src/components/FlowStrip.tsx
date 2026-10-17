@@ -52,7 +52,7 @@ export default function FlowStrip({ ownerId,compact=false }: { ownerId: string;c
           },
           { name: 'Overflow', rate: f.flux.overflow, detail: formatValue(f.ponding * 1000, 'mm') },
         ];
-  if(compact) return <section className="flow-legend" aria-label="Water path"><h3>Water path · current minute</h3><div>{[['Inlet',f.flux.inlet],['Chamber',f.flux.inlet],['Outlet',f.flux.outfall],['Bypass',f.flux.overflow]].map(([name,value])=><span key={String(name)}><strong>{name}</strong> {formatValue(Number(value)*60000)} L/min</span>)}</div></section>;
+  if(compact) return <section className="flow-legend" aria-label="Water path"><h3>Water path · current minute <Term text="L/min" helpOnly/></h3><div>{[['Inlet',f.flux.inlet],['Chamber',f.flux.inlet],['Outlet',f.flux.outfall],['Bypass',f.flux.overflow]].map(([name,value])=><span key={String(name)}><strong>{name}</strong> {formatValue(Number(value)*60000)} L/min</span>)}</div></section>;
   return (
     <section className="flow-path" aria-label="Water path">
       <h3>Water path · current minute</h3>

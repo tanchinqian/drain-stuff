@@ -8,7 +8,7 @@ for(const width of [390,1440,1920]) test('Round 8B review captures at '+width,as
   const drawer=page.getByRole('dialog');
   await expect(drawer.locator('.diagnosis-panel').getByRole('button',{name:'Accept',exact:true})).toBeEnabled();
   await page.screenshot({path:`../docs/screens/round8b/fault-drawer-${width}.png`});
-  await drawer.locator('.diagnosis-panel > summary').scrollIntoViewIfNeeded();
+  await drawer.locator('.diagnosis-panel').evaluate(el=>el.scrollIntoView({block:'start'}));
   await page.screenshot({path:`../docs/screens/round8b/diagnosis-${width}.png`});
   await page.keyboard.press('Escape');await expect(drawer).toHaveCount(0);
   await page.goto('/');await page.getByLabel('Check ranking under ±25%').uncheck();

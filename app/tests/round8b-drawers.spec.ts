@@ -38,6 +38,8 @@ test('mobile Back and dirty-text dismissal use the same drawer guard',async({pag
 test('fault layout shows status, note helper, six lifecycle stages and sticky next action',async({page})=>{
   await page.goto('/faults?fault=F-002');
   const dialog=page.getByRole('dialog');
+  await expect(dialog.locator('.drawer-header')).toContainText('Zone B');
+  await expect(dialog.locator('.drawer-header .status-chip')).toContainText('Detected');
   await expect(dialog.locator('.workflow-steps li')).toHaveCount(6);
   await expect(dialog).toContainText('Add a note to confirm.');
   const action=dialog.locator('.drawer-footer').getByRole('button',{name:'Confirm fault',exact:true});
@@ -47,4 +49,25 @@ test('fault layout shows status, note helper, six lifecycle stages and sticky ne
   await expect(dialog.locator('[aria-current=step]')).toContainText('Confirmed');
   await expect(dialog.locator('.workflow-steps .complete')).toHaveCount(1);
   await page.keyboard.press('Escape'); await expect(dialog).toHaveCount(0);
+});
+
+test('saving diagnosis does not discard a separate unsaved work-order note',async({page})=>{
+  await page.goto('/faults?fault=F-001');const dialog=page.getByRole('dialog');
+  await dialog.getByLabel('Required note',{exact:true}).fill('Keep this unsaved work note');
+  await dialog.locator('.diagnosis-panel').getByRole('button',{name:'Accept',exact:true}).click();
+  await expect(dialog.locator('.diagnosis-panel')).toContainText('Recorded in the audit log');
+  await expect(dialog.getByRole('textbox',{name:'Required note',exact:true})).toHaveValue('Keep this unsaved work note');
+  page.once('dialog',d=>d.dismiss());await page.keyboard.press('Escape');
+  await expect(dialog).toBeVisible();await expect(dialog.getByRole('textbox',{name:'Required note',exact:true})).toHaveValue('Keep this unsaved work note');
+  page.once('dialog',d=>d.accept());await page.keyboard.press('Escape');await expect(dialog).toHaveCount(0);
+});
+
+for(const dirty of [false,true]) test('second drawer replaces the first with dirty guard '+dirty,async({page})=>{
+  await page.goto('/tests/drawer-fixture.html');await page.getByRole('button',{name:'Open first',exact:true}).click();
+  if(dirty){await page.getByLabel('Draft note').fill('Keep this draft');page.once('dialog',d=>d.dismiss());await page.getByRole('button',{name:'Open second',exact:true}).click();await expect(page.getByRole('dialog',{name:'First record'})).toBeVisible();page.once('dialog',d=>d.accept());}
+  await page.getByRole('button',{name:'Open second',exact:true}).click();
+  await expect(page.getByRole('dialog')).toHaveCount(1);await expect(page.getByRole('dialog')).toHaveAccessibleName('Second record');
+  expect(await page.evaluate(()=>document.body.style.overflow)).toBe('hidden');
+  await page.keyboard.press('Escape');await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(page.getByRole('button',{name:'Open first',exact:true})).toBeFocused();
 });

@@ -33,7 +33,7 @@ export function createDataStore(
   let db = structuredClone(initial);
   archiveTrialExamples(db);
   // Upgrade only the untouched original demo fault; preserve every entered lifecycle action.
-  const demoFault = db.faults.find(f=>f.id==='F-001'&&f.featureId==='S1'&&f.synthetic&&!f.raisedBy&&!f.history?.length&&f.workOrder?.state==='detected');
+  const demoFault = db.faults.find(f=>f.id==='F-001'&&f.featureId==='S1'&&f.synthetic&&f.raisedBy!=='manual'&&f.diagnosingInput==='Level history + visual inspection'&&!f.history?.length&&f.workOrder?.state==='detected');
   if(demoFault) {
     demoFault.workOrder={state:'confirmed'};
     demoFault.status='inspected';
@@ -564,7 +564,7 @@ export function createDataStore(
       db = generateMock();
       archiveTrialExamples(db);
   // Upgrade only the untouched original demo fault; preserve every entered lifecycle action.
-  const demoFault = db.faults.find(f=>f.id==='F-001'&&f.featureId==='S1'&&f.synthetic&&!f.raisedBy&&!f.history?.length&&f.workOrder?.state==='detected');
+  const demoFault = db.faults.find(f=>f.id==='F-001'&&f.featureId==='S1'&&f.synthetic&&f.raisedBy!=='manual'&&f.diagnosingInput==='Level history + visual inspection'&&!f.history?.length&&f.workOrder?.state==='detected');
   if(demoFault) {
     demoFault.workOrder={state:'confirmed'};
     demoFault.status='inspected';

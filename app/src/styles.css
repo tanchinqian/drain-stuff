@@ -2555,3 +2555,7 @@ main > .about {
 [id^="feature-"], #storm-heading, #board-replay { scroll-margin-top: 120px; }
 .triage-map { top: 76px; }
 @media(max-width:600px) { .section-index { gap: 0; } .section-index a, .section-index button { padding: 8px 9px; font-size: 12px; } }
+
+.comparison-legend .legend-capacity { height: 2px; }
+.model-workspace:not(.compost-model) .cad-scene.channel-scene { height: clamp(320px,28vw,500px); min-height: 0; }
+.drawer-header .status-chip { margin-bottom: 4px; }

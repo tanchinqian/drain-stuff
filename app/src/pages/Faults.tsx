@@ -205,6 +205,9 @@ export default function Faults() {
       {active && (
         <Drawer
           title={active.id + ' · ' + displayName(active.type)}
+          key={active.id}
+          status={<Chip value={active.workOrder?.state ?? 'detected'} tone={active.workOrder?.state==='closed'?'ok':'watch'}/>}
+          subtitle={<><p className="small">{active.featureId} · {partName(active.partId)} · Zone {active.zone}</p><p className="small">{active.raisedBy==='manual'?'Operator inspection':'Recorded rule finding'} · {timeLabel(active.openedAt)}</p></>}
           onClose={() => {
             setSelected(null);
             const next = new URLSearchParams(params);

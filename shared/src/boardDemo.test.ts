@@ -13,7 +13,10 @@ test('Heavy demo derives a fixable S1, capacity-limited S2 and clear S3',()=>{
 });
 test('only the untouched older demo fault is upgraded',()=>{
   const initial=generateMock();const fault=initial.faults.find(f=>f.id==='F-001')!;
+  fault.raisedBy='rule';fault.ruleId='RULE-INLET-DEBRIS-001';
   fault.workOrder={state:'detected'};expect(createDataStore(initial).snapshot().faults.find(f=>f.id==='F-001')!.workOrder?.state).toBe('confirmed');
   fault.history=[{id:'user-reopen',t:new Date().toISOString(),user:'Operator',action:'reopen',note:'New observation'}];
+  expect(createDataStore(initial).snapshot().faults.find(f=>f.id==='F-001')!.workOrder?.state).toBe('detected');
+  fault.history=[];fault.raisedBy='manual';
   expect(createDataStore(initial).snapshot().faults.find(f=>f.id==='F-001')!.workOrder?.state).toBe('detected');
 });

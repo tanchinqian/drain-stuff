@@ -1,5 +1,5 @@
 import { Check } from 'lucide-react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Fault } from '../api/types';
 import { api } from '../api/client';
@@ -16,6 +16,7 @@ const actions = {
   closed: 'reopen',
 } as const;
 export default function WorkOrderPanel({ fault }: { fault: Fault }) {
+  const workRef=useRef<HTMLElement>(null);
   const cache = useQueryClient(),
     jobId = useBoard((s) => s.jobId);
   const state = fault.workOrder?.state ?? (fault.status === 'closed' ? 'closed' : 'detected');
@@ -57,7 +58,7 @@ export default function WorkOrderPanel({ fault }: { fault: Fault }) {
             }
           : {}),
       });
-      drawerSaved();
+      drawerSaved(workRef.current);
       setNote('');
       await cache.invalidateQueries();
     } catch (e) {
@@ -67,7 +68,7 @@ export default function WorkOrderPanel({ fault }: { fault: Fault }) {
     }
   }
   return (
-    <section className="work-order">
+    <section className="work-order" ref={workRef}>
       <h3>Work order</h3>
       <ol className="workflow-steps">
         {states.map((s) => (

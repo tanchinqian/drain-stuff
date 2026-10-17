@@ -9,7 +9,7 @@ type Feedback = {choice: string; at: string};
 export default function DiagnosisPanel({ faultId, partContext, inline = false }: {
   faultId: string; partContext?: DiagnosisRequest['partContext']; inline?: boolean;
 }) {
-  const cache = useQueryClient(), snapshot = useRef(partContext);
+  const panelRef=useRef<HTMLDetailsElement>(null), cache = useQueryClient(), snapshot = useRef(partContext);
   snapshot.current = partContext;
   const [open,setOpen]=useState(true), [review,setReview]=useState<'edit'|'reject'|null>(null),
     [ids,setIds]=useState<string[]>([]), [search,setSearch]=useState(''), [note,setNote]=useState(''),
@@ -29,10 +29,10 @@ export default function DiagnosisPanel({ faultId, partContext, inline = false }:
     try {
       await api.diagnosisFeedback({suggestionId:result.id,choice,note,...(choice==='edit'?{rankedStepIds:[...new Set(ids)]}:{})});
       cache.setQueryData(['diagnosis-feedback',result.id],{choice,at:new Date().toISOString()});
-      drawerSaved();setReview(null);setNote('');await cache.invalidateQueries({queryKey:['faults']});
+      drawerSaved(panelRef.current);setReview(null);setNote('');await cache.invalidateQueries({queryKey:['faults']});
     } catch(e) {setError((e as Error).message);} finally {setBusy(false);}
   }
-  return <details className="diagnosis-panel fault-section" open={open} onToggle={e=>setOpen(e.currentTarget.open)} aria-label={inline?'Selected part AI diagnosis':'Suggested diagnosis'}>
+  return <details ref={panelRef} className="diagnosis-panel fault-section" open={open} onToggle={e=>setOpen(e.currentTarget.open)} aria-label={inline?'Selected part AI diagnosis':'Suggested diagnosis'}>
     <summary>{inline?'AI diagnosis':'Suggested diagnosis'}<span>{result ? result.confidence+' confidence · '+result.mode : 'Review the recorded finding and supporting sources'}</span></summary>
     <div className="diagnosis-content">
       <div className="actions"><button className="text-action" disabled={query.isFetching||busy} onClick={()=>{setReview(null);void query.refetch();}}>{query.isFetching?'Analysing…':'Refresh'}</button></div>
@@ -41,7 +41,7 @@ export default function DiagnosisPanel({ faultId, partContext, inline = false }:
       {result && <>
         <p className={'diagnosis-sentence'+(result.insufficientInformation?' insufficient':'')}><strong>{result.insufficientInformation?'Not enough information':result.diagnosis}</strong></p>
         <div className="diagnosis-chips"><Chip value={'Confidence: '+result.confidence}/><span className="status-chip">{result.mode}</span></div>
-        {result.provider?.fallback && <p className="small" role="status">Fallback · case matching. {result.provider.reason?.replaceAll('_',' ')}. See the backend terminal for the reason.</p>}
+        {result.provider?.fallback && <p className="small" role="status">Fallback · case matching. {result.provider.reason?.replaceAll('_',' ')}. {result.provider.reason==='backend_unavailable'?'The local backend is unavailable; this result was produced in the browser.':'See the backend terminal for the reason.'}</p>}
         {query.data?.second!==undefined && <p className="small">Simulation snapshot: minute {(query.data.second/60).toFixed(1)}. Simulation is separate from recorded observations.</p>}
         {result.insufficientInformation && <div className="notice insufficient"><p>{result.diagnosis}</p><p>Needed: a trusted inspection, current readings and a sourced comparable case.</p>{result.analysis?.missingInformation.map((text,i)=><p key={i}>{text}</p>)}</div>}
         {result.analysis && <>

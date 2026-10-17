@@ -280,7 +280,7 @@ function Model(props: Props) {
   return (
     <>
       <FitCamera
-        bounds={fitBounds} direction={fitBounds ? [-5,5,12] : undefined}
+        bounds={fitBounds} direction={fitBounds ? [-9,9,12] : undefined}
         width={
           props.physics
             ? Math.max(
@@ -438,7 +438,7 @@ export default function DrainScene(props: Props) {
   const low = props.lowQuality || automaticLow;
   return (
     <div
-      className="scene cad-scene"
+      className={"scene cad-scene"+(props.featureId==='R1'?' channel-scene':'')}
       aria-label={
         props.kind === 'compost'
           ? 'Selectable 3D compost bay parts'
