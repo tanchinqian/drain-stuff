@@ -25,6 +25,7 @@ export type ViewMode = 'Operator' | 'Debug' | 'Troubleshoot';
 export type Offsets = Partial<Record<PartId, [number, number, number]>>;
 export interface Props {
   lowQuality?: boolean;
+  cameraPreset?: "overview" | "inlet";
   inspectionActive?: boolean;
   onInspect?: (id?: PartId) => void;
   onPerformance?: (fps: number, quality: string) => void;
@@ -200,10 +201,17 @@ function Model(props: Props) {
     props.edges,
     props.parts,
   ]);
+  const fitBounds = useMemo(()=>{
+    if(props.featureId!=='R1'||!design) return undefined;
+    if(props.cameraPreset==='inlet') return new Box3().setFromCenterAndSize(new Vector3(-design.length/2,props.physics!.config.values.crest.value/2,0),new Vector3(2,1.4,1.8));
+    const bounds=new Box3();Object.values(groups).forEach(g=>{if(g?.userData.localBounds) bounds.union(g.userData.localBounds);});return bounds;
+  },[groups,props.featureId,props.cameraPreset]);
+  const fitTarget=fitBounds?.getCenter(new Vector3());
   const annotations: SceneLabel[] = [];
   const f = props.physics?.frame;
   const stageFlow: Partial<Record<PartId, number>> = {
     inlet: f?.flux.inlet,
+    pretreat:f?.flux.inlet, sock:f?.flux.inlet, ponding:f?.flux.inlet,
     media: f?.flux.infiltration,
     underdrain: f?.flux.drain,
     outfall: f?.flux.outfall,
@@ -223,7 +231,7 @@ function Model(props: Props) {
     const q = stageFlow[id];
     if (q !== undefined) {
       const stage = {
-        inlet: 'Inlet',
+        inlet: 'Inlet', pretreat:'Chamber', sock:'Screen', ponding:'Chamber',
         media: 'Media',
         underdrain: 'Underdrain',
         outfall: 'Outfall',
@@ -272,6 +280,7 @@ function Model(props: Props) {
   return (
     <>
       <FitCamera
+        bounds={fitBounds} direction={fitBounds ? [-5,5,12] : undefined}
         width={
           props.physics
             ? Math.max(
@@ -294,7 +303,7 @@ function Model(props: Props) {
         }
         controlsRef={controls}
         enabled={!props.move}
-        target={props.physics && props.assembly !== 'exploded' ? [-0.4, -0.1, -0.4] : [1.2, 1.2, 0]}
+        target={fitTarget ? [fitTarget.x,fitTarget.y,fitTarget.z] : props.physics && props.assembly !== 'exploded' ? [-0.4, -0.1, -0.4] : [1.2, 1.2, 0]}
       />
       <color attach="background" args={['#E2DCCB']} />
       <ambientLight intensity={1.35} />

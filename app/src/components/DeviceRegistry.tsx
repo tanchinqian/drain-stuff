@@ -190,9 +190,9 @@ export default function DeviceRegistry() {
             </tr>
           </thead>
           <tbody>
-            {rows.data?.map((d) => (
+            {rows.data?.map((d,index) => (
               <tr key={d.id}>
-                <td>{d.id}</td>
+                <td><details><summary>{d.part==='inlet'?'Inlet':'Outlet'} level sensor {index+1}</summary><p>{d.id}</p></details></td>
                 <td>
                   {d.assetId} · {d.part}
                 </td>

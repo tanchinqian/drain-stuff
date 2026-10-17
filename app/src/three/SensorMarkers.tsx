@@ -1,3 +1,4 @@
+import { sensorLabel } from '../utils';
 import { useState } from 'react';
 import { Html } from '@react-three/drei';
 import { useNavigate } from 'react-router-dom';
@@ -50,7 +51,7 @@ export default function SensorMarkers({
                   className="sensor-popup"
                   onClick={() => navigate(`/sensors?sensor=${encodeURIComponent(sensor.sensorId)}`)}
                 >
-                  <strong>{sensor.sensorId}</strong>
+                  <strong>{sensorLabel(sensor)}</strong>
                   <span>
                     {sensor.metric}: <SensorValue sensor={sensor} />
                   </span>

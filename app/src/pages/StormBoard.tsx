@@ -1,3 +1,4 @@
+import { sensorLabel } from '../utils';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
@@ -407,7 +408,7 @@ export default function StormBoard() {
                     <p className="small">
                       {data.data?.sensors
                         .filter((s) => s.ownerId === row.asset && s.deviceId)
-                        .map((s) => s.sensorId + ' · ' + s.status)
+                        .map((s) => sensorLabel(s) + ' · ' + s.status)
                         .join(' / ')}
                     </p>
                     <div className="actions">

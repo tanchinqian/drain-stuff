@@ -11,7 +11,7 @@ The owner approved the full cleanup brief after completion of the selected-part 
 | 2 Fault layout | Done | Status and asset/source header, six-step lifecycle, explicit note helper, sticky next action, summary/evidence sections and newest-first audit timeline. Three drawer/lifecycle browser checks pass. Three-viewport captures follow in section 8. |
 | 3 Suggested diagnosis | Done | Cached automatic retrieval, Refresh, concise state/mode chips, deduplicated numbered draft steps and source chips, collapsed citations/production details, amber insufficient state, reasoned edit/reject and timestamped feedback. Four browser checks and 57 backend/shared checks pass. |
 | 4 Board fixable case | Done | Local DB F-001 was the older untouched detected fixture. Only that untouched fixture is upgraded; entered lifecycle history is preserved. Heavy physics test confirms S1 fixable, S2 capacity-limited and S3 clear. Computed differences, three bar styles/legend and stale-confirmation notice added. Two new unit checks pass. |
-| 5 R1 / 3D framing | Not started | Fit, controls, stage readings and device labels. |
+| 5 R1 / 3D framing | Done | Bounds-based R1 camera and inlet close-up; three viewport checks confirm at least 70% width. High-first adaptive quality, quality/FPS only in Debug. Visible assembly modes; collapsed advanced controls. Compact flow legend and selected chamber flow. Human device labels retain IDs in details. |
 | 6 Page structure | Not started | Section navigation and three viewport review. |
 | 7 Live AI check tooling | Not started | User-run script and exact setup; no live call until the user runs it. |
 | 8 Demo readiness | Not started | Fresh setup, explicit reset and five-minute runbook. |

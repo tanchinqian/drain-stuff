@@ -2542,3 +2542,9 @@ main > .about {
 .legend-capacity, .mode-capacity-limit .mode-track > span { background: var(--ink2); height: 2px; }
 .mode-capacity-limit .mode-track { display: flex; align-items: center; }
 .comparison-difference { font-weight: 550; font-size: 14px; }
+
+.flow-legend { margin-block: 16px; border-top: 1px solid var(--border); padding-top: 10px; }
+.flow-legend h3 { font-size: 14px; }
+.flow-legend > div { display: flex; flex-wrap: wrap; gap: 10px 20px; font-size: 13px; }
+.view-controls > summary { font-weight: 600; cursor: pointer; padding: 14px 0; }
+.camera-presets { margin-block: 12px; }

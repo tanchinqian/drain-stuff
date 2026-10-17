@@ -32,9 +32,25 @@ export interface ControlProps {
   showSensors: boolean;
   setShowSensors: Dispatch<SetStateAction<boolean>>;
 }
+export function AssemblyModes({assembly,setAssembly,explode,setExplode}: ControlProps) {
+  return (<div className="segments">
+        {(['exploded', 'assembled', 'section'] as const).map((value) => (
+          <button
+            key={value}
+            aria-pressed={assembly === value}
+            onClick={() => {
+              setAssembly(value);
+              if (value === 'assembled') setExplode(0);
+              if (value === 'exploded' && !explode) setExplode(65);
+            }}
+          >
+            {value === 'exploded' ? 'Exploded' : value === 'assembled' ? 'Assembled' : 'Cutaway'}
+          </button>
+        ))}
+      </div>);
+}
 export function AssemblyControls({
   mode,
-  assembly,
   setAssembly,
   explode,
   setExplode,
@@ -53,21 +69,6 @@ export function AssemblyControls({
 }: ControlProps) {
   return (
     <>
-      <div className="segments">
-        {(['exploded', 'assembled', 'section'] as const).map((value) => (
-          <button
-            key={value}
-            aria-pressed={assembly === value}
-            onClick={() => {
-              setAssembly(value);
-              if (value === 'assembled') setExplode(0);
-              if (value === 'exploded' && !explode) setExplode(65);
-            }}
-          >
-            {value === 'exploded' ? 'Exploded' : value === 'assembled' ? 'Assembled' : 'Cutaway'}
-          </button>
-        ))}
-      </div>
       <div className="field">
         <label htmlFor="explode">
           Explode <output>{explode}%</output>

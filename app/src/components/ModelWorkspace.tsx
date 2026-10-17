@@ -12,7 +12,7 @@ import { useSelection } from '../state';
 import DrainScene, { type Assembly, type Offsets, type ViewMode } from '../three/DrainScene';
 import PartPanel from './PartPanel';
 import SensorPositions from './SensorPositions';
-import { AssemblyControls, PartControls } from './ModelControls';
+import { AssemblyControls, AssemblyModes, PartControls } from './ModelControls';
 export default function ModelWorkspace({
   ownerId,
   parts: sourceParts,
@@ -44,6 +44,7 @@ export default function ModelWorkspace({
   const [flat, setFlat] = useState(false),
     [dimensionsVisible, setDimensionsVisible] = useState(false);
   const [inspectionActive, setInspectionActive] = useState(kind === 'compost');
+  const [cameraPreset,setCameraPreset]=useState<'overview'|'inlet'>('overview');
   const [quality, setQuality] = useState('High');
   const [lowQuality, setLowQuality] = useState(false);
 
@@ -171,7 +172,7 @@ export default function ModelWorkspace({
         </aside>
         <section className="panel model-card">
           <div className="model-mode">
-            {physics && (
+            {physics && mode==='Debug' && (
               <output className="quality-status">{lowQuality ? 'Low' : quality} quality</output>
             )}
             <div className="segments">
@@ -191,11 +192,14 @@ export default function ModelWorkspace({
             </div>
           </div>
 
+          <AssemblyModes {...controlProps}/>
+          {ownerId==='R1' && <div className="actions camera-presets"><button aria-pressed={cameraPreset==='overview'} onClick={()=>{setCameraPreset('overview');setReset(v=>v+1);}}>Fit channel</button><button aria-pressed={cameraPreset==='inlet'} onClick={()=>{setCameraPreset('inlet');setReset(v=>v+1);}}>Inspect inlet close-up</button></div>}
           {physics && flat ? (
             <PhysicsSection {...physics} />
           ) : (
             <DrainScene
               physics={physics}
+              cameraPreset={cameraPreset}
               inspectionActive={inspectionActive}
               onInspect={(id) => {
                 setInspectionActive(!!id);
@@ -236,14 +240,14 @@ export default function ModelWorkspace({
           {physics && (
             <>
               <div className="physics-view-controls">
-                <label>
+                {mode==='Debug' && <label>
                   <input
                     type="checkbox"
                     checked={lowQuality}
                     onChange={(e) => setLowQuality(e.target.checked)}
                   />{' '}
                   Low quality
-                </label>
+                </label>}
                 <label>
                   <input
                     type="checkbox"
@@ -262,7 +266,7 @@ export default function ModelWorkspace({
                 </label>
               </div>
               <PhysicsControls ownerId={ownerId} />
-              <FlowStrip ownerId={ownerId} />
+              <FlowStrip ownerId={ownerId} compact={!inspectionActive} />
             </>
           )}
           {showSensors && (
@@ -275,8 +279,9 @@ export default function ModelWorkspace({
           )}
           {summary}
           <div className="part-settings">
-            <AssemblyControls {...controlProps} />
-            <PartControls {...controlProps} />
+            <details className="view-controls" open={mode==='Debug'}><summary>View controls</summary>
+              <AssemblyControls {...controlProps}/><PartControls {...controlProps}/>
+            </details>
           </div>
         </section>
         <PartPanel

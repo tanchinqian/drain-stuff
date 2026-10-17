@@ -100,3 +100,7 @@ export const faultOrder = (a: import('./api/types').Fault, b: import('./api/type
   b.severity - a.severity ||
   faultImpact(a.type) - faultImpact(b.type) ||
   Date.parse(a.openedAt) - Date.parse(b.openedAt);
+
+export function sensorLabel(s: {deviceId?:string;partId:string;sensorId:string}) {
+  return s.deviceId ? (s.partId==='inlet'?'Inlet':s.partId==='outfall'?'Outlet':'Drain')+' level sensor' : s.sensorId;
+}

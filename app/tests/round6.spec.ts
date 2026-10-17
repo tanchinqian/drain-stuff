@@ -131,6 +131,7 @@ for (const featureId of ['S1', 'S3', 'I1', 'T1'])
         ),
         quality: await page.locator('.cad-scene').getAttribute('data-quality'),
       });
+      await page.getByRole('button', {name:'Debug',exact:true}).click();
       await page.getByRole('checkbox', { name: 'Low quality', exact: true }).check();
       await expect(page.locator('.cad-scene')).toHaveAttribute('data-quality', 'low');
       await page.emulateMedia({ reducedMotion: 'reduce' });

@@ -1,3 +1,4 @@
+import { sensorLabel } from '../utils';
 import DeviceRegistry from '../components/DeviceRegistry';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip } from 'recharts';
 import { useState } from 'react';
@@ -144,7 +145,7 @@ export default function Sensors() {
               { key: 'trust', label: 'Trust', value: (s) => s.drift },
             ]}
             columns={[
-              { key: 'id', label: 'Sensor', value: (s) => s.sensorId },
+              { key: 'id', label: 'Sensor', value: (s) => s.sensorId, render:s=>sensorLabel(s) },
               { key: 'type', label: 'Type', value: (s) => s.type },
               {
                 key: 'asset',

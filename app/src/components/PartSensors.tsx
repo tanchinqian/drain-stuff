@@ -1,3 +1,4 @@
+import { sensorLabel } from '../utils';
 import { Link } from 'react-router-dom';
 import type { Sensor } from '../api/types';
 import { displayName, formatValue } from '../utils';
@@ -22,7 +23,7 @@ export default function PartSensors({ sensors }: { sensors: Sensor[] }) {
                   to={'/sensors?sensor=' + encodeURIComponent(s.sensorId)}
                   aria-label={s.sensorId}
                 >
-                  {s.sensorId.replace(s.ownerId + '-', '')}
+                  {s.deviceId ? sensorLabel(s) : s.sensorId.replace(s.ownerId + '-', '')}
                 </Link>
               </td>
               <td

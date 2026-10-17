@@ -1,7 +1,7 @@
 import { usePhysics } from '../simulation/physics/view';
 import { formatValue } from '../utils';
 import Term from './Term';
-export default function FlowStrip({ ownerId }: { ownerId: string }) {
+export default function FlowStrip({ ownerId,compact=false }: { ownerId: string;compact?:boolean }) {
   const { config, frame: f } = usePhysics(ownerId);
   if (!config || !f) return null;
   const v = config.values,
@@ -52,6 +52,7 @@ export default function FlowStrip({ ownerId }: { ownerId: string }) {
           },
           { name: 'Overflow', rate: f.flux.overflow, detail: formatValue(f.ponding * 1000, 'mm') },
         ];
+  if(compact) return <section className="flow-legend" aria-label="Water path"><h3>Water path · current minute</h3><div>{[['Inlet',f.flux.inlet],['Chamber',f.flux.inlet],['Outlet',f.flux.outfall],['Bypass',f.flux.overflow]].map(([name,value])=><span key={String(name)}><strong>{name}</strong> {formatValue(Number(value)*60000)} L/min</span>)}</div></section>;
   return (
     <section className="flow-path" aria-label="Water path">
       <h3>Water path Â· current minute</h3>

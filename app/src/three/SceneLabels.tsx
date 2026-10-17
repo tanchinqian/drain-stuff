@@ -12,10 +12,12 @@ export default function SceneLabels({ labels }: { labels: SceneLabel[] }) {
   const { camera, size } = useThree();
   const [placed, setPlaced] = useState<ReturnType<typeof placeLabels>>([]);
   const last = useRef(''),
-    timer = useRef(0);
+    timer = useRef(0), source = useRef('');
   useFrame((_, delta) => {
     timer.current += delta;
-    if (timer.current < 0.1) return;
+    const signature=JSON.stringify(labels);
+    if (timer.current < 0.1 && signature===source.current) return;
+    source.current=signature;
     timer.current = 0;
     const points = labels
       .map((label) => {
