@@ -362,7 +362,7 @@ export default function StormBoard() {
                           ? 'Upkeep opportunity — compare clearing'
                           : 'No overflow in this scenario'}
                     </p>
-                    <p className="comparison-difference">{row.capacityLimited ? 'Escalate: still overflows when cleared' : row.asInstalled.summary.overflowM3-row.ifCleared.summary.overflowM3 > 1e-8 ? `Clearing the fault removes ${(row.asInstalled.summary.overflowM3-row.ifCleared.summary.overflowM3).toFixed(3)} m� of overflow` : 'No overflow to remove in this scenario'}</p>
+                    <p className="comparison-difference">{row.capacityLimited ? 'Escalate: still overflows when cleared' : row.asInstalled.summary.overflowM3-row.ifCleared.summary.overflowM3 > 1e-8 ? `Clearing the fault removes ${(row.asInstalled.summary.overflowM3-row.ifCleared.summary.overflowM3).toFixed(3)} m³ of overflow` : 'No overflow to remove in this scenario'}</p>
                     {row.capacityLimited && Math.abs(row.asInstalled.summary.overflowM3-row.ifCleared.summary.overflowM3)<1e-8 && <p className="small">No difference: capacity-limited</p>}
                     <div
                       className="mode-comparison"

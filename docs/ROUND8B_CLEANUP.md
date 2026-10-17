@@ -14,7 +14,7 @@ The owner approved the full cleanup brief after completion of the selected-part 
 | 5 R1 / 3D framing | Done | Bounds-based R1 camera and inlet close-up; three viewport checks confirm at least 70% width. High-first adaptive quality, quality/FPS only in Debug. Visible assembly modes; collapsed advanced controls. Compact flow legend and selected chamber flow. Human device labels retain IDs in details. |
 | 6 Page structure | Done | Sticky section navigation on Overview and feature pages links Overview, Replay, Parts, Sensors and Model details. Empty states provide next actions. Six-page containment/axe matrix passes at 390, 1440 and 1920 (3 browser tests). Existing single primary-action patterns retained. Final screenshot review follows. |
 | 7 Live AI check tooling | Done; live check pending user | server/.env setup and npm run check:ai added. Three seeded faults print mode/confidence/validation/IDs/latency/fallback reason and fail on rejected/fallback output. Mocked self-test passes with no live calls. Actual provider verification is explicitly not claimed. |
-| 8 Demo readiness | Not started | Fresh setup, explicit reset and five-minute runbook. |
+| 8 Demo readiness | Verification in progress | Three startup commands, backup-preserving reset and five-minute video runbook added. Reset and AI tooling self-tests pass with isolated/mock fixtures. Final full suite, clean startup and screenshot review are running. |
 
 ## Initial verification notes
 

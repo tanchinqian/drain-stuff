@@ -33,19 +33,19 @@ export default function DiagnosisPanel({ faultId, partContext, inline = false }:
     } catch(e) {setError((e as Error).message);} finally {setBusy(false);}
   }
   return <details className="diagnosis-panel fault-section" open={open} onToggle={e=>setOpen(e.currentTarget.open)} aria-label={inline?'Selected part AI diagnosis':'Suggested diagnosis'}>
-    <summary>{inline?'AI diagnosis':'Suggested diagnosis'}<span>{result ? result.confidence+' confidence · '+result.mode : 'Review the recorded finding and supporting sources'}</span></summary>
+    <summary>{inline?'AI diagnosis':'Suggested diagnosis'}<span>{result ? result.confidence+' confidence Â· '+result.mode : 'Review the recorded finding and supporting sources'}</span></summary>
     <div className="diagnosis-content">
-      <div className="actions"><button className="text-action" disabled={query.isFetching||busy} onClick={()=>{setReview(null);void query.refetch();}}>{query.isFetching?'Analysing…':'Refresh'}</button></div>
+      <div className="actions"><button className="text-action" disabled={query.isFetching||busy} onClick={()=>{setReview(null);void query.refetch();}}>{query.isFetching?'Analysingâ€¦':'Refresh'}</button></div>
       {(error||query.error) && <p role="alert">{error||query.error?.message} Use Refresh to retry.</p>}
-      {!result && query.isFetching && <p role="status">Comparing this finding with sourced cases and the configured model…</p>}
+      {!result && query.isFetching && <p role="status">Comparing this finding with sourced cases and the configured modelâ€¦</p>}
       {result && <>
         <p className={'diagnosis-sentence'+(result.insufficientInformation?' insufficient':'')}><strong>{result.insufficientInformation?'Not enough information':result.diagnosis}</strong></p>
         <div className="diagnosis-chips"><Chip value={'Confidence: '+result.confidence}/><span className="status-chip">{result.mode}</span></div>
-        {result.provider?.fallback && <p className="small" role="status">Fallback · case matching. {result.provider.reason?.replaceAll('_',' ')}. See the backend terminal for the reason.</p>}
+        {result.provider?.fallback && <p className="small" role="status">Fallback Â· case matching. {result.provider.reason?.replaceAll('_',' ')}. See the backend terminal for the reason.</p>}
         {query.data?.second!==undefined && <p className="small">Simulation snapshot: minute {(query.data.second/60).toFixed(1)}. Simulation is separate from recorded observations.</p>}
         {result.insufficientInformation && <div className="notice insufficient"><p>{result.diagnosis}</p><p>Needed: a trusted inspection, current readings and a sourced comparable case.</p>{result.analysis?.missingInformation.map((text,i)=><p key={i}>{text}</p>)}</div>}
         {result.analysis && <>
-          <h4>Possible causes · unconfirmed</h4>
+          <h4>Possible causes Â· unconfirmed</h4>
           {result.analysis.possibleCauses.map((cause,i)=><div className="diagnosis-cause" key={i}><strong>{cause.cause}</strong><p>{cause.reasoning}</p></div>)}
           {!!result.analysis.checks.length && <details><summary>Suggested checks</summary><ul>{result.analysis.checks.map((text,i)=><li key={i}>{text}</li>)}</ul></details>}
           {!result.insufficientInformation && !!result.analysis.missingInformation.length && <details><summary>Information needed</summary><ul>{result.analysis.missingInformation.map((text,i)=><li key={i}>{text}</li>)}</ul></details>}
@@ -54,10 +54,10 @@ export default function DiagnosisPanel({ faultId, partContext, inline = false }:
           const cases=result.sources.filter(s=>'stepsTaken' in s&&s.stepsTaken.includes(id)&&sourceIds.includes(s.id));
           return <li key={id} data-step-id={id}><p>{stepLibrary[id]}</p><div className="source-chips">{(cases.length?cases.map(s=>s.id):result.citedGuidanceIds).map(source=><span key={source}>{source}</span>)}</div></li>;
         })}</ol></>}
-        <details className="diagnosis-evidence"><summary>Cited evidence · {sourceIds.length} sources</summary>
+        <details className="diagnosis-evidence"><summary>Cited evidence Â· {sourceIds.length} sources</summary>
           {!sourceIds.length && <p>No retrieved source supports this explanation. General knowledge is not a site observation.</p>}
           {result.sources.filter((s,i,all)=>sourceIds.includes(s.id)&&all.findIndex(other=>other.id===s.id)===i).map(s=><article key={s.id}>
-            <strong>{s.id} · {'sourceLabel' in s?s.sourceLabel:s.title}</strong>
+            <strong>{s.id} Â· {'sourceLabel' in s?s.sourceLabel:s.title}</strong>
             <p className="small">{'cause' in s ? /guidance-based/i.test(s.sourceLabel)?'Guidance-based example':'Reported incident':'Guidance-based example'}</p>
             <p>{'cause' in s?s.symptoms+' '+s.outcome:s.passage}</p>
             {s.sourceUrl.startsWith('https://')?<a href={s.sourceUrl} target="_blank" rel="noreferrer">Open source</a>:<span>Recorded operator case</span>}
@@ -77,7 +77,7 @@ export default function DiagnosisPanel({ faultId, partContext, inline = false }:
           <button disabled={busy||!!recorded.data} onClick={()=>{setReview('edit');setIds(stepIds);}}>Edit</button>
           <button className="text-action" disabled={busy||!!recorded.data} onClick={()=>setReview('reject')}>Reject</button>
         </div>
-        {recorded.data && <p role="status">Recorded in the audit log · {recorded.data.choice} · {new Date(recorded.data.at).toLocaleString('en-MY')}</p>}
+        {recorded.data && <p role="status">Recorded in the audit log Â· {recorded.data.choice} Â· {new Date(recorded.data.at).toLocaleString('en-MY')}</p>}
       </>}
     </div>
   </details>;

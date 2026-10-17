@@ -1,6 +1,14 @@
-# Local startup — Round 8
+# Drain Trial Console — local demonstration
 
 From this folder, run `npm ci`, `npm --prefix app ci`, then **`npm run dev:all`**. It starts the local API and React app and seeds an empty SQLite database. The demonstration opens directly without a login or token. Anyone who can reach the server can read and change demo records; audit entries use “Demo visitor”. The terminal prints the app URL. Existing database records are preserved. Node 20.12+ is required.
+
+```sh
+npm ci
+npm --prefix app ci
+npm run dev:all
+```
+
+Stop the launcher before `npm run demo:reset` to restore the illustrative seed (a timestamped database backup is retained). Restart and reload the app, then run a fresh storm. See [five-minute video runbook](docs/VIDEO_RUNBOOK.md), [Round 8B checks](docs/ROUND8B_CLEANUP.md) and [user-run live AI check](docs/AI_LIVE_CHECK.md). Model settings may be kept in ignored `server/.env`; existing root `.env.local` remains supported.
 
 `npm run build:all` builds both; `npm run start:server` serves the built app/API together. Standalone `npm --prefix app run dev` still supports the original offline mock when no API base is configured.
 

@@ -64,6 +64,10 @@ An ephemeral filesystem loses SQLite data on redeploy. Back up the complete SQLi
 
 ## Provider and device demonstration
 
-Set `LLM_PROVIDER`, `LLM_API_KEY` and `LLM_MODEL` only in root `.env.local`, then restart. Both provider envelopes are checked with mocks; a live paid provider call is not verified. Twenty-five-second timeouts and one retry fall back to sourced matching. Prompt rules/version live in `server/ai/prompts/diagnosis.system.md`.
+Set `LLM_PROVIDER`, `LLM_API_KEY` and `LLM_MODEL` in ignored `server/.env` (or the existing root `.env.local`), then restart. Both provider envelopes are checked with mocks; a live paid provider call is not verified. Twenty-five-second timeouts and one retry fall back to sourced matching. Prompt rules/version live in `server/ai/prompts/diagnosis.system.md`.
 
 Run `npm run sim:device` after `dev:all`. It registers a fresh R1 node and sends a backdated ramp plus fault cases. Set `SIM_API_BASE` if the API port differs from 8080. Real TTN/ChirpStack installations need their own integration credential and commissioned device; no hardware is assumed. See `docs/iot/` for payload, electrical design and unverified conditions.
+
+## Repeatable demonstration
+
+Stop the local launcher, run `npm run demo:reset`, restart `npm run dev:all`, and reload the app. Reset backs up the current SQLite database and creates fresh illustrative records; it preserves uploaded files. It refuses to run while a local API is detected on the configured port range. Close other development servers first. Run a new storm to replace an old tab's saved run. Use `npm run demo:reset -- --self-test` to check the reset tool with an isolated temporary fixture. See `VIDEO_RUNBOOK.md` and `AI_LIVE_CHECK.md`.
