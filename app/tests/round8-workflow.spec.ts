@@ -116,7 +116,7 @@ test('Round 8 full workflow, real API, replay, devices and responsive accessibil
       .overflowM3,
   ).toBe(0);
   await page.goto('/faults?fault=' + fault.id);
-  const panel = page.locator('.work-order');
+  const panel = page.getByRole('dialog');
   await panel
     .getByRole('textbox', { name: 'Required note' })
     .fill('Obstruction independently confirmed');

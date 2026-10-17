@@ -1,10 +1,11 @@
+import { Check } from 'lucide-react';
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Fault } from '../api/types';
 import { api } from '../api/client';
 import { useBoard } from '../triage';
 import SearchableSelect from './SearchableSelect';
-import RecordHistory from './RecordHistory';
+import { DrawerFooter, drawerSaved } from './Drawer';
 const states = ['detected', 'confirmed', 'assigned', 'cleared', 'verified', 'closed'];
 const actions = {
   detected: 'confirm',
@@ -56,6 +57,7 @@ export default function WorkOrderPanel({ fault }: { fault: Fault }) {
             }
           : {}),
       });
+      drawerSaved();
       setNote('');
       await cache.invalidateQueries();
     } catch (e) {
@@ -72,8 +74,9 @@ export default function WorkOrderPanel({ fault }: { fault: Fault }) {
           <li
             key={s}
             aria-current={s === state ? 'step' : undefined}
-            className={s === state ? 'current' : ''}
+            className={s === state ? 'current' : states.indexOf(s) < states.indexOf(state) ? 'complete' : ''}
           >
+            <span className="step-dot" aria-hidden="true">{states.indexOf(s) < states.indexOf(state) ? <Check size={12}/> : null}</span>
             {s[0].toUpperCase() + s.slice(1)}
           </li>
         ))}
@@ -83,8 +86,9 @@ export default function WorkOrderPanel({ fault }: { fault: Fault }) {
       </p>
       <label className="field">
         Required note
-        <textarea value={note} maxLength={2000} onChange={(e) => setNote(e.target.value)} />
+        <textarea value={note} aria-describedby="work-note-help" maxLength={2000} onChange={(e) => setNote(e.target.value)} />
       </label>
+      <p id="work-note-help" className="small">{!note.trim() ? 'Add a note to ' + actions[state] + '.' : 'This note will be saved in the audit trail.'}{state === 'confirmed' && !assignee.trim() ? ' Choose the crew receiving the work.' : ''}</p>
       {state === 'confirmed' && (
         <label className="field">
           Crew or contractor
@@ -191,8 +195,8 @@ export default function WorkOrderPanel({ fault }: { fault: Fault }) {
         </>
       )}
       {error && <p role="alert">{error}</p>}
-      <div className="actions">
-        <button
+      <DrawerFooter><div className="actions">
+        <button className="primary"
           disabled={
             busy ||
             !note.trim() ||
@@ -218,14 +222,13 @@ export default function WorkOrderPanel({ fault }: { fault: Fault }) {
             Reopen fault
           </button>
         )}
-      </div>
+      </div></DrawerFooter>
       {evidence?.before && evidence.after && (
         <p className="takeaway">
           Verification re-run: overflow {evidence.before.overflowM3.toFixed(3)} →{' '}
           {evidence.after.overflowM3.toFixed(3)} m³. Relative ranking, not a prediction.
         </p>
       )}
-      <RecordHistory entries={fault.history ?? []} title="Work-order audit trail" />
       <p className="small">
         Confirming changes future rankings. Run the board again after a change. Never enter a
         chamber or lift a cover alone.

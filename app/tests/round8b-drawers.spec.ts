@@ -34,3 +34,17 @@ test('mobile Back and dirty-text dismissal use the same drawer guard',async({pag
   await expect(dialog).toHaveCount(0);
   expect(await page.evaluate(()=>document.body.style.overflow)).not.toBe('hidden');
 });
+
+test('fault layout shows status, note helper, six lifecycle stages and sticky next action',async({page})=>{
+  await page.goto('/faults?fault=F-002');
+  const dialog=page.getByRole('dialog');
+  await expect(dialog.locator('.workflow-steps li')).toHaveCount(6);
+  await expect(dialog).toContainText('Add a note to confirm.');
+  const action=dialog.locator('.drawer-footer').getByRole('button',{name:'Confirm fault',exact:true});
+  await expect(action).toBeDisabled();
+  await dialog.getByLabel('Required note',{exact:true}).fill('Independent inspection complete');
+  await expect(action).toBeEnabled(); await action.click();
+  await expect(dialog.locator('[aria-current=step]')).toContainText('Confirmed');
+  await expect(dialog.locator('.workflow-steps .complete')).toHaveCount(1);
+  await page.keyboard.press('Escape'); await expect(dialog).toHaveCount(0);
+});

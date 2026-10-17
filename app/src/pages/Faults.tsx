@@ -12,6 +12,7 @@ import AssetList from '../components/AssetList';
 import WorkOrderPanel from '../components/WorkOrderPanel';
 import EscalationPanel from '../components/EscalationPanel';
 import DiagnosisPanel from '../components/DiagnosisPanel';
+import RecordHistory from '../components/RecordHistory';
 import Timestamp from '../components/Timestamp';
 import Chip from '../components/Chip';
 import { QueryState } from '../components/QueryState';
@@ -38,6 +39,7 @@ export default function Faults() {
     () => api.reportFault({ ...entry, note, user }),
     'Saved report to the fault register',
   );
+  const inputs = useQuery({queryKey:['fault-evidence-inputs'],queryFn:()=>api.sensors()});
   const active = selected
     ? (faults.data?.find((f) => f.id === selected.id) ?? selected)
     : (faults.data?.find((f) => f.id === params.get('fault')) ?? null);
@@ -210,12 +212,7 @@ export default function Faults() {
             setParams(next, {replace:true});
           }}
         >
-          <Chip value={active.status} />
-          <p>
-            {active.featureId} · {partName(active.partId)} · Zone {active.zone}
-          </p>
-          <p>{active.diagnosingInput}</p>
-          <p>{timeLabel(active.openedAt)}</p>
+          <section className="fault-summary"><h3>Summary</h3><p>{active.diagnosingInput}</p></section>
           <Link
             className="button"
             to={partLink(
@@ -228,13 +225,16 @@ export default function Faults() {
           </Link>
           <WorkOrderPanel key={active.id} fault={active} />
           <DiagnosisPanel key={'diagnosis-' + active.id} faultId={active.id} />
-          <h3>Diagnosing inputs</h3>
-          {active.sensorIds.map((id) => (
-            <p key={id}>
-              <Link to={'/sensors?sensor=' + encodeURIComponent(id)}>{id}</Link> ·{' '}
-              {displayName(active.sensorStatusesAtAlert[id] ?? 'Not recorded')}
-            </p>
-          ))}
+          <details className="fault-section"><summary>Evidence and inputs <span>{active.sensorIds.length} recorded inputs</span></summary>
+            {!active.sensorIds.length ? <p>No linked input recorded; add an independent inspection note.</p> :
+            <div className="table-scroll"><table className="evidence-table"><thead><tr><th>Input</th><th>Value</th><th>Trust</th><th>Time</th></tr></thead><tbody>
+            {active.sensorIds.map(id => {const sensor=inputs.data?.find(s=>s.sensorId===id); return <tr key={id}>
+              <td><Link to={'/sensors?sensor='+encodeURIComponent(id)}>{id}</Link></td><td>{sensor?.lastText ?? sensor?.lastValue ?? 'Not recorded'} {sensor?.unit}</td>
+              <td>{displayName(active.sensorStatusesAtAlert[id] ?? 'Not recorded')}</td><td>{sensor?.lastAt ? timeLabel(sensor.lastAt) : 'Not recorded'}</td>
+            </tr>;})}</tbody></table></div>}
+            <p className="small">Trust is captured when the fault was raised. Values and time are the latest stored readings.</p>
+          </details>
+          <RecordHistory entries={active.history ?? []} title="Audit trail" />
         </Drawer>
       )}
       {rule && (
