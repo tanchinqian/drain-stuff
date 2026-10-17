@@ -102,6 +102,7 @@ export function simulatePhysics(
   config: PhysicsConfig,
   pattern: Pattern = "alternating-block",
   drawn: RainPoint[] = [],
+  captureSoil = true,
 ): PhysicsRun {
   const started = performance.now();
   validateConfig(config);
@@ -183,7 +184,7 @@ export function simulatePhysics(
     flux: Fluxes,
     links: LinkReading[],
   ) => {
-    const field = soil?.frame();
+    const field = captureSoil ? soil?.frame() : undefined;
     const stage = volumeStage(
       cell.surface,
       design.length,

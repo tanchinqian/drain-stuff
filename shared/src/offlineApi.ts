@@ -9,6 +9,8 @@ import {
   type StormResult,
   type CaseRecord,
   type Suggestion,
+  type StormInput,
+  type StormProgress,
 } from "./contract";
 import { runStorm } from "./physics/triage";
 import {referenceCases,referenceGuidance} from './caseLibrary';
@@ -16,7 +18,16 @@ import { deterministicDiagnosis, stepLibrary } from "./diagnosis";
 import { transitionAllowed } from "./workflow";
 import type { Fault, TrialDetail } from "./api/types";
 import type { createDataStore } from "./api/store";
-export function createOfflineApi(store: ReturnType<typeof createDataStore>) {
+export type StormCalculator = (
+  input: StormInput,
+  faults: Fault[],
+  trials: TrialDetail[],
+  onProgress?: (progress: StormProgress) => void,
+) => Promise<StormResult>;
+export function createOfflineApi(
+  store: ReturnType<typeof createDataStore>,
+  calculate: StormCalculator = async (...args) => runStorm(...args),
+) {
   type Job = {
     id: string;
     status: string;
@@ -25,6 +36,7 @@ export function createOfflineApi(store: ReturnType<typeof createDataStore>) {
     error: string | null;
     createdAt: string;
     actor: string;
+    progress: StormProgress | null;
   };
   const caseFaultIds = new Set<string>();
   const escalations:Escalation[]=[];
@@ -80,6 +92,7 @@ export function createOfflineApi(store: ReturnType<typeof createDataStore>) {
           error: null,
           createdAt: now(),
           actor,
+          progress: null,
         };
       if (jobs.size >= 8) {
         const oldest = jobs.keys().next().value!;
@@ -90,10 +103,11 @@ export function createOfflineApi(store: ReturnType<typeof createDataStore>) {
       const saved = store.snapshot(),
         snapshot = { faults: saved.faults, trials: saved.trials };
       snapshots.set(row.id, snapshot);
-      setTimeout(() => {
+      setTimeout(async () => {
         try {
           row.status = "running";
-          row.result = runStorm(input, snapshot.faults, snapshot.trials);
+          row.result = await calculate(input, snapshot.faults, snapshot.trials,
+            (progress) => { row.progress = progress; });
           row.status = "completed";
         } catch (e) {
           row.status = "failed";
@@ -102,7 +116,10 @@ export function createOfflineApi(store: ReturnType<typeof createDataStore>) {
       }, 0);
       return clone(row);
     }
-    if (method === "GET" && p[0] === "storm-runs") return clone(job(p[1]));
+    if (method === "GET" && p[0] === "storm-runs") {
+      const row = job(p[1]);
+      return clone(u.searchParams.get("statusOnly") === "1" ? { ...row, result: null } : row);
+    }
     if (method === "GET" && p[0] === "triage") {
       const row = job(u.searchParams.get("stormRunId") ?? "");
       if (!row.result) throw new Error("Wait for this storm run to finish");
@@ -159,6 +176,7 @@ export function createOfflineApi(store: ReturnType<typeof createDataStore>) {
         fault = state.faults.find((f) => f.id === p[1]);
       if (!fault) throw new Error("Fault not found");
       const { transition } = transitionAllowed(fault, p[2]);
+      const originalFault = JSON.stringify(fault);
       if (p[2] === "assign" && !input.assignee)
         throw new Error("Name the crew or contractor");
       if (p[2] === "assign") {
@@ -202,7 +220,7 @@ export function createOfflineApi(store: ReturnType<typeof createDataStore>) {
             throw new Error(
               "Choose a completed run that included this confirmed fault",
             );
-          const after = runStorm(
+          const after = await calculate(
             {
               ...before.input,
               assets: [fault.featureId as "S1"],
@@ -220,6 +238,10 @@ export function createOfflineApi(store: ReturnType<typeof createDataStore>) {
           };
         }
       }
+      const current = store.snapshot();
+      const index = current.faults.findIndex((f) => f.id === fault.id);
+      if (index < 0 || JSON.stringify(current.faults[index]) !== originalFault)
+        throw new Error("This fault changed while verification ran. Reopen it and try again.");
       fault.workOrder = {
         ...fault.workOrder,
         state: transition.to,
@@ -238,7 +260,8 @@ export function createOfflineApi(store: ReturnType<typeof createDataStore>) {
         action: p[2],
         note: input.note,
       });
-      store.replace(state);
+      current.faults[index] = fault;
+      store.replace(current);
       return clone(fault);
     }
     if (p[0] === "cases") {

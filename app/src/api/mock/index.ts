@@ -1,4 +1,5 @@
 import { createOfflineApi } from '../../../../shared/src/offlineApi';
+import { calculateStorm } from '../calculateStorm';
 import { createDataStore } from '../../../../shared/src/api/store';
 import { rebaseDates } from '../../clock';
 import { generateMock, DEMO_NOW, SEED_REFERENCE, type Database } from './seed';
@@ -85,10 +86,10 @@ const store = createDataStore(db, (snapshot) => {
     /* Continue in memory. */
   }
 });
-let offline = createOfflineApi(store);
+let offline = createOfflineApi(store, calculateStorm);
 export const resetMock = () => {
   store.reset();
-  offline = createOfflineApi(store);
+  offline = createOfflineApi(store, calculateStorm);
 };
 export async function mockRequest(path: string, method = 'GET', body?: unknown) {
   const extra = await offline(path, method, body);

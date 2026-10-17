@@ -39,7 +39,7 @@ test('a network failure during initial discovery selects the local adapter', asy
   expect(config.contractVersion).toBe(client.CONTRACT_VERSION);
   expect(client.showDataNotice()).toBe(true);
 });
-test('an authenticated API write error is reported and never retried against the local adapter', async () => {
+test('an API write error is reported and never retried against the local adapter', async () => {
   vi.stubEnv('VITE_API_BASE', 'https://drain.example/api');
   vi.stubEnv('VITE_DATA_SOURCE', 'api');
   vi.stubGlobal(
@@ -49,7 +49,7 @@ test('an authenticated API write error is reported and never retried against the
       .mockResolvedValueOnce(new Response('{}', { status: 200 }))
       .mockResolvedValueOnce(
         new Response(
-          JSON.stringify({ error: { code: 'VALIDATION', message: 'Add an operator name.' } }),
+          JSON.stringify({ error: { code: 'VALIDATION', message: 'Add a required note.' } }),
           { status: 422 },
         ),
       ),
@@ -57,7 +57,7 @@ test('an authenticated API write error is reported and never retried against the
   vi.resetModules();
   const client = await import('./client');
   await expect(client.api.faultStatus('F-001', { status: 'closed', user: '' })).rejects.toThrow(
-    'Add an operator name.',
+    'Add a required note.',
   );
   expect(client.isMock).toBe(false);
 });

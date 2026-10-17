@@ -1,5 +1,13 @@
 # API contract changelog
 
+## 4.2.0 — 16 October 2026, public demonstration
+
+- Removed the visitor sign-in screen, bearer token checks, required operator names and `OPERATOR_TOKEN` configuration. Existing routes and response fields are unchanged.
+- Application reads, writes and evidence photos are public to reachable demo visitors. New audit actors are fixed to “Demo visitor”; previous audit entries remain intact.
+- Startup opens directly; offline fallback, request validation, CORS, rate limits and lifecycle gates remain. Device integration credentials and external model API credentials remain separate from visitor access.
+- Storm jobs add optional `progress` (completed/total, asset, mode, phase and optional sensitivity parameter/multiplier). `GET /storm-runs/:id?statusOnly=1` omits the result payload; the existing default endpoint still returns it. Browser fallback calculations use a dedicated worker. See `STORM_PERFORMANCE.md` for scoped timings.
+- Existing checks were updated for anonymous access but were not rerun for this change.
+
 ## 4.1.0 — 16 October 2026, remaining Round 8 stages
 
 - Added photo evidence storage/retrieval, recorded owner escalations, commissioned devices, authenticated TTN/ChirpStack ingest and explicit reading provenance.

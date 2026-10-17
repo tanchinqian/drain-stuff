@@ -1,7 +1,7 @@
 import { Worker } from "node:worker_threads";
 import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
-import type { StormInput, StormResult } from "../../shared/src/contract";
+import type { StormInput, StormResult, StormProgress } from "../../shared/src/contract";
 import type { Fault, TrialDetail } from "../../shared/src/api/types";
 import type { Repository } from "./db";
 export class StormQueue {
@@ -9,6 +9,7 @@ export class StormQueue {
   private pending: { start: () => void; reject: (error: Error) => void }[] = [];
   private workers = new Set<Worker>();
   private closed = false;
+  private progress = new Map<string, StormProgress>();
   constructor(
     private repo: Repository,
     private timeoutMs = 180000,
@@ -18,6 +19,7 @@ export class StormQueue {
     faults: Fault[],
     onStart?: () => void,
     trials: TrialDetail[] = this.repo.load().trials,
+    onProgress?: (progress: StormProgress) => void,
   ): Promise<StormResult> {
     if (this.closed || this.pending.length + this.active >= 5)
       throw new Error(
@@ -51,9 +53,11 @@ export class StormQueue {
           () => finish(new Error("Storm calculation timed out")),
           this.timeoutMs,
         );
-        worker.once("message", (m) =>
-          finish(m.error ? new Error(m.error) : undefined, m.result),
-        );
+        worker.on("message", (m) => {
+          if (done) return;
+          if (m.progress) onProgress?.(m.progress);
+          else finish(m.error ? new Error(m.error) : undefined, m.result);
+        });
         worker.once("error", (error) => finish(error));
         worker.once("exit", (code) => {
           if (!done) finish(new Error(`Storm worker stopped (${code})`));
@@ -91,8 +95,10 @@ export class StormQueue {
           .prepare("UPDATE storm_runs SET status='running' WHERE id=?")
           .run(id),
       trials,
+      (progress) => this.progress.set(id, progress),
     )
       .then((result) => {
+        this.progress.delete(id);
         if (!this.closed)
           this.repo.sql
             .prepare(
@@ -101,6 +107,7 @@ export class StormQueue {
             .run(JSON.stringify(result), new Date().toISOString(), id);
       })
       .catch((error) => {
+        this.progress.delete(id);
         if (!this.closed)
           this.repo.sql
             .prepare(
@@ -110,9 +117,11 @@ export class StormQueue {
       });
     return this.get(id)!;
   }
-  get(id: string) {
+  get(id: string, statusOnly = false) {
     const row = this.repo.sql
-      .prepare("SELECT * FROM storm_runs WHERE id=?")
+      .prepare(statusOnly
+        ? "SELECT id,status,input,NULL AS result,error,created_at,actor FROM storm_runs WHERE id=?"
+        : "SELECT * FROM storm_runs WHERE id=?")
       .get(id) as Record<string, string> | undefined;
     return row
       ? {
@@ -123,6 +132,7 @@ export class StormQueue {
           error: row.error,
           createdAt: row.created_at,
           actor: row.actor,
+          progress: this.progress.get(id) ?? null,
         }
       : undefined;
   }
@@ -131,6 +141,7 @@ export class StormQueue {
     for (const job of this.pending)
       job.reject(new Error("Server stopped before this run started"));
     this.pending = [];
+    this.progress.clear();
     await Promise.all([...this.workers].map((w) => w.terminate()));
   }
 }

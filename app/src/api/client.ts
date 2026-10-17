@@ -26,25 +26,6 @@ import type {
 } from './types';
 export { CONTRACT_VERSION } from '../../../shared/src/contract';
 export const configuredBase = import.meta.env.VITE_API_BASE?.replace(/\/$/, '');
-export function operatorAccess() {
-  try {
-    return JSON.parse(sessionStorage.getItem('drain-operator') || 'null') as {
-      token: string;
-      name: string;
-    } | null;
-  } catch {
-    return null;
-  }
-}
-export function operatorHeaders(): Record<string, string> {
-  const access = operatorAccess();
-  return access ? { Authorization: 'Bearer ' + access.token, 'X-Operator-Name': access.name } : {};
-}
-export function useLocalDemo(reason = 'manual') {
-  isMock = true;
-  selected = undefined;
-  window.dispatchEvent(new CustomEvent('api-source-change', { detail: reason }));
-}
 
 const base = configuredBase;
 export let isMock = !base || import.meta.env.VITE_DATA_SOURCE === 'mock';
@@ -54,7 +35,6 @@ async function selectSource() {
   selected ??= fetch(base + '/config', {
     signal: AbortSignal.timeout(2500),
     credentials: 'omit',
-    headers: operatorHeaders(),
   })
     .then((response) => {
       if (response.status >= 500) throw new Error('Connection unavailable');
@@ -80,7 +60,6 @@ async function request<T>(path: string, body?: unknown, timeoutMs = 15000): Prom
       credentials: 'omit',
       method: body === undefined ? 'GET' : 'POST',
       headers: {
-        ...operatorHeaders(),
         ...(body === undefined ? {} : { 'Content-Type': 'application/json' }),
       },
       body: body === undefined ? undefined : JSON.stringify(body),
@@ -94,8 +73,6 @@ async function request<T>(path: string, body?: unknown, timeoutMs = 15000): Prom
     return (await mockRequest(path, 'GET')) as T;
   }
   if (!response.ok) {
-    if (response.status === 401 && typeof window !== 'undefined')
-      window.dispatchEvent(new Event('api-auth-required'));
     const payload = await response.json().catch(() => null);
     throw new Error(
       typeof payload?.error?.message === 'string'
@@ -127,6 +104,7 @@ interface StormJob {
   input: StormInput;
   result: StormResult | null;
   error: string | null;
+  progress?: import('../../../shared/src/contract').StormProgress | null;
 }
 export const api = {
   aiInfo:()=>request<{promptVersion:string;provider:string;mode:string}>('/ai/config'),
@@ -139,6 +117,7 @@ export const api = {
   escalationStatus: (id:string,status:'acknowledged'|'resolved',note:string)=>request<Escalation>('/escalations/'+id+'/status',{status,note}),
   stormRun: (input: StormRequest) => request<StormJob>('/storm-runs', input),
   stormResult: (id: string) => request<StormJob>('/storm-runs/' + encodeURIComponent(id)),
+  stormStatus: (id: string) => request<StormJob>('/storm-runs/' + encodeURIComponent(id) + '?statusOnly=1'),
   triage: (id: string) =>
     request<StormResult & { stormRunId: string }>('/triage?stormRunId=' + encodeURIComponent(id)),
   triageOverride: (input: {

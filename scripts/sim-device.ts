@@ -4,7 +4,7 @@ import {encodeUplink} from '../shared/src/iot';
 loadEnvFile('.env.local');
 const base=process.env.SIM_API_BASE??'http://127.0.0.1:8080/api/v1';
 if(!process.env.LORAWAN_SIM_SECRET)throw new Error('Start npm run dev:all first to create the simulator integration secret');
-const id=randomBytes(8).toString('hex'),headers={Authorization:'Bearer '+process.env.OPERATOR_TOKEN,'X-Operator-Name':'Device simulator','Content-Type':'application/json'};
+const id=randomBytes(8).toString('hex'),headers={'Content-Type':'application/json'};
 async function post(path:string,body:unknown,custom=headers){const r=await fetch(base+path,{method:'POST',headers:custom,body:JSON.stringify(body)});const data=await r.json() as any;if(!r.ok)throw new Error(data.error?.message??String(r.status));return data;}
 await post('/devices',{id,assetId:'R1',part:'inlet',mountingHeightM:1,overflowLevelM:.45});
 // Backdated event times model normal/event intervals; wall-clock delivery is accelerated.

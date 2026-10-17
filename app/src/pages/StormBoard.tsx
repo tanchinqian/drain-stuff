@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
@@ -10,8 +10,30 @@ import PlanMap from '../components/PlanMap';
 import NeighbourhoodScene from '../three/NeighbourhoodScene';
 import { QueryState } from '../components/QueryState';
 import { useSelection } from '../state';
+import { radarStops, type RainPlayback } from '../site/weather';
+import type { ZoneRain } from '../api/types';
+import { hyetograph } from '../simulation/physics/rainfall';
+import { useSimulation } from '../simulation/physics/store';
+import StormMapPlayback from '../components/StormMapPlayback';
 const label = 'Relative ranking, not a prediction';
+const emptyRows: TriageRow[] = [];
+const MapScene = memo(NeighbourhoodScene);
+const MapPlan = memo(PlanMap);
+const modeNames: Record<string, string> = {
+  installed: 'As installed', cleared: 'If cleared', capacity: 'Capacity limit',
+};
+const parameterNames: Record<string, string> = {
+  ks: 'soil conductivity', drainC: 'outlet capacity', peak: 'rainfall peak',
+};
 export default function StormBoard() {
+  const requestedJob = useRef<string | null>(null);
+  const mapRef = useRef<HTMLElement>(null);
+  const revealMap = useCallback(() => {
+    mapRef.current?.scrollIntoView({
+      behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+      block: 'start',
+    });
+  }, []);
   const { jobId, setJob, selected, select } = useBoard();
   const [preset, setPreset] = useState('heavy'),
     [peak, setPeak] = useState(63),
@@ -19,6 +41,8 @@ export default function StormBoard() {
     [preview, setPreview] = useState(false),
     [robustness, setRobustness] = useState(true),
     [view, setView] = useState('3d'),
+    [layer, setLayer] = useState<'rain' | 'water'>('rain'),
+    [cloudOpacity, setCloudOpacity] = useState(55),
     [pending, setPending] = useState(false),
     [error, setError] = useState(''),
     [override, setOverride] = useState<TriageRow | null>(null),
@@ -46,11 +70,11 @@ export default function StormBoard() {
   });
   const faults = useQuery({ queryKey: ['board-faults'], queryFn: () => api.faults() });
   const job = useQuery({
-    queryKey: ['storm-job', jobId],
+    queryKey: ['storm-job-status', jobId],
     enabled: !!jobId,
-    queryFn: () => api.stormResult(jobId!),
+    queryFn: () => api.stormStatus(jobId!),
     refetchInterval: (q) =>
-      ['queued', 'running'].includes(q.state.data?.status ?? '') ? 1000 : false,
+      ['queued', 'running'].includes(q.state.data?.status ?? '') ? 500 : false,
   });
   const triage = useQuery({
     queryKey: ['triage', jobId, job.data?.status],
@@ -64,13 +88,41 @@ export default function StormBoard() {
     staleTime: 300000,
     retry: false,
   });
-  const rows = triage.data?.rows ?? [];
-  const ranks = Object.fromEntries(rows.map((r) => [r.asset, r.rank]));
-  const choose = (id: string) => {
+  const rows = triage.data?.rows ?? emptyRows;
+  const rainPlayback = useMemo<RainPlayback | undefined>(() => {
+    const config = rows[0]?.asInstalled.config;
+    return config ? { points: hyetograph(config, 'alternating-block'), peakMmHr: config.values.peak.value * 3.6e6 } : undefined;
+  }, [rows]);
+  useEffect(() => {
+    if (!jobId || !rows.length) return;
+    useSimulation.getState().loadBoardReplay(rows, jobId);
+    if (requestedJob.current === jobId) {
+      requestedJob.current = null;
+      setLayer('rain');
+      revealMap();
+      if (!matchMedia('(prefers-reduced-motion: reduce)').matches)
+        useSimulation.setState({ playing: true });
+    }
+  }, [rows, jobId, revealMap]);
+  const watchStorm = () => {
+    setLayer('rain');
+    useSimulation.setState({ second: 0, playing: !matchMedia('(prefers-reduced-motion: reduce)').matches });
+    revealMap();
+  };
+  const scenarioPeak = preset === 'custom' ? peak : stormPresets[preset as keyof typeof stormPresets].peakMmHr;
+  const mapPeak = rainPlayback?.peakMmHr ?? scenarioPeak;
+  const rain = useMemo<ZoneRain[]>(() => mapPeak > 0
+    ? (data.data?.zones ?? []).map((zone) => ({
+        synthetic: true, zone: zone.id, peakMmPerHr: mapPeak, totalMm: 0,
+      }))
+    : [], [data.data?.zones, mapPeak]);
+  const ranks = useMemo(() => Object.fromEntries(rows.map((r) => [r.asset, r.rank])), [rows]);
+  const choose = useCallback((id: string) => {
     select(id);
     useSelection.getState().selectHouse(null);
-  };
+  }, [select]);
   async function run() {
+    useSimulation.setState({ playing: false });
     setPending(true);
     setError('');
     try {
@@ -81,15 +133,24 @@ export default function StormBoard() {
         assets: [...assets],
         options: { robustness, previewUnconfirmed: preview, recoveryMinutes: 360 },
       });
+      cache.setQueryData(['storm-job-status', next.id], { ...next, result: null });
+      requestedJob.current = next.id;
       setJob(next.id);
-      await cache.invalidateQueries({ queryKey: ['triage'] });
     } catch (e) {
       setError((e as Error).message);
     } finally {
       setPending(false);
     }
   }
-  const working = pending || ['queued', 'running'].includes(job.data?.status ?? '');
+  const working = pending || (!job.isError && !triage.isError && (
+    (!!jobId && job.isPending) ||
+    ['queued', 'running'].includes(job.data?.status ?? '') ||
+    (job.data?.status === 'completed' && triage.isPending)
+  ));
+  const progress = pending ? null : job.data?.progress;
+  const progressMax = progress?.total ?? 1;
+  const progressValue = !pending && job.data?.status === 'completed'
+    ? progressMax : progress?.completed;
   return (
     <>
       <div className="page-heading">
@@ -108,6 +169,7 @@ export default function StormBoard() {
             Entered scenarios help prioritise upkeep before a storm. These rainfall values are not a
             forecast.
           </p>
+          <p className="small">Run storm calculates new results, then plays the rainfall. Watch storm replays the saved run without recalculating.</p>
         </div>
         {warnings.data?.available && !!warnings.data.warnings?.length && (
           <details>
@@ -171,6 +233,7 @@ export default function StormBoard() {
           <button className="primary" disabled={working} onClick={run}>
             {working ? 'Calculating…' : 'Run storm'}
           </button>
+          {rainPlayback && !working && <button onClick={watchStorm}>Watch storm</button>}
         </div>
         <div className="actions">
           <label>
@@ -197,11 +260,31 @@ export default function StormBoard() {
         )}
         <p role="status">
           {working
-            ? 'Running each asset in three states. Results appear when all calculations finish.'
+            ? pending
+              ? 'Starting the storm calculation…'
+              : job.data?.status === 'completed'
+                ? 'Calculations complete. Preparing the ranking…'
+                : progress
+                  ? `${progress.completed} of ${progress.total} comparisons complete · ${progress.asset} · ${progress.phase === 'sensitivity' ? `Checking ${parameterNames[progress.parameter!] ?? progress.parameter} at ${Math.round(progress.multiplier! * 100)}%` : modeNames[progress.mode]}`
+                  : job.data?.status === 'queued'
+                    ? 'Queued behind the current storm calculation…'
+                    : 'Starting asset comparisons…'
             : rows.length
               ? `${rows.length} assets compared. ${triage.data?.robustness.evaluated ? (triage.data.robustness.stable ? 'Ranking stable under ±25%.' : 'Order changes under ±25%.') : 'Sensitivity check not run.'}`
               : 'Choose a scenario and run the storm to see the ranking.'}
         </p>
+        {working && (
+          <div
+            className={'storm-progress' + (progressValue === undefined ? ' is-indeterminate' : '')}
+            role="progressbar"
+            aria-label="Storm calculation progress"
+            aria-valuemin={0}
+            aria-valuemax={progressMax}
+            aria-valuenow={progressValue}
+          >
+            <span aria-hidden="true" style={{ transform: `scaleX(${(progressValue ?? 0) / progressMax})` }} />
+          </div>
+        )}
         {job.data && (
           <p className="small">
             Saved run:{' '}
@@ -250,8 +333,10 @@ export default function StormBoard() {
                         onClick={() => choose(row.asset)}
                       >
                         <span className="rank-number">{row.rank}</span>
-                        <strong>{row.asset}</strong> ·{' '}
-                        {data.data?.features.find((f) => f.id === row.asset)?.name}
+                        <span className="triage-asset-title">
+                          <strong>{row.asset}</strong> ·{' '}
+                          {data.data?.features.find((f) => f.id === row.asset)?.name}
+                        </span>
                       </button>
                       <button
                         onClick={() => {
@@ -365,7 +450,7 @@ export default function StormBoard() {
               </details>
             )}
           </section>
-          <section className="panel triage-map">
+          <section className="panel triage-map" id="storm-map" ref={mapRef}>
             <div className="panel-heading">
               <div>
                 <h2>Asset locations</h2>
@@ -381,32 +466,68 @@ export default function StormBoard() {
                 ))}
               </div>
             </div>
+            <div className="scene-toolbar">
+              <button
+                aria-pressed={layer === 'rain'}
+                onClick={() => setLayer(layer === 'rain' ? 'water' : 'rain')}
+              >
+                Rainfall
+              </button>
+              <label className="cloud-control">
+                Rainfall layer opacity
+                <input
+                  aria-label="Rainfall layer opacity"
+                  type="range" min="0" max="75" step="5"
+                  value={cloudOpacity}
+                  disabled={layer !== 'rain'}
+                  onChange={(e) => setCloudOpacity(Number(e.target.value))}
+                />
+                <output>{cloudOpacity}%</output>
+              </label>
+            </div>
+            {!rainPlayback && (
+              <p className="small rainfall-instant">
+                Rainfall preview · {scenarioPeak} mm/h across all zones. Run a storm to play its timeline. Not live radar.
+              </p>
+            )}
             {data.data &&
               (view === 'plan' ? (
-                <PlanMap
+                <MapPlan
                   showHouseList={false}
                   {...data.data}
-                  rain={[]}
-                  layer="water"
+                  rain={rain}
+                  layer={layer}
                   showSensors={false}
-                  cloudOpacity={0}
+                  cloudOpacity={cloudOpacity}
+                  rainPlayback={rainPlayback}
                   ranks={ranks}
                   selectedAsset={selected}
                   onSelectAsset={choose}
                 />
               ) : (
-                <NeighbourhoodScene
+                <MapScene
                   {...data.data}
-                  rain={[]}
-                  layer="water"
+                  rain={rain}
+                  layer={layer}
                   showSensors={false}
-                  cloudOpacity={0}
+                  cloudOpacity={cloudOpacity}
+                  rainPlayback={rainPlayback}
                   reset={0}
                   ranks={ranks}
                   selectedAsset={selected}
                   onSelectAsset={choose}
                 />
               ))}
+            {rainPlayback && <StormMapPlayback playback={rainPlayback} />}
+            {layer === 'rain' && (
+              <div className="heat-legend" aria-label="Rainfall intensity legend">
+                {radarStops.map((stop) => (
+                  <span key={stop.value}>
+                    <i style={{ background: stop.color }} />{stop.label}
+                  </span>
+                ))}
+              </div>
+            )}
             <p className="small">Numbered outlines match the priority list · {label}</p>
             <Link
               className="button"

@@ -11,8 +11,6 @@ services:
       mountPath: /var/data
       sizeGB: 1
     envVars:
-      - key: OPERATOR_TOKEN
-        generateValue: true
       - key: DB_PATH
         value: /var/data/drain.sqlite
       - key: HOST

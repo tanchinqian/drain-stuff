@@ -5,16 +5,11 @@ import { basename, dirname, join, resolve } from "node:path";
 import { Repository } from "./db";
 import { createApi } from "./api";
 import { createDataStore } from "../../shared/src/api/store";
-const token = "test-operator-token-with-32-characters";
 let repo: Repository, api: ReturnType<typeof createApi>;
-const auth = {
-  Authorization: "Bearer " + token,
-  "X-Operator-Name": "Test coordinator",
-};
+const headers = {};
 beforeEach(() => {
   repo = new Repository(":memory:");
   api = createApi(repo, {
-    token,
     seed: true,
     rateLimit: 100,
     warningsFetch: vi.fn(async () => {
@@ -28,7 +23,7 @@ afterEach(async () => {
 async function request(
   path: string,
   body?: unknown,
-  headers: Record<string, string> = auth,
+  headers: Record<string, string> = {},
 ) {
   const response = await api.app.request("/api/v1" + path, {
     method: body === undefined ? "GET" : "POST",
@@ -83,20 +78,13 @@ for (const path of paths)
     };
     required(data, original);
   });
-test("auth, actor, CORS, malformed JSON and request limit", async () => {
-  expect((await request("/config", undefined, {})).response.status).toBe(401);
-  expect(
-    (await request("/config", undefined, { Authorization: token })).response
-      .status,
-  ).toBe(401);
-  expect(
-    (await request("/faults", {}, { Authorization: "Bearer " + token }))
-      .response.status,
-  ).toBe(422);
+test("demo access, CORS, malformed JSON and request limit", async () => {
+  expect((await request("/config", undefined, {})).response.status).toBe(200);
+  expect((await request("/faults", {}, {})).response.status).toBe(422);
   expect(
     (
       await request("/config", undefined, {
-        ...auth,
+        ...headers,
         Origin: "https://evil.example",
       })
     ).response.status,
@@ -105,7 +93,7 @@ test("auth, actor, CORS, malformed JSON and request limit", async () => {
     (
       await api.app.request("/api/v1/faults", {
         method: "POST",
-        headers: { ...auth, "Content-Type": "application/json" },
+        headers: { ...headers, "Content-Type": "application/json" },
         body: "{",
       })
     ).status,
@@ -118,7 +106,7 @@ test("auth, actor, CORS, malformed JSON and request limit", async () => {
   expect((await request("/absent")).response.status).toBe(404);
   expect((await api.app.request("/health")).status).toBe(200);
 });
-test("legacy writes all persist and audit the header actor", async () => {
+test("legacy writes all persist and audit the demo actor", async () => {
   const state = repo.load(),
     batch = state.batches[0],
     trial = state.trials[0];
@@ -210,7 +198,7 @@ test("allocation enforces maturity, dose and recorded actor", async () => {
       .status,
   ).toBe(200);
   expect(repo.load().trials.find((t) => t.featureId === "S1")!.appliedBy).toBe(
-    "Test coordinator",
+    "Demo visitor",
   );
   expect(
     (
@@ -409,7 +397,7 @@ test("rate limits, safety of missing diagnosis and failed writes", async () => {
   expect(repo.load()).toEqual(before);
   await api.close();
   repo = new Repository(":memory:");
-  api = createApi(repo, { token, seed: true, rateLimit: 1 });
+  api = createApi(repo, { seed: true, rateLimit: 1 });
   expect(
     (await request("/ai/diagnose", { faultId: "F-001" })).response.status,
   ).toBe(200);
@@ -568,7 +556,6 @@ test("warning proxy validates and caches a successful upstream response", async 
       ),
   );
   api = createApi(repo, {
-    token,
     seed: true,
     warningsFetch: upstream as typeof fetch,
   });
@@ -596,7 +583,7 @@ test('photo evidence stores bounded images and rejects active content',async()=>
   expect(saved.response.status).toBe(201);
   const name=saved.data.path.split('/').at(-1),path=resolve(repo.uploadsDir,name);
   expect(dirname(path)).toBe(repo.uploadsDir);
-  try { const photo=await api.app.request('/api/v1/evidence/'+name,{headers:auth});expect(photo.status).toBe(200);expect(photo.headers.get('Content-Type')).toBe('image/png'); }
+  try { const photo=await api.app.request('/api/v1/evidence/'+name,{headers});expect(photo.status).toBe(200);expect(photo.headers.get('Content-Type')).toBe('image/png'); }
   finally { rmSync(path); }
 });
 test('capacity escalation stores evidence, recipient and auditable status',async()=>{

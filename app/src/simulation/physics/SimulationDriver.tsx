@@ -6,15 +6,19 @@ import { testMean } from '../../utils';
 import { featureIds, runConfig, useSimulation } from './store';
 import { peakFrame, type PhysicsRun } from './engine';
 export default function SimulationDriver() {
-  const { pathname } = useLocation(),
+  const { pathname: routePath } = useLocation();
+  // Match the router's tolerance for repeated and trailing slashes.
+  const pathname = routePath.replace(/\/+/g, '/').replace(/\/$/, '') || '/',
     active =
       pathname.startsWith('/feature/') ||
       pathname === '/observations' ||
       pathname.startsWith('/batches/');
+  const playbackActive = active || pathname === '/';
   const trials = useQuery({ queryKey: ['simulation-trials'], queryFn: api.trials });
   const ready = !trials.isPending;
   useEffect(() => {
     if (!trials.data) return;
+    if (useSimulation.getState().replay) return;
     const state = useSimulation.getState(),
       configs = structuredClone(state.configs);
     let changed = false;
@@ -49,8 +53,16 @@ export default function SimulationDriver() {
     speed = useSimulation((s) => s.speed);
   useEffect(() => {
     if (!ready || !active) return;
+    const ids = pathname.startsWith('/feature/')
+      ? featureIds.filter((id) => id === pathname.split('/')[2]) : [...featureIds];
     const state = useSimulation.getState(),
-      results: Record<string, PhysicsRun> = {};
+      results: Record<string, PhysicsRun> = { ...state.runs };
+    const needed = ids.filter((id) => !results[id]);
+    if (!needed.length) {
+      useSimulation.setState({ busy: false });
+      return;
+    }
+    useSimulation.setState({ busy: true, error: null });
     const worker = new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' });
     const fail = (error: string) => useSimulation.setState({ error, busy: false, playing: false });
     const timeout = window.setTimeout(() => {
@@ -73,21 +85,23 @@ export default function SimulationDriver() {
       const id = featureIds[event.data.id];
       if (!id || !event.data.result) return;
       results[id] = event.data.result;
-      if (Object.keys(results).length === featureIds.length) {
+      if (needed.every((id) => results[id])) {
         clearTimeout(timeout);
-        const peak = peakFrame(results.S1);
+        const current = useSimulation.getState();
+        const peak = peakFrame(results[ids[0]]);
         useSimulation.setState({
           runs: results,
           busy: false,
           error: null,
-          second: state.second === 0 ? peak.second : state.second,
+          second: !current.replay?.preserveClock && current.second === 0 ? peak.second : current.second,
+          replay: current.replay ? { ...current.replay, preserveClock: true } : null,
         });
         worker.terminate();
       }
     };
-    featureIds.forEach((id, index) =>
+    needed.forEach((id) =>
       worker.postMessage({
-        id: index,
+        id: featureIds.indexOf(id),
         kind: 'hydraulic',
         config: runConfig(state.configs[id], state.scenario),
         pattern: state.pattern,
@@ -98,9 +112,9 @@ export default function SimulationDriver() {
       clearTimeout(timeout);
       worker.terminate();
     };
-  }, [revision, ready, active]);
+  }, [revision, ready, active, pathname]);
   useEffect(() => {
-    if (!playing || !active) return;
+    if (!playing || !playbackActive) return;
     const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
     if (motion.matches) {
       useSimulation.setState({ playing: false });
@@ -110,16 +124,23 @@ export default function SimulationDriver() {
       if (motion.matches) useSimulation.setState({ playing: false });
     };
     motion.addEventListener('change', stop);
+    let last = performance.now();
     const timer = window.setInterval(() => {
+      const now = performance.now(), elapsed = (now - last) / 1000;
+      last = now;
       const s = useSimulation.getState(),
         end = s.configs.S1.values.duration.value + s.configs.S1.values.recovery.value;
-      const second = Math.min(end, s.second + speed / 4);
-      useSimulation.setState({ second, playing: second < end });
-    }, 250);
+      if (document.hidden || (s.busy && pathname !== '/')) return;
+      const candidate = s.second + speed * elapsed;
+      const rainEnd = s.configs.S1.values.duration.value;
+      const pauseForRecovery = pathname === '/' && s.second < rainEnd && candidate >= rainEnd;
+      const second = pauseForRecovery ? rainEnd : Math.min(end, candidate);
+      useSimulation.setState({ second, playing: !pauseForRecovery && second < end });
+    }, 100);
     return () => {
       clearInterval(timer);
       motion.removeEventListener('change', stop);
     };
-  }, [playing, speed, active]);
+  }, [playing, speed, playbackActive, pathname]);
   return null;
 }

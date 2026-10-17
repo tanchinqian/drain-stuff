@@ -1,22 +1,11 @@
 import { test, expect } from '@playwright/test';
-import { readFileSync } from 'node:fs';
 import { mkdir } from 'node:fs/promises';
-const token = readFileSync('../.env.local', 'utf8')
-  .match(/^OPERATOR_TOKEN=(.+)$/m)![1]
-  .trim();
 test.use({
   baseURL: process.env.ROUND8_APP_URL || 'http://127.0.0.1:5175',
   launchOptions: {
     executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE,
     args: ['--use-angle=d3d11'],
   },
-});
-test.beforeEach(async ({ page }) => {
-  await page.addInitScript(
-    (token) =>
-      sessionStorage.setItem('drain-operator', JSON.stringify({ token, name: 'Browser check' })),
-    token,
-  );
 });
 test('storm board calculates five assets and selects their map marker', async ({ page }) => {
   test.setTimeout(180000);

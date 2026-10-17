@@ -16,7 +16,7 @@ Design-level, bench test pending. All multi-byte fields are unsigned big-endian 
 
 ## Webhook
 
-`POST /api/v1/ingest/lorawan`, header `X-Ingest-Key`. Real network credentials use `LORAWAN_INGEST_SECRET`; simulator uses a separate `LORAWAN_SIM_SECRET`. At least 24 characters; never the operator token. The matched integration determines immutable source provenance; a payload cannot choose it.
+`POST /api/v1/ingest/lorawan`, header `X-Ingest-Key`. Real network credentials use `LORAWAN_INGEST_SECRET`; simulator uses a separate `LORAWAN_SIM_SECRET`. At least 24 characters; these are integration credentials, separate from the public demonstration UI. The matched integration determines immutable source provenance; a payload cannot choose it.
 
 TTN v3: `end_device_ids.dev_eui`, `uplink_message.frm_payload` (base64), optional `received_at`. ChirpStack: `deviceInfo.devEui`, `data` (base64), optional `time`. A valid packet needs 12 bytes and a commissioned EUI. Counter idempotency is `(device ID, payload counter)`. An older counter is rejected; duplicates return success without a second reading. Timestamp must advance and be within one day of server receipt. [TTN formatters](https://www.thethingsindustries.com/docs/integrations/payload-formatters/javascript/uplink/), [ChirpStack event protocol](https://github.com/chirpstack/chirpstack/blob/master/api/go/integration/integration.pb.go).
 

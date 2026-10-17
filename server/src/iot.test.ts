@@ -2,11 +2,11 @@ import {beforeEach,afterEach,test,expect} from 'vitest';
 import {Repository} from './db';
 import {createApi} from './api';
 import {encodeUplink} from '../../shared/src/iot';
-const token='test-operator-token-for-iot-32-chars',secret='test-simulator-integration-secret-32';
+const secret='test-simulator-integration-secret-32';
 let repo:Repository,api:ReturnType<typeof createApi>;
-beforeEach(()=>{repo=new Repository(':memory:');api=createApi(repo,{token,simSecret:secret,deviceSecret:'physical-network-secret-at-least-32',seed:true});});
+beforeEach(()=>{repo=new Repository(':memory:');api=createApi(repo,{simSecret:secret,deviceSecret:'physical-network-secret-at-least-32',seed:true});});
 afterEach(()=>api.close());
-async function post(path:string,body:unknown,headers:Record<string,string>={Authorization:'Bearer '+token,'X-Operator-Name':'Test'}) {const r=await api.app.request('/api/v1'+path,{method:'POST',headers:{...headers,'Content-Type':'application/json'},body:JSON.stringify(body)});return {status:r.status,data:await r.json() as any};}
+async function post(path:string,body:unknown,headers:Record<string,string>={}) {const r=await api.app.request('/api/v1'+path,{method:'POST',headers:{...headers,'Content-Type':'application/json'},body:JSON.stringify(body)});return {status:r.status,data:await r.json() as any};}
 const input={id:'0102030405060708',assetId:'R1',part:'inlet',mountingHeightM:1,overflowLevelM:.45};
 test('non-object uplinks are rejected without a server error',async()=>{
  for(const body of [null,[],42,'uplink']) expect((await post('/ingest/lorawan',body,{'X-Ingest-Key':secret})).status).toBe(422);
@@ -32,7 +32,7 @@ test('TTN ramp raises Detected only; sensor markers reference commissioned devic
 });
 test('missing uplinks become offline and invalid payloads are rejected',async()=>{
  await post('/devices',input);await post('/ingest/lorawan',wire(1,800,new Date(Date.now()-3600000).toISOString()),{'X-Ingest-Key':secret});
- const r=await api.app.request('/api/v1/devices',{headers:{Authorization:'Bearer '+token}});expect((await r.json() as any)[0].status).toBe('offline');
+ const r=await api.app.request('/api/v1/devices',{});expect((await r.json() as any)[0].status).toBe('offline');
  expect(repo.load().sensors.find(s=>s.deviceId===input.id)?.status).toBe('offline');
  const bad=wire(2);bad.data=Buffer.alloc(12).toString('base64');expect((await post('/ingest/lorawan',bad,{'X-Ingest-Key':secret})).status).toBe(422);
 });

@@ -7,7 +7,7 @@ import { resolve } from "node:path";
 if (!existsSync(".env.local"))
   writeFileSync(
     ".env.local",
-    `OPERATOR_TOKEN=${randomBytes(32).toString("hex")}\nDB_PATH=data/drain.sqlite\nLLM_PROVIDER=none\n`,
+    `DB_PATH=data/drain.sqlite\nLLM_PROVIDER=none\n`,
     { mode: 0o600 },
   );
 if(!/^LORAWAN_SIM_SECRET=.+$/m.test(readFileSync('.env.local','utf8'))) appendFileSync('.env.local',`\nLORAWAN_SIM_SECRET=${randomBytes(32).toString('hex')}\n`);
@@ -95,7 +95,7 @@ for (const child of children)
     if (!stopping) stop(code || 1);
   });
 console.log(
-  `Open http://127.0.0.1:${appPort}. First connection: enter your name and the token from .env.local. Tokens are never printed.`,
+  `Open http://127.0.0.1:${appPort}. The demonstration opens directly; no sign-in is required.`,
 );
 process.on("SIGINT", () => stop());
 process.on("SIGTERM", () => stop());

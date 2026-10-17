@@ -1,5 +1,5 @@
 import { z } from "zod";
-export const CONTRACT_VERSION = "4.1.0";
+export const CONTRACT_VERSION = "4.2.0";
 export const assets = ["S1", "S2", "S3", "I1", "R1"] as const;
 export const assetId = z.enum(assets);
 const text = z.string().trim().min(1).max(2000);
@@ -160,6 +160,15 @@ export interface StormResult {
     stable: boolean | null;
     orders: { parameter: string; multiplier: number; assets: string[] }[];
   };
+}
+export interface StormProgress {
+  completed: number;
+  total: number;
+  asset: string;
+  mode: string;
+  phase: "comparison" | "sensitivity";
+  parameter?: string;
+  multiplier?: number;
 }
 export interface CaseRecord {
   id: string;

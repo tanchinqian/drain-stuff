@@ -1,7 +1,6 @@
 import { z } from "zod";
 export const serverEnv = z
   .object({
-    OPERATOR_TOKEN: z.string().min(24),
     DB_PATH: z.string().default("data/drain.sqlite"),
     PORT: z.coerce.number().int().min(1).max(65535).default(8080),
     HOST: z.string().default("127.0.0.1"),

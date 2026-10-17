@@ -22,7 +22,7 @@ export default function PhysicsControls({ ownerId }: { ownerId: string }) {
   }, []);
   const state = useSimulation.getState();
   useEffect(() => {
-    if (!run) return;
+    if (!run || useSimulation.getState().replay) return;
     const peak = peakFrame(run);
     useSimulation.getState().seek(peak.second);
   }, [run]);

@@ -1,10 +1,12 @@
 # Local startup — Round 8
 
-From this folder, run `npm ci`, `npm --prefix app ci`, then **`npm run dev:all`**. It starts the local API and React app and seeds an empty SQLite database. Enter your name and the token from ignored `.env.local` on first connection. The terminal prints the app URL; it never prints the token. Existing database records are preserved. Node 20.12+ is required.
+From this folder, run `npm ci`, `npm --prefix app ci`, then **`npm run dev:all`**. It starts the local API and React app and seeds an empty SQLite database. The demonstration opens directly without a login or token. Anyone who can reach the server can read and change demo records; audit entries use “Demo visitor”. The terminal prints the app URL. Existing database records are preserved. Node 20.12+ is required.
 
 `npm run build:all` builds both; `npm run start:server` serves the built app/API together. Standalone `npm --prefix app run dev` still supports the original offline mock when no API base is configured.
 
-See [local setup](docs/DEPLOY.md), [stage progress and checks](docs/ROUND8_PROGRESS.md), [contract 4.1.0](docs/BACKEND_HANDOFF.md), [AI evaluation](docs/AI_EVALUATION.md), and [honest limits](docs/LIMITS.md). Run storms from Overview; inspect a row to replay its saved 3D scenario. Faults provides verification and cited diagnosis. Register nodes on Sensors or run `npm run sim:device` for an explicitly simulated feed. The local LLM provider remains disabled unless a separate key/model is configured.
+Overview's Asset locations map includes the radar-coloured Rainfall toggle and opacity control in 3D and Plan. After a new storm calculation finishes, the saved rainfall curve plays at 60× by default (one simulated minute per second), and the map scrolls into view. Watch storm restarts it; playback controls sit beneath the map and share the clock with asset replay. Overview pauses at the end of rain; Play recovery continues drainage. The cloud follows simulated intensity uniformly across zones and clears after rain; it is not live radar. Observation history retains the dated rainfall layer. See [storm playback](docs/STORM_PLAYBACK.md).
+
+See [local setup](docs/DEPLOY.md), [stage progress and checks](docs/ROUND8_PROGRESS.md), [contract 4.2.0](docs/BACKEND_HANDOFF.md), [AI evaluation](docs/AI_EVALUATION.md), and [honest limits](docs/LIMITS.md). Run storms from Overview; inspect a row to replay its saved 3D scenario. Faults provides verification and cited diagnosis. Register nodes on Sensors or run `npm run sim:device` for an explicitly simulated feed. The local LLM provider remains disabled unless a separate key/model is configured.
 
 ---
 

@@ -1,8 +1,8 @@
 # Current Round 8
 
-The local React/Hono/SQLite console now has a storm triage Overview for S1/S2/S3/I1/R1, three-mode calculations, ranked map selection, saved 3D replay, six-state work orders with verification, recorded owner escalations, registered device ingest and a simulator. Materials and trial is a secondary area; old illustrative test outcomes are archived separately from entered measurements. The accepted wire contract is **4.1.0**, with canonical logic in `shared/src`.
+The local React/Hono/SQLite console now has a storm triage Overview for S1/S2/S3/I1/R1, three-mode calculations, ranked map selection, saved 3D replay, six-state work orders with verification, recorded owner escalations, registered device ingest and a simulator. Materials and trial is a secondary area; old illustrative test outcomes are archived separately from entered measurements. The accepted wire contract is **4.2.0**, with canonical logic in `shared/src`.
 
-`npm run dev:all` starts the app and persistent backend. The user's local operator token is stored only in ignored `.env.local`. Cloud deployment remains optional and has not occurred. Anthropic and OpenAI-compatible diagnosis adapters are implemented behind server-only configuration; the current local configuration uses sourced deterministic matching without an LLM key/model. Suggestions never confirm faults, assign work or invent repair steps.
+`npm run dev:all` starts the app and persistent backend. The demonstration opens without a login. Application reads/writes and photos are public to reachable visitors; new API audit entries use “Demo visitor”. No operator token is configured. Cloud deployment remains optional and has not occurred. Anthropic and OpenAI-compatible diagnosis adapters are implemented behind server-only configuration; the current local configuration uses sourced deterministic matching without an LLM key/model. Suggestions never confirm faults, assign work or invent repair steps.
 
 The cream/brown Archivo Map desk identity and approved radar/water colours are preserved. Nodes, electrical figures and firmware remain designs awaiting bench tests; no hardware deployment, measured battery life, radio approval, forecast accuracy or field calibration is claimed. See `docs/ROUND8_PROGRESS.md`, `docs/AI_EVALUATION.md`, `docs/LIMITS.md` and `docs/iot/`. Earlier stage and deployment statements below are historical where superseded by this scope.
 
@@ -18,7 +18,7 @@ An operator console for a small drainage and compost pilot. Operators inspect pi
 
 ## Accepted scope
 
-- Local React app in `app/`, using contract **4.1.0** through one API client. A configured, reachable backend is preferred; the browser-local mock is the fallback. A local backend is now bundled; standalone mock mode remains.
+- Local React app in `app/`, using contract **4.2.0** through one API client. A configured, reachable backend is preferred; the browser-local mock is the fallback. A local backend is now bundled; standalone mock mode remains.
 - Confirmed identity: **Map desk**, with cream and brown surfaces, Archivo typography, native controls and geometric schematics. The user explicitly retained the seven radar colours and cyan water when approving Round 3's other changes.
 - Uncapped responsive work surface with 24px desktop and 12px mobile gutters, shared record tables, searchable grouped asset rails, non-modal drawers, plain display names, glossary popovers and dated save feedback. Record histories stay collapsed until opened; no universal page activity history.
 - Overview uses fixed mapped geometry, **24 interactive pilot houses**, six feature destinations, a Plan alternative and optional sensor markers. Context houses are geometry only. House movement and layout editing are removed.

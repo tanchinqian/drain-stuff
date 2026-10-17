@@ -5,9 +5,8 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { randomBytes } from 'node:crypto';
 import { encodeUplink } from '../../shared/src/iot';
 const env = readFileSync('../.env.local', 'utf8'),
-  token = env.match(/^OPERATOR_TOKEN=(.+)$/m)![1].trim(),
   simSecret = env.match(/^LORAWAN_SIM_SECRET=(.+)$/m)![1].trim();
-const headers = { Authorization: 'Bearer ' + token, 'X-Operator-Name': 'Browser check' };
+const headers = {};
 test.use({
   baseURL: process.env.ROUND8_APP_URL || 'http://127.0.0.1:5175',
   launchOptions: {
@@ -43,11 +42,6 @@ test('Round 8 full workflow, real API, replay, devices and responsive accessibil
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await mkdir('../docs/screens/round8', { recursive: true });
-  await page.addInitScript(
-    (token) =>
-      sessionStorage.setItem('drain-operator', JSON.stringify({ token, name: 'Browser check' })),
-    token,
-  );
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Set the storm to compare' })).toBeVisible({
     timeout: 30000,

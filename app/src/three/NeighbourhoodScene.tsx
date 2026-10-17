@@ -11,6 +11,7 @@ import SensorMarkers from './SensorMarkers';
 import RainCloud from './RainCloud';
 import { sensorMarkers } from '../api/sensorViews';
 import { featureCallouts, pilotByBuilding, roadLabels, site } from '../site/layout';
+import type { RainPlayback } from '../site/weather';
 
 type Props = {
   sensors: Sensor[];
@@ -21,6 +22,7 @@ type Props = {
   rain: ZoneRain[];
   layer: 'water' | 'rain';
   cloudOpacity: number;
+  rainPlayback?: RainPlayback;
   reset: number;
   ranks?: Record<string, number>; selectedAsset?: string; onSelectAsset?: (id: string) => void;
 };
@@ -31,6 +33,7 @@ function SceneContent({
   rain,
   layer,
   cloudOpacity,
+  rainPlayback,
   sensors,
   showSensors,
   ranks = {}, selectedAsset, onSelectAsset,
@@ -260,7 +263,7 @@ function SceneContent({
           </group>
         );
       })}
-      {layer === 'rain' && cloudOpacity > 0 && <RainCloud samples={rain} opacity={cloudOpacity} />}
+      {layer === 'rain' && cloudOpacity > 0 && <RainCloud samples={rain} opacity={cloudOpacity} playback={rainPlayback} />}
       {showSensors && <SensorMarkers site sensors={sensorMarkers(sensors)} />}
     </>
   );

@@ -3,7 +3,7 @@ import { cors } from "hono/cors";
 import { bodyLimit } from "hono/body-limit";
 import { secureHeaders } from "hono/secure-headers";
 import { serveStatic } from "@hono/node-server/serve-static";
-import { createHash, randomUUID, timingSafeEqual } from "node:crypto";
+import { randomUUID } from "node:crypto";
 import { existsSync, mkdirSync, writeFileSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { z, ZodError } from "zod";
@@ -44,15 +44,12 @@ export interface ApiOptions {
   diagnosisFetch?: typeof fetch;
   deviceSecret?: string;
   simSecret?: string;
-  token: string;
   corsOrigins?: string[];
   seed?: boolean;
   warningsFetch?: typeof fetch;
   rateLimit?: number;
 }
 export function createApi(repo: Repository, options: ApiOptions) {
-  if (options.token.length < 24)
-    throw new Error("Set OPERATOR_TOKEN to at least 24 characters");
   if (options.seed) repo.seed();
   const queue = new StormQueue(repo),
     app = new Hono<{ Variables: { actor: string } }>();
@@ -72,7 +69,7 @@ export function createApi(repo: Repository, options: ApiOptions) {
     "/api/*",
     cors({
       origin: (origin, c) => (originAllowed(origin, c.req.url) ? origin : ""),
-      allowHeaders: ["Authorization", "Content-Type", "X-Operator-Name"],
+      allowHeaders: ["Content-Type", "X-Ingest-Key"],
       allowMethods: ["GET", "POST", "OPTIONS"],
       maxAge: 600,
     }),
@@ -104,17 +101,7 @@ export function createApi(repo: Repository, options: ApiOptions) {
     const origin = c.req.header("Origin") ?? "";
     if (!originAllowed(origin, c.req.url))
       throw new ApiError(403, "Origin is not allowed");
-    const authorization = c.req.header("Authorization") ?? "";
-    const supplied = authorization.startsWith("Bearer ")
-      ? authorization.slice(7)
-      : "";
-    const hash = (value: string) => createHash("sha256").update(value).digest();
-    if (!timingSafeEqual(hash(supplied), hash(options.token)))
-      throw new ApiError(401, "Enter the operator token to connect");
-    const actor = c.req.header("X-Operator-Name")?.trim() ?? "";
-    if (c.req.method === "POST" && (!actor || actor.length > 80))
-      throw new ApiError(422, "Enter an operator name (1–80 characters)");
-    c.set("actor", actor || "Operator");
+    c.set("actor", "Demo visitor");
     await next();
   });
   const diagnosis = createDiagnosisService(
@@ -148,8 +135,8 @@ export function createApi(repo: Repository, options: ApiOptions) {
     }
     await next();
   });
-  const runOrThrow = (id: string) => {
-    const run = queue.get(id);
+  const runOrThrow = (id: string, statusOnly = false) => {
+    const run = queue.get(id, statusOnly);
     if (!run) throw new ApiError(404, "Storm run not found");
     return run;
   };
@@ -164,7 +151,7 @@ export function createApi(repo: Repository, options: ApiOptions) {
     ),
   );
   app.get("/api/v1/storm-runs/:id", (c) =>
-    c.json(runOrThrow(c.req.param("id"))),
+    c.json(runOrThrow(c.req.param("id"), c.req.query("statusOnly") === "1")),
   );
   app.get("/api/v1/triage", (c) => {
     const run = runOrThrow(z.string().uuid().parse(c.req.query("stormRunId")));

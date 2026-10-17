@@ -8,10 +8,12 @@ import {
 } from './config';
 import type { PhysicsFrame, PhysicsRun } from './engine';
 import type { Pattern, RainPoint } from './rainfall';
+import type { TriageRow } from '../../../../shared/src/contract';
 export const featureIds = ['S1', 'S2', 'S3', 'I1', 'R1', 'T1', 'T2'] as const;
 interface SimulationState {
-  replay: { jobId: string; asset: string; mode: string } | null;
+  replay: { jobId: string; asset: string; mode: string; preserveClock?: boolean } | null;
   loadReplay: (config: PhysicsConfig, jobId: string, mode: string) => void;
+  loadBoardReplay: (rows: TriageRow[], jobId: string) => void;
   manualKs: Record<string, boolean>;
   configs: Record<string, PhysicsConfig>;
   runs: Record<string, PhysicsRun>;
@@ -42,21 +44,45 @@ interface SimulationState {
 const restart = { second: 0, playing: false, busy: true, error: null, runs: {} };
 export const useSimulation = create<SimulationState>((set, get) => ({
   replay: null,
+  loadBoardReplay: (rows, jobId) => {
+    const state = get();
+    if (state.replay?.jobId === jobId || !rows.length) return;
+    const configs = structuredClone(state.configs);
+    const weather = rows[0].asInstalled.config.values;
+    for (const config of Object.values(configs))
+      for (const key of ['peak', 'duration', 'recovery'] as const)
+        config.values[key] = { ...weather[key] };
+    for (const row of rows) configs[row.asset] = structuredClone(row.asInstalled.config);
+    set({ ...restart, configs, revision: state.revision + 1,
+      pattern: 'alternating-block', drawn: [], scenario: 'Normal',
+      speed: state.replay ? state.speed : 60,
+      manualKs: { ...state.manualKs, ...Object.fromEntries(rows.map((row) => [row.asset, true])) },
+      replay: { jobId, asset: 'board', mode: 'installed', preserveClock: true },
+    });
+  },
   loadReplay: (config, jobId, mode) => {
-    const configs = structuredClone(get().configs);
+    const state = get();
+    const sameStorm = state.replay?.jobId === jobId;
+    if (sameStorm && JSON.stringify(state.configs[config.id]) === JSON.stringify(config)) {
+      set({ replay: { jobId, asset: config.id, mode, preserveClock: true }, busy: !state.runs[config.id], error: null });
+      return;
+    }
+    const configs = structuredClone(state.configs);
     for (const c of Object.values(configs))
       for (const k of ['peak', 'duration', 'recovery'] as const)
         c.values[k] = { ...config.values[k] };
     configs[config.id] = structuredClone(config);
     set((s) => ({
       ...restart,
+      second: sameStorm ? state.second : 0,
+      playing: sameStorm ? state.playing : false,
       configs,
       revision: s.revision + 1,
       pattern: 'alternating-block',
       drawn: [],
       scenario: 'Normal',
       manualKs: { ...s.manualKs, [config.id]: true },
-      replay: { jobId, asset: config.id, mode },
+      replay: { jobId, asset: config.id, mode, preserveClock: sameStorm },
     }));
   },
   manualKs: {},
@@ -110,13 +136,7 @@ export const useSimulation = create<SimulationState>((set, get) => ({
         'pipeDiameter',
       ].includes(key)
     ) {
-      let user = 'Local operator';
-      try {
-        user = JSON.parse(sessionStorage.getItem('drain-operator') ?? '{}').name || user;
-      } catch {
-        /* no saved session */
-      }
-      configs[id].dimensionRecord = { user, at: new Date().toISOString() };
+      configs[id].dimensionRecord = { user: 'Demo visitor', at: new Date().toISOString() };
     }
     if (key === 'ks') configs[id].sampleCount = n;
     set((s) => ({

@@ -6,6 +6,7 @@ import {
   type ModeResult,
   type StormResult,
   type TriageRow,
+  type StormProgress,
 } from "../contract";
 import { testMean } from "../trialMetrics";
 import type { TrialDetail } from "../api/types";
@@ -51,7 +52,22 @@ export function runStorm(
   input: StormInput,
   faults: Fault[],
   trials: TrialDetail[] = [],
+  onProgress?: (progress: StormProgress) => void,
 ): StormResult {
+  const total = input.assets.length * (input.options.robustness ? 9 : 3);
+  let completed = 0;
+  const cache = new Map<string, ModeResult>();
+  const calculate = (config: PhysicsRun["config"], current: Omit<StormProgress, "completed" | "total">) => {
+    onProgress?.({ ...current, completed, total });
+    const key = JSON.stringify(config);
+    let value = cache.get(key);
+    if (!value) {
+      value = result(simulatePhysics(config, undefined, undefined, false));
+      cache.set(key, value);
+    }
+    onProgress?.({ ...current, completed: ++completed, total });
+    return value;
+  };
   const storm = input.custom ?? stormPresets[input.preset!];
   const rows = input.assets.map((asset): TriageRow => {
     const base = boardConfig(asset);
@@ -70,16 +86,10 @@ export function runStorm(
     base.values.peak.value = storm.peakMmHr / 3.6e6;
     base.values.duration.value = storm.durationMinutes * 60;
     base.values.recovery.value = input.options.recoveryMinutes * 60;
-    const modes = ["installed", "cleared", "capacity"].map((mode) =>
-      result(
-        simulatePhysics(
-          faultConfig(
-            base,
-            faults,
-            mode as "installed",
-            input.options.previewUnconfirmed,
-          ),
-        ),
+    const modes = (["installed", "cleared", "capacity"] as const).map((mode) =>
+      calculate(
+        faultConfig(base, faults, mode, input.options.previewUnconfirmed),
+        { asset, mode, phase: "comparison" },
       ),
     );
     return {
@@ -111,7 +121,9 @@ export function runStorm(
           // Outfall capacity sensitivity includes the circular Manning limit as well as drain conductance.
           if (parameter === "drainC")
             config.values.manningN.value /= multiplier;
-          return { ...row, asInstalled: result(simulatePhysics(config)) };
+          return { ...row, asInstalled: calculate(config, {
+            asset: row.asset, mode: "installed", phase: "sensitivity", parameter, multiplier,
+          }) };
         });
         orders.push({
           parameter,

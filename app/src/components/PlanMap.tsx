@@ -1,9 +1,9 @@
-import { useMemo } from 'react';
 import type { Feature, House, Sensor, Zone, ZoneRain } from '../api/types';
 import { useSelection } from '../state';
 import { useNavigate } from 'react-router-dom';
 import { featureCallouts, pilotByBuilding, planPoint, site } from '../site/layout';
-import { weatherCanvas } from '../site/weather';
+import type { RainPlayback } from '../site/weather';
+import RainfallOverlay from './RainfallOverlay';
 
 export default function PlanMap({
   houses,
@@ -14,6 +14,7 @@ export default function PlanMap({
   sensors,
   showSensors,
   cloudOpacity,
+  rainPlayback,
   ranks = {},
   selectedAsset,
   onSelectAsset,
@@ -27,6 +28,7 @@ export default function PlanMap({
   sensors: Sensor[];
   showSensors: boolean;
   cloudOpacity: number;
+  rainPlayback?: RainPlayback;
   ranks?: Record<string, number>;
   selectedAsset?: string;
   onSelectAsset?: (id: string) => void;
@@ -36,7 +38,6 @@ export default function PlanMap({
     selected = useSelection((s) => s.houseId),
     zoneId = useSelection((s) => s.zoneId);
   const navigate = useNavigate();
-  const cloud = useMemo(() => weatherCanvas(rain).toDataURL(), [rain]);
   return (
     <>
       <svg
@@ -117,15 +118,7 @@ export default function PlanMap({
           );
         })}
         {layer === 'rain' && (
-          <image
-            href={cloud}
-            x="29"
-            y="72"
-            width="792"
-            height="336"
-            opacity={cloudOpacity / 100}
-            pointerEvents="none"
-          />
+          <RainfallOverlay rain={rain} opacity={cloudOpacity} playback={rainPlayback} />
         )}
         {zoneId &&
           (() => {

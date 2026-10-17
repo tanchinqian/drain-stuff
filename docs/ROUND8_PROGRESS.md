@@ -1,5 +1,9 @@
 # Round 8 implementation progress
 
+## Current demonstration access — 16 October 2026
+
+The owner requested removal of visitor authentication after the Round 8 delivery. Contract **4.2.0** opens directly, with anonymous application reads/writes and evidence-photo access. Audit actors are now “Demo visitor”. The obsolete operator token has been removed from local configuration; historical audit entries are retained. External AI and device-integration credentials are separate. Existing checks were updated but not rerun for this change. The stage reports and passing counts below describe the preceding authenticated checkpoint where noted.
+
 The owner authorised continuing through the remaining stages without routine approval on 16 October 2026. Local-first remains the deployment requirement. Stage A is committed as `fc63e21`.
 
 ## Stage B — storm board

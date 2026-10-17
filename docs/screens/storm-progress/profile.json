@@ -1,0 +1,258 @@
+{
+  "baseline": {
+    "apiElapsedMs": 19950,
+    "maxEventLoopGap": 172.8
+  },
+  "runs": [
+    {
+      "mode": "api",
+      "elapsedMs": 14417,
+      "clickDuringRunMs": 39,
+      "errors": [],
+      "maxEventLoopGap": 55.30000001192093,
+      "progress": [
+        {
+          "value": 0,
+          "max": 1,
+          "text": "Starting asset comparisons…"
+        },
+        {
+          "value": 0,
+          "max": 45,
+          "text": "0 of 45 comparisons complete · S1 · As installed"
+        },
+        {
+          "value": 3,
+          "max": 45,
+          "text": "3 of 45 comparisons complete · S2 · As installed"
+        },
+        {
+          "value": 6,
+          "max": 45,
+          "text": "6 of 45 comparisons complete · S3 · As installed"
+        },
+        {
+          "value": 15,
+          "max": 45,
+          "text": "15 of 45 comparisons complete · S2 · Checking soil conductivity at 75%"
+        },
+        {
+          "value": 18,
+          "max": 45,
+          "text": "18 of 45 comparisons complete · S1 · Checking soil conductivity at 75%"
+        },
+        {
+          "value": 19,
+          "max": 45,
+          "text": "19 of 45 comparisons complete · S3 · Checking soil conductivity at 75%"
+        },
+        {
+          "value": 20,
+          "max": 45,
+          "text": "20 of 45 comparisons complete · S2 · Checking soil conductivity at 125%"
+        },
+        {
+          "value": 23,
+          "max": 45,
+          "text": "23 of 45 comparisons complete · S1 · Checking soil conductivity at 125%"
+        },
+        {
+          "value": 24,
+          "max": 45,
+          "text": "24 of 45 comparisons complete · S3 · Checking soil conductivity at 125%"
+        },
+        {
+          "value": 25,
+          "max": 45,
+          "text": "25 of 45 comparisons complete · S2 · Checking outlet capacity at 75%"
+        },
+        {
+          "value": 28,
+          "max": 45,
+          "text": "28 of 45 comparisons complete · S1 · Checking outlet capacity at 75%"
+        },
+        {
+          "value": 29,
+          "max": 45,
+          "text": "29 of 45 comparisons complete · S3 · Checking outlet capacity at 75%"
+        },
+        {
+          "value": 30,
+          "max": 45,
+          "text": "30 of 45 comparisons complete · S2 · Checking outlet capacity at 125%"
+        },
+        {
+          "value": 33,
+          "max": 45,
+          "text": "33 of 45 comparisons complete · S1 · Checking outlet capacity at 125%"
+        },
+        {
+          "value": 34,
+          "max": 45,
+          "text": "34 of 45 comparisons complete · S3 · Checking outlet capacity at 125%"
+        },
+        {
+          "value": 35,
+          "max": 45,
+          "text": "35 of 45 comparisons complete · S2 · Checking rainfall peak at 75%"
+        },
+        {
+          "value": 36,
+          "max": 45,
+          "text": "36 of 45 comparisons complete · I1 · Checking rainfall peak at 75%"
+        },
+        {
+          "value": 38,
+          "max": 45,
+          "text": "38 of 45 comparisons complete · S1 · Checking rainfall peak at 75%"
+        },
+        {
+          "value": 39,
+          "max": 45,
+          "text": "39 of 45 comparisons complete · S3 · Checking rainfall peak at 75%"
+        },
+        {
+          "value": 40,
+          "max": 45,
+          "text": "40 of 45 comparisons complete · S2 · Checking rainfall peak at 125%"
+        },
+        {
+          "value": 43,
+          "max": 45,
+          "text": "43 of 45 comparisons complete · S1 · Checking rainfall peak at 125%"
+        },
+        {
+          "value": 44,
+          "max": 45,
+          "text": "44 of 45 comparisons complete · S3 · Checking rainfall peak at 125%"
+        }
+      ],
+      "status": "5 assets compared. Ranking stable under ±25%."
+    },
+    {
+      "mode": "offline",
+      "elapsedMs": 12774,
+      "clickDuringRunMs": 38,
+      "errors": [],
+      "maxEventLoopGap": 150.40000000596046,
+      "progress": [
+        {
+          "value": 0,
+          "max": 1,
+          "text": "Queued behind the current storm calculation…"
+        },
+        {
+          "value": 0,
+          "max": 45,
+          "text": "0 of 45 comparisons complete · S1 · As installed"
+        },
+        {
+          "value": 1,
+          "max": 45,
+          "text": "1 of 45 comparisons complete · S1 · If cleared"
+        },
+        {
+          "value": 3,
+          "max": 45,
+          "text": "3 of 45 comparisons complete · S2 · As installed"
+        },
+        {
+          "value": 6,
+          "max": 45,
+          "text": "6 of 45 comparisons complete · S3 · As installed"
+        },
+        {
+          "value": 15,
+          "max": 45,
+          "text": "15 of 45 comparisons complete · S2 · Checking soil conductivity at 75%"
+        },
+        {
+          "value": 16,
+          "max": 45,
+          "text": "16 of 45 comparisons complete · S1 · Checking soil conductivity at 75%"
+        },
+        {
+          "value": 19,
+          "max": 45,
+          "text": "19 of 45 comparisons complete · S3 · Checking soil conductivity at 75%"
+        },
+        {
+          "value": 20,
+          "max": 45,
+          "text": "20 of 45 comparisons complete · S2 · Checking soil conductivity at 125%"
+        },
+        {
+          "value": 21,
+          "max": 45,
+          "text": "21 of 45 comparisons complete · S1 · Checking soil conductivity at 125%"
+        },
+        {
+          "value": 24,
+          "max": 45,
+          "text": "24 of 45 comparisons complete · S3 · Checking soil conductivity at 125%"
+        },
+        {
+          "value": 25,
+          "max": 45,
+          "text": "25 of 45 comparisons complete · S2 · Checking outlet capacity at 75%"
+        },
+        {
+          "value": 26,
+          "max": 45,
+          "text": "26 of 45 comparisons complete · S1 · Checking outlet capacity at 75%"
+        },
+        {
+          "value": 29,
+          "max": 45,
+          "text": "29 of 45 comparisons complete · S3 · Checking outlet capacity at 75%"
+        },
+        {
+          "value": 30,
+          "max": 45,
+          "text": "30 of 45 comparisons complete · S2 · Checking outlet capacity at 125%"
+        },
+        {
+          "value": 31,
+          "max": 45,
+          "text": "31 of 45 comparisons complete · S1 · Checking outlet capacity at 125%"
+        },
+        {
+          "value": 34,
+          "max": 45,
+          "text": "34 of 45 comparisons complete · S3 · Checking outlet capacity at 125%"
+        },
+        {
+          "value": 35,
+          "max": 45,
+          "text": "35 of 45 comparisons complete · S2 · Checking rainfall peak at 75%"
+        },
+        {
+          "value": 36,
+          "max": 45,
+          "text": "36 of 45 comparisons complete · S1 · Checking rainfall peak at 75%"
+        },
+        {
+          "value": 39,
+          "max": 45,
+          "text": "39 of 45 comparisons complete · S3 · Checking rainfall peak at 75%"
+        },
+        {
+          "value": 40,
+          "max": 45,
+          "text": "40 of 45 comparisons complete · S2 · Checking rainfall peak at 125%"
+        },
+        {
+          "value": 41,
+          "max": 45,
+          "text": "41 of 45 comparisons complete · S1 · Checking rainfall peak at 125%"
+        },
+        {
+          "value": 44,
+          "max": 45,
+          "text": "44 of 45 comparisons complete · S3 · Checking rainfall peak at 125%"
+        }
+      ],
+      "status": "5 assets compared. Ranking stable under ±25%."
+    }
+  ]
+}
