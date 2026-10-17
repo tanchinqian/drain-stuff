@@ -1,4 +1,4 @@
-# Backend handoff — contract 4.2.0
+# Backend handoff — contract 4.3.0
 
 ## Current local production path
 
@@ -77,7 +77,7 @@ Every response shape below has a JSON example in `contract-examples.v3.json`; `G
 
 | Method and path | Query parameters | Response / behavior |
 | --- | --- | --- |
-| GET `/config` | None | `Config`; contractVersion `4.2.0`, thresholds and observation horizon |
+| GET `/config` | None | `Config`; contractVersion `4.3.0`, thresholds and observation horizon |
 | GET `/zones` | None | `Zone[]`: id, name, peakMmPerHr, housesHoldingWater6h, housesTotal |
 | GET `/houses` | Optional `zone` in mock | `House[]`: 24 pilot records, fixed x/y, drainId, zone, nearestFeature, ownerOfRecord, lastReadingAt, holdsWater6h |
 | GET `/features` | None | `Feature[]`: six feature records |
@@ -195,7 +195,7 @@ None of these numerical defaults have been confirmed against field calibration o
 
 | Keys | Current value | Status / meaning |
 | --- | --- | --- |
-| contractVersion, dataThrough | 4.2.0; seeded observation horizon | Software version; fixed mock observation horizon, not a live station timestamp |
+| contractVersion, dataThrough | 4.3.0; seeded observation horizon | Software version; fixed mock observation horizon, not a live station timestamp |
 | doseCapLPerM2 | 25 | Provisional guardrail, not application target |
 | pilotDoses | A 10, B 15, C 20 L/m² | Provisional labelled trial doses |
 | drainDownLimitH | 6 | Provisional comparison target |
@@ -234,7 +234,7 @@ The physics engine's separate typed parameter register is [PHYSICS_PARAMETERS.md
 
 Deterministic seed 2026 supplies values; newly generated observation dates, sensor times, rainfall and dataThrough anchor to app load time. The historical reference 12 Oct 2026 09:40 Singapore is a seed construction reference, not the current observation clock. Persisted writes and actual audit/check histories retain their saved timestamps. New user writes/audits use wall clock; next re-test is seven days after a new test. Client due status uses the earlier of the recorded due day and latest test plus seven days, compared as a Singapore calendar day. Mock zone rainfall scales a common ten-minute storm by zone peaks 52/68/34/18 relative to 63 mm/h. Pilot assignments, owners and trial outcomes are invented; OSM buildings supply context geometry only.
 
-Browser storage key `drain-trial-console-v1` holds schema version 2. Migration preserves tests, checks, allocations, trust and calibration while refreshing fixed map coordinates, filling missing checklist fields, normalizing fault IDs/rule IDs, adding histories and setting contract version 4.2.0. Old Batches with missing prompt snapshots are backfilled once using available current checks; these are not genuine historical check snapshots. New readings store their prompt snapshot at save time. Existing allocations without a mixing depth display “not recorded” until an operator records one. The static default S1 allocation includes 150 mm depth.
+Browser storage key `drain-trial-console-v1` holds schema version 2. Migration preserves tests, checks, allocations, trust and calibration while refreshing fixed map coordinates, filling missing checklist fields, normalizing fault IDs/rule IDs, adding histories and setting contract version 4.3.0. Old Batches with missing prompt snapshots are backfilled once using available current checks; these are not genuine historical check snapshots. New readings store their prompt snapshot at save time. Existing allocations without a mixing depth display “not recorded” until an operator records one. The static default S1 allocation includes 150 mm depth.
 
 Reload retains saved mock data; source switching does not upload or merge it into an API. Corrupt/incompatible storage starts a seed; unavailable/full storage leaves the in-memory mock usable but cannot guarantee reload persistence. No multi-user synchronization, concurrency control, durable photo service or production audit security exists in local mode. Back up required records before clearing browser data. Reset helpers are test utilities, not operational reset controls.
 

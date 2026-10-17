@@ -31,3 +31,11 @@ Anthropic Messages and OpenAI-compatible Chat Completions adapters take the mode
 Automated provider calls are mocked. Checks cover invalid JSON, unknown step, unknown citation, extra properties, forecast text, insufficient results with steps, case injection, timeout, missing key, suspect evidence, both response envelopes, cache behavior, prompt version loading and an assembled-prompt snapshot. **No live paid provider/model request has been verified.** `LLM_PROVIDER=none` is the current local configuration. The user-supplied key is the local operator token, not an inferred provider credential.
 
 API references: [official OpenAI Chat Completions schema](https://developers.openai.com/api/reference/resources/chat/subresources/completions/methods/create), [Anthropic Messages schema](https://platform.claude.com/docs/en/api/messages/create). The UI displays mode, confidence, prompt version, sources, unchanged draft steps and logged Accept/Edit/Reject controls. Human review remains necessary; constrained JSON is not proof of factual correctness.
+
+## Selected-part analysis — 17 October 2026
+
+The part sidebar now reuses the diagnosis service for recorded findings. The backend validates the asset/part against the saved fault and loads canonical part purpose/typical failures and stored relevant sensor values, text, timestamps and trust. A bounded browser-supplied simulation snapshot is explicitly separate from those records. Temporary SIM alerts are not silently made into recorded faults.
+
+Prompt `diagnosis-2026-10-17-v2` permits general domain knowledge as unconfirmed possible causes, reasoning, missing information and high-level checks when selectedPart is present. General knowledge needs no fabricated citation. Repair actions still use vetted library step IDs. Weak evidence caps confidence at low, other part analysis at medium, and no suggestion changes workflow state automatically.
+
+OpenCode configuration uses model `deepseek-v4.1-flash` with an OpenAI-compatible endpoint. Startup logs CONFIG with model/host/configured status. Per-request MODEL/CACHE or ATTEMPT FAILED/FALLBACK lines report the model and a bounded reason code, never keys or raw provider output. UI fallback disclosure and provenance are returned in the suggestion. No live provider result is claimed.

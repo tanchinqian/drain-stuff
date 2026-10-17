@@ -96,6 +96,7 @@ import type {
   Suggestion,
   CaseRecord,
   GuidanceRecord,
+  DiagnosisRequest,
   Escalation,
 } from '../../../shared/src/contract';
 interface StormJob {
@@ -107,7 +108,7 @@ interface StormJob {
   progress?: import('../../../shared/src/contract').StormProgress | null;
 }
 export const api = {
-  aiInfo:()=>request<{promptVersion:string;provider:string;mode:string}>('/ai/config'),
+  aiInfo:()=>request<{promptVersion:string;provider:string;mode:string;model?:string|null;configured?:boolean}>('/ai/config'),
   diagnosisHints:()=>request<Record<string,string>>('/ai/hints'),
   devices:()=>request<import('../../../shared/src/iot').Device[]>('/devices'),
   commission:(input:import('zod').input<typeof import('../../../shared/src/iot').deviceInput>)=>request<import('../../../shared/src/iot').Device>('/devices',input),
@@ -139,7 +140,8 @@ export const api = {
     ),
   cases: () => request<CaseRecord[]>('/cases'),
   guidance: () => request<GuidanceRecord[]>('/guidance'),
-  diagnose: (faultId: string) => request<Suggestion>('/ai/diagnose', { faultId },30000),
+  diagnose: (faultId: string, partContext?: DiagnosisRequest['partContext']) =>
+    request<Suggestion>('/ai/diagnose', { faultId, ...(partContext ? { partContext } : {}) }, 65000),
   diagnosisFeedback: (input: {
     suggestionId: string;
     choice: 'accept' | 'edit' | 'reject';

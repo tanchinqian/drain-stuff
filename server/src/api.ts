@@ -21,6 +21,7 @@ import {
   type Escalation,
   type CaseRecord,
   type GuidanceRecord,
+  type DiagnosisContext,
 } from "../../shared/src/contract";
 import { writeSchema, legacyReads } from "../../shared/src/api/validation";
 export class ApiError extends Error {
@@ -39,6 +40,7 @@ import {
 import { transitions } from "../../shared/src/workflow";
 import { deviceApi } from "./iot";
 import { createDiagnosisService, type ProviderConfig } from "./diagnosis";
+import { buildParts } from "../../shared/src/api/parts";
 export interface ApiOptions {
   llm?: ProviderConfig;
   diagnosisFetch?: typeof fetch;
@@ -594,6 +596,8 @@ export function createApi(repo: Repository, options: ApiOptions) {
   app.get("/api/v1/ai/config", (c) =>
     c.json({
       promptVersion: diagnosis.version,
+      model: options.llm?.model ?? null,
+      configured: !!(options.llm?.provider !== 'none' && options.llm?.key && options.llm?.model),
       provider: diagnosis.provider,
       mode:
         options.llm?.key && options.llm.model && diagnosis.provider !== "none"
@@ -625,16 +629,29 @@ export function createApi(repo: Repository, options: ApiOptions) {
     );
   });
   app.post("/api/v1/ai/diagnose", async (c) => {
-    const { faultId } = diagnosisInput.parse(await c.req.json()),
+    const { faultId, partContext } = diagnosisInput.parse(await c.req.json()),
       state = repo.load(),
       fault = state.faults.find((f) => f.id === faultId);
     if (!fault) throw new ApiError(404, "Fault not found");
+    let context: DiagnosisContext | undefined;
+    if (partContext) {
+      if (partContext.ownerId !== fault.featureId || partContext.partId !== fault.partId)
+        throw new ApiError(422, "The diagnosis must refer to the selected fault's asset and part.");
+      const part = buildParts(fault.featureId, state.sensors, state.faults,
+        state.batches.some((batch) => batch.id === fault.featureId))
+        .find((part) => part.partId === fault.partId);
+      if (!part) throw new ApiError(422, "Part not found for this asset.");
+      context = { ownerId: fault.featureId, part: {
+        name: part.name, purpose: part.purpose, typicalFailure: part.typicalFailure, installed: part.installed,
+      }, model: partContext.model };
+    }
     const suggestion = await diagnosis.diagnose(
       fault,
       state.features.find((f) => f.id === fault.featureId)?.kind ?? "inlet",
       repo.jsonRows<CaseRecord>("cases"),
       repo.jsonRows<GuidanceRecord>("guidance"),
       state.sensors,
+      context,
     );
     repo.sql.transaction(() => {
       repo.sql

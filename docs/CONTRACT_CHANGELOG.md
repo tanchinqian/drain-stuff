@@ -44,3 +44,10 @@ See [BACKEND_HANDOFF.md](BACKEND_HANDOFF.md) for examples, query semantics, comp
 ## 2.0.0 — earlier sensor/assembly stage
 
 Introduced stable sensor placement, trust/calibration metadata, part links and fault diagnosing-input provenance. Earlier stage documents describe the interface at that time; version 3 supersedes conflicting data badges, house editing and control patterns.
+
+## 4.3.0 — part-level AI analysis
+
+- Optional validated asset/part and bounded model snapshot on diagnosis requests.
+- Optional structured hypotheses, high-level checks, missing information and provider/fallback metadata on suggestions.
+- AI configuration reads expose model and configured status, never credentials.
+- Original fault-only clients remain compatible.

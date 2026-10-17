@@ -1,8 +1,13 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { api } from '../api/client';
-import type { Suggestion } from '../../../shared/src/contract';
+import type { Suggestion, DiagnosisRequest } from '../../../shared/src/contract';
 import { stepLibrary } from '../../../shared/src/diagnosis';
-export default function DiagnosisPanel({ faultId }: { faultId: string }) {
+export default function DiagnosisPanel({ faultId, partContext, inline = false }: {
+  faultId: string; partContext?: DiagnosisRequest['partContext']; inline?: boolean;
+}) {
+  const info = useQuery({queryKey: ['ai-config'], queryFn: api.aiInfo});
+  const [capturedSecond, setCapturedSecond] = useState<number>();
   const [result, setResult] = useState<Suggestion | null>(null),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(''),
@@ -16,8 +21,9 @@ export default function DiagnosisPanel({ faultId }: { faultId: string }) {
     setError('');
     setSaved('');
     try {
-      const r = await api.diagnose(faultId);
+      const r = await api.diagnose(faultId, partContext);
       setResult(r);
+      setCapturedSecond(partContext?.model?.second);
       setIds(r.rankedStepIds);
     } catch (e) {
       setError((e as Error).message);
@@ -44,20 +50,23 @@ export default function DiagnosisPanel({ faultId }: { faultId: string }) {
     }
   }
   return (
-    <section className="diagnosis-panel">
+    <section className="diagnosis-panel" aria-label={inline ? 'Selected part AI diagnosis' : 'Suggested diagnosis'}>
       <div className="panel-heading">
-        <h3>Suggested diagnosis</h3>
+        <h3>{inline ? 'AI diagnosis' : 'Suggested diagnosis'}</h3>
         <button disabled={busy} onClick={generate}>
-          {busy ? 'Retrieving…' : result ? 'Refresh suggestion' : 'Retrieve suggestion'}
+          {busy ? 'Analysing…' : result ? 'Refresh analysis' : inline ? 'Analyse this part' : 'Retrieve suggestion'}
         </button>
       </div>
       {error && <p role="alert">{error}</p>}
       {!result && (
         <p className="small">
-          Compare this fault with sourced cases and guidance. Suggestions do not confirm faults or
-          assign work.
+          {inline ? 'Explain the recorded finding using this part, its readings, the current storm snapshot and general model knowledge.'
+            : 'Compare this fault with sourced cases and guidance. Suggestions do not confirm faults or assign work.'}
         </p>
       )}
+      {inline && !result && <p className="small">{info.data?.model
+        ? `Model: ${info.data.model}${info.data.configured ? '' : ' · Connection not configured; case matching will be used.'}`
+        : 'Case matching is available. Start the local backend to use its configured model.'}</p>}
       {result && (
         <>
           <p className="takeaway">{result.draftBanner}</p>
@@ -70,12 +79,27 @@ export default function DiagnosisPanel({ faultId }: { faultId: string }) {
           <p className="small">
             Confidence: {result.confidence} · {result.mode}
           </p>
+          {result.provider && <p className="small" role="status">
+            {result.provider.fallback
+              ? `Fallback · case matching. ${result.provider.reason?.replaceAll('_', ' ') ?? 'Model unavailable'}.`
+              : `Model: ${result.provider.model} · General knowledge and supplied context`}
+          </p>}
+          {capturedSecond !== undefined && <p className="small">Simulation snapshot: minute {(capturedSecond / 60).toFixed(1)}. Simulation outputs are separate from recorded observations.</p>}
+          {result.analysis && <>
+            <h4>Possible causes · unconfirmed</h4>
+            {result.analysis.possibleCauses.map((cause, index) => <div className="diagnosis-cause" key={index}>
+              <strong>{cause.cause}</strong><p>{cause.reasoning}</p>
+            </div>)}
+            {!!result.analysis.missingInformation.length && <><h4>Information needed</h4><ul>{result.analysis.missingInformation.map((item, i) => <li key={i}>{item}</li>)}</ul></>}
+            {!!result.analysis.checks.length && <><h4>Suggested checks</h4><ul>{result.analysis.checks.map((item, i) => <li key={i}>{item}</li>)}</ul></>}
+          </>}
           <ol>
             {result.rankedStepIds.map((id) => (
               <li key={id}>{stepLibrary[id]}</li>
             ))}
           </ol>
-          <h4>Cited evidence</h4>
+          <h4>Retrieved evidence</h4>
+          {!result.citedCaseIds.length && !result.citedGuidanceIds.length && <p className="small">No retrieved source supports this explanation. General model knowledge is not a site observation.</p>}
           {result.sources
             .filter(
               (s) => result.citedCaseIds.includes(s.id) || result.citedGuidanceIds.includes(s.id),

@@ -280,6 +280,7 @@ export default function ModelWorkspace({
           </div>
         </section>
         <PartPanel
+          ownerId={ownerId}
           part={part}
           config={config}
           fault={faults.find(
@@ -287,6 +288,17 @@ export default function ModelWorkspace({
           )}
           mode={mode}
           sensors={sensors.filter((s) => part.sensorIds.includes(s.sensorId))}
+          diagnosisFault={faults.find((f) => f.featureId === ownerId && f.partId === selected &&
+            f.status !== 'closed' && !f.id.startsWith('SIM-'))}
+          model={physics?.frame ? {
+            second: physics.frame.second,
+            rainfallMmHr: physics.frame.rain * 3.6e6,
+            pondingMm: physics.frame.ponding * 1000,
+            infiltrationLMin: physics.frame.flux.infiltration * 60000,
+            outletLMin: physics.frame.flux.outfall * 60000,
+            overflowLMin: physics.frame.flux.overflow * 60000,
+            moisture: physics.frame.moisture,
+          } : undefined}
         />
       </div>
     </div>

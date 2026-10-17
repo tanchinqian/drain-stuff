@@ -1,5 +1,5 @@
 import { z } from "zod";
-export const CONTRACT_VERSION = "4.2.0";
+export const CONTRACT_VERSION = "4.3.0";
 export const assets = ["S1", "S2", "S3", "I1", "R1"] as const;
 export const assetId = z.enum(assets);
 const text = z.string().trim().min(1).max(2000);
@@ -102,7 +102,34 @@ export const feedbackInput = z
     rankedStepIds: z.array(z.string()).max(20).optional(),
   })
   .strict();
-export const diagnosisInput = z.object({ faultId: text }).strict();
+export const diagnosisModel = z.object({
+  second: z.number().finite().min(0).max(864000),
+  rainfallMmHr: z.number().finite().min(0).max(10000),
+  pondingMm: z.number().finite().min(0).max(1e7),
+  infiltrationLMin: z.number().finite().min(0).max(1e9),
+  outletLMin: z.number().finite().min(0).max(1e9),
+  overflowLMin: z.number().finite().min(0).max(1e9),
+  moisture: z.number().finite().min(0).max(1),
+}).strict();
+export const diagnosisInput = z.object({
+  faultId: text,
+  partContext: z.object({
+    ownerId: z.string().min(1).max(80),
+    partId: z.string().min(1).max(80),
+    model: diagnosisModel.optional(),
+  }).strict().optional(),
+}).strict();
+export type DiagnosisRequest = z.infer<typeof diagnosisInput>;
+export interface DiagnosisContext {
+  ownerId: string;
+  part: { name: string; purpose: string; typicalFailure: string; installed: boolean };
+  model?: z.infer<typeof diagnosisModel>;
+}
+export interface DiagnosisAnalysis {
+  possibleCauses: { cause: string; reasoning: string }[];
+  checks: string[];
+  missingInformation: string[];
+}
 export const escalationInput = z
   .object({
     stormRunId: z.string().uuid(),
@@ -205,4 +232,10 @@ export interface Suggestion {
   promptVersion: string;
   sources: (CaseRecord | GuidanceRecord)[];
   draftBanner: string;
+  analysis?: DiagnosisAnalysis;
+  provider?: {
+    model: string | null;
+    fallback: boolean;
+    reason?: string;
+  };
 }

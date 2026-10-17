@@ -318,6 +318,11 @@ export function createOfflineApi(
         cases,
         referenceGuidance,
       );
+      if (input.partContext && (input.partContext.ownerId !== fault.featureId || input.partContext.partId !== fault.partId))
+        throw new Error('The diagnosis must refer to the selected fault\'s asset and part.');
+      result.provider = {model: null, fallback: true, reason: 'backend_unavailable'};
+      result.notes += ' Local demo fallback: start npm run dev:all to use the configured model and backend terminal logs.';
+      console.warn('[diagnosis] FALLBACK backend_unavailable; browser-local matching only.');
       suggestions.set(result.id, result);
       return clone(result);
     }

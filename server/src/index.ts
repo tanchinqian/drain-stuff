@@ -6,6 +6,15 @@ import { createApi } from "./api";
 import { serverEnv } from "./env";
 if (existsSync(".env.local")) loadEnvFile(".env.local");
 const env = serverEnv.parse(process.env);
+console.info('[diagnosis] CONFIG ' + JSON.stringify({
+  provider: env.LLM_PROVIDER, model: env.LLM_MODEL ?? null,
+  endpointHost: env.LLM_BASE_URL ? new URL(env.LLM_BASE_URL).hostname : 'default',
+  configured: !!(env.LLM_PROVIDER !== 'none' && env.LLM_API_KEY && env.LLM_MODEL),
+}));
+if (env.LLM_PROVIDER === 'none' || !env.LLM_API_KEY || !env.LLM_MODEL)
+  console.warn('[diagnosis] FALLBACK ' + JSON.stringify({
+    reason: env.LLM_PROVIDER === 'none' ? 'provider_disabled' : !env.LLM_API_KEY ? 'missing_api_key' : 'missing_model',
+  }));
 const repo = new Repository(env.DB_PATH);
 const api = createApi(repo, {
   llm:{provider:env.LLM_PROVIDER,key:env.LLM_API_KEY,model:env.LLM_MODEL,baseUrl:env.LLM_BASE_URL},

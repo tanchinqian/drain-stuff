@@ -7,18 +7,26 @@ import type { ViewMode } from '../three/DrainScene';
 import Status from './Status';
 import PartSensors from './PartSensors';
 import { dateTime, displayName } from '../utils';
+import DiagnosisPanel from './DiagnosisPanel';
+import type { DiagnosisRequest } from '../../../shared/src/contract';
 export default function PartPanel({
   part,
   config,
   fault,
   mode,
   sensors = [],
+  ownerId,
+  diagnosisFault,
+  model,
 }: {
   part: Part;
   config: Config;
   fault?: Fault;
   mode: ViewMode;
   sensors?: Sensor[];
+  ownerId: string;
+  diagnosisFault?: Fault;
+  model?: NonNullable<DiagnosisRequest['partContext']>['model'];
 }) {
   const rules = useQuery({ queryKey: ['fault-rules'], queryFn: api.faultRules });
   const action = useWrite(
@@ -116,6 +124,14 @@ export default function PartPanel({
       <p style={{ marginTop: 8 }}>
         {displayName(part.issue?.split('Diagnosing input:')[0] ?? 'No issue recorded')}
       </p>
+      {diagnosisFault && part.installed ? <DiagnosisPanel
+        key={ownerId + ':' + part.partId + ':' + diagnosisFault.id}
+        faultId={diagnosisFault.id}
+        inline
+        partContext={{ownerId, partId: part.partId, ...(model ? {model} : {})}}
+      /> : part.installed && <p className="small" style={{marginTop: 12}}>
+        AI diagnosis is available for a recorded finding on this part. Temporary model alerts stay separate; record an inspection in the fault register first.
+      </p>}
       {part.steps?.length && (
         <>
           <div className="notice">
