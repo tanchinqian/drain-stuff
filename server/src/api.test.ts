@@ -349,6 +349,8 @@ test("six-state lifecycle, evidence, audit, case, fallback diagnosis and feedbac
       })
     ).response.status,
   ).toBe(200);
+  expect((await request('/ai/feedback',{suggestionId:suggestion.data.id,choice:'reject'})).response.status).toBe(422);
+  expect((await request('/faults')).data.find((f:{id:string})=>f.id===fault.id).history).toEqual(expect.arrayContaining([expect.objectContaining({action:'Diagnosis accept'})]));
   expect(
     (
       await request("/ai/feedback", {

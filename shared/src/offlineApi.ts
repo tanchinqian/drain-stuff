@@ -329,6 +329,7 @@ export function createOfflineApi(
     }
     if (p[0] === "ai" && p[1] === "feedback" && method === "POST") {
       const input = feedbackInput.parse(raw);
+      if (input.choice !== 'accept' && !input.note.trim()) throw new Error('Add a reason to edit or reject the suggestion');
       if (!suggestions.has(input.suggestionId))
         throw new Error("Suggestion not found");
       if (input.rankedStepIds?.some((s) => !stepLibrary[s]))

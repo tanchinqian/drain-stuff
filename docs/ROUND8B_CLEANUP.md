@@ -9,7 +9,7 @@ The owner approved the full cleanup brief after completion of the selected-part 
 | 0 Verification and stale docs | Done | Build and lint pass. Backend/shared 57/57, frontend 67/67. Full browser baseline: 20/43; updated run 35/43, remaining eight checks pass in targeted reruns (6/8 then 2/2). A final full suite will follow the UI changes. |
 | 1 Shared drawers | Done | Native shared modal: dimmed scrim, outside/Escape/Back, dirty guard, focus trap/return, scroll lock, 540px desktop and full-height mobile. Shared footer for measurement/allocation/safety/report/commissioning. Three browser checks pass, including axe and saves. |
 | 2 Fault layout | Done | Status and asset/source header, six-step lifecycle, explicit note helper, sticky next action, summary/evidence sections and newest-first audit timeline. Three drawer/lifecycle browser checks pass. Three-viewport captures follow in section 8. |
-| 3 Suggested diagnosis | Not started | Cached auto retrieval, numbered sources, feedback and insufficient state. |
+| 3 Suggested diagnosis | Done | Cached automatic retrieval, Refresh, concise state/mode chips, deduplicated numbered draft steps and source chips, collapsed citations/production details, amber insufficient state, reasoned edit/reject and timestamped feedback. Four browser checks and 57 backend/shared checks pass. |
 | 4 Board fixable case | Not started | Confirm seed/effects and explain computed differences. |
 | 5 R1 / 3D framing | Not started | Fit, controls, stage readings and device labels. |
 | 6 Page structure | Not started | Section navigation and three viewport review. |

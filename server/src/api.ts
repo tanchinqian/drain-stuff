@@ -670,12 +670,9 @@ export function createApi(repo: Repository, options: ApiOptions) {
   });
   app.post("/api/v1/ai/feedback", async (c) => {
     const input = feedbackInput.parse(await c.req.json());
-    if (
-      !repo.sql
-        .prepare("SELECT 1 FROM suggestions WHERE id=?")
-        .get(input.suggestionId)
-    )
-      throw new ApiError(404, "Suggestion not found");
+    const suggestion = repo.sql.prepare("SELECT fault_id FROM suggestions WHERE id=?").get(input.suggestionId) as {fault_id:string}|undefined;
+    if (!suggestion) throw new ApiError(404,"Suggestion not found");
+    if (input.choice !== 'accept' && !input.note.trim()) throw new ApiError(422,'Add a reason to edit or reject the suggestion');
     if (input.rankedStepIds?.some((id) => !stepLibrary[id]))
       throw new ApiError(422, "Only draft library step IDs are accepted");
     repo.sql.transaction(() => {
@@ -691,9 +688,15 @@ export function createApi(repo: Repository, options: ApiOptions) {
       repo.audit(
         c.get("actor"),
         "Diagnosis " + input.choice,
-        input.suggestionId,
+        suggestion.fault_id,
         input.note,
+        {suggestionId: input.suggestionId},
       );
+      const state = repo.load(), fault = state.faults.find(f => f.id === suggestion.fault_id);
+      if (fault) {
+        (fault.history ??= []).push({id:uuid(),t:new Date().toISOString(),user:c.get("actor"),action:"Diagnosis " + input.choice,note:input.note});
+        repo.save(state);
+      }
     })();
     return c.json({ ok: true });
   });

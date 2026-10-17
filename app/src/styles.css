@@ -2518,3 +2518,18 @@ main > .about {
 .drawer-body .record-history ol { list-style: none; margin: 18px 0 0 7px; padding: 0 0 0 20px; border-left: 1px solid var(--border); }
 .drawer-body .record-history li { position: relative; margin-bottom: 20px; }
 .drawer-body .record-history li::before { content: ''; position: absolute; left: -25px; top: 6px; width: 8px; height: 8px; border-radius: 50%; background: var(--ink2); }
+
+.diagnosis-content { padding-top: 12px; }
+.diagnosis-content > .actions:first-child { justify-content: flex-end; margin: 0 0 10px; }
+.text-action { border-color: transparent; background: transparent; text-decoration: underline; text-underline-offset: 3px; }
+.diagnosis-sentence { line-height: 1.6; }
+.diagnosis-chips, .source-chips { display: flex; flex-wrap: wrap; gap: 7px; }
+.diagnosis-steps { list-style: decimal; padding-left: 25px; }
+.diagnosis-steps li { padding: 10px 12px; margin: 10px 0; background: var(--well2); }
+.diagnosis-steps p { margin: 0 0 8px; }
+.source-chips span { font-size: 11px; padding: 3px 6px; border: 1px solid var(--border); background: var(--panel); }
+.diagnosis-content details { margin-block: 18px; }
+.diagnosis-content summary { font-size: 14px; }
+.diagnosis-evidence article { margin: 14px 0; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
+.insufficient { background: #eadcba; color: var(--ink); padding: 12px; }
+.diagnosis-review { margin-block: 18px; }

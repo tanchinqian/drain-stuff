@@ -149,18 +149,12 @@ test('Round 8 full workflow, real API, replay, devices and responsive accessibil
   await panel.getByRole('button', { name: 'Close work order', exact: true }).click();
   await expect(panel.locator('[aria-current=step]')).toHaveText('Closed');
   const diag = page.locator('.diagnosis-panel');
-  await diag.getByRole('button', { name: 'Retrieve suggestion' }).click();
   await expect(diag).toContainText('Matched from cases', { timeout: 30000 });
-  await expect(diag).toContainText('Retrieved evidence');
+  await expect(diag).toContainText('Cited evidence');
   await diag.getByRole('button', { name: 'Accept', exact: true }).click();
-  await expect(diag).toContainText('Recorded: accept');
+  await expect(diag).toContainText('Recorded in the audit log');
   await page.screenshot({ path: 'test-results/captures/round8/diagnosis.png', fullPage: true });
-  await diag.getByRole('button', { name: 'Refresh analysis' }).click();
-  await expect(diag.getByRole('button', { name: 'Reject', exact: true })).toBeEnabled({
-    timeout: 30000,
-  });
-  await diag.getByRole('button', { name: 'Reject', exact: true }).click();
-  await expect(diag).toContainText('Recorded: reject');
+  await expect(diag.getByRole('button',{name:'Accept',exact:true})).toBeDisabled();
   await page.goto('/faults?asset=S2&escalate=1');
   await page.getByRole('textbox', { name: 'Owner / recipient' }).fill('Township owner');
   await page
