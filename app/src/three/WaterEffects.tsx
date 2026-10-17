@@ -3,6 +3,7 @@ import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { drainDesign, terrainHeight, type DrainDesign } from '../simulation/physics/design';
 import type { ModelPhysics } from './PhysicsOverlay';
+import { rainBounds, rainColour } from './visibility';
 
 export function useReducedMotion() {
   const [reduced, setReduced] = useState(
@@ -21,13 +22,12 @@ const random = (seed: number) => {
   return v - Math.floor(v);
 };
 export const rainCount = (rain: number, low = false) =>
-  rain <= 0 ? 0 : Math.min(low ? 64 : 192, Math.ceil(rain * 3.6e6 * (low ? 0.7 : 2)));
+  rain <= 0 ? 0 : Math.min(low ? 192 : 512, Math.ceil(rain * 3.6e6 * (low ? 4 : 9)));
 export const seepageCount = (q: number, low = false) =>
   q > 0 ? Math.min(low ? 12 : 40, Math.ceil(q * 60000 * 2)) : 0;
 export function StormRain({
   physics,
   low = false,
-  plane,
 }: {
   physics: ModelPhysics;
   low?: boolean;
@@ -42,51 +42,58 @@ export function StormRain({
   const time = useRef(0),
     object = useMemo(() => new THREE.Object3D(), []);
   const invalidate = useThree((s) => s.invalidate);
-  const targets = useMemo(() => {
-    const geometry = new THREE.BufferGeometry();
-    const vertices: number[] = [];
-    for (const x of [-d.length / 2, d.length / 2])
-      for (const z of [-d.topWidth / 2, -d.bedWidth / 2, d.bedWidth / 2, d.topWidth / 2])
-        vertices.push(x, terrainHeight(d, z), z);
-    geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-    geometry.setIndex([0, 4, 1, 1, 4, 5, 1, 5, 2, 2, 5, 6, 2, 6, 3, 3, 6, 7]);
-    const surface = new THREE.Mesh(
-      geometry,
-      new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }),
-    );
-    surface.updateMatrixWorld();
-    const water = new THREE.Plane(new THREE.Vector3(0, 1, 0), -(frame?.ponding ?? 0));
-    return { surface, water };
-  }, [d.length, d.bedWidth, d.topWidth, frame?.ponding]);
-  const impactPoints = useMemo(() => {
-    const raycaster = new THREE.Raycaster(),
-      point = new THREE.Vector3();
-    return Array.from({ length: count }, (_, i) => {
-      const x = (random(i + 1) - 0.5) * d.length,
-        z = (random(i + 999) - 0.5) * d.topWidth;
-      raycaster.set(new THREE.Vector3(x, 4, z), new THREE.Vector3(0, -1, 0));
-      const ground = raycaster.intersectObject(targets.surface)[0]?.point.y ?? terrainHeight(d, z);
-      const hit = raycaster.ray.intersectPlane(targets.water, point);
-      return { x, z, y: Math.max(ground, hit?.y ?? ground) };
-    });
-  }, [count, targets, d.length, d.topWidth]);
-  useEffect(
-    () => () => {
-      targets.surface.geometry.dispose();
-      (targets.surface.material as THREE.Material).dispose();
-    },
-    [targets],
+  const bounds = rainBounds(d);
+  const impactPoints = useMemo(
+    () =>
+      Array.from({ length: count }, (_, i) => {
+        const x = (random(i + 1) - 0.5) * bounds.length,
+          z = (random(i + 999) - 0.5) * bounds.width;
+        const onBed = Math.abs(x) <= d.length / 2 && Math.abs(z) <= d.topWidth / 2;
+        let y = onBed
+          ? Math.max(terrainHeight(d, z), frame?.ponding ?? 0)
+          : d.bottomY - d.nativeDepth;
+        const c = d.catchment,
+          roadX = -d.length / 2 - c.roadWidth / 2 - 0.7;
+        if (Math.abs(x - roadX) <= c.roadWidth / 2 && Math.abs(z) <= (d.topWidth + 1) / 2)
+          y = c.kerbHeight;
+        const footZ = -d.topWidth / 2 - c.footpathWidth / 2;
+        if (Math.abs(x) < (d.length + 1) / 2 && Math.abs(z - footZ) < c.footpathWidth / 2)
+          y = c.kerbHeight;
+        if (
+          c.roofArea > 0 &&
+          Math.abs(x) < d.length * 0.375 &&
+          Math.abs(z - (footZ - c.footpathWidth / 2 - 0.15)) < c.roofEdgeDepth / 2
+        )
+          y = c.kerbHeight + 1.09;
+        return { x, z, y };
+      }),
+    [
+      count,
+      bounds.length,
+      bounds.width,
+      d.length,
+      d.topWidth,
+      d.bottomY,
+      d.nativeDepth,
+      frame?.ponding,
+    ],
   );
   useFrame((_, delta) => {
     if (!drops.current || !impacts.current || !count) return;
     if (!reduced) time.current += Math.min(delta, 0.1);
     for (let i = 0; i < count; i++) {
       const { x, z, y: impactY } = impactPoints[i];
-      const phase = ((time.current * 7) / 2.4 + random(i + 222)) % 1;
-      const altitude = impactY + (1 - phase) * 2.4;
+      const speed = 5.5 + random(i + 42) * 2;
+      const phase = ((time.current * speed) / bounds.height + random(i + 222)) % 1;
+      const altitude = impactY + (1 - phase) * bounds.height;
       object.position.set(x - (altitude - impactY) * 0.08, altitude, z);
       object.rotation.set(0, 0, -0.08);
-      object.scale.set(0.003, Math.min(0.15, Math.max(0.001, altitude - impactY)), 0.003);
+      const distanceFade = 0.5 + 0.5 * (z / bounds.width + 0.5);
+      object.scale.set(
+        0.008 * distanceFade,
+        Math.min(0.18 + random(i + 8) * 0.14, Math.max(0.001, altitude - impactY)),
+        0.008 * distanceFade,
+      );
       object.updateMatrix();
       drops.current.setMatrixAt(i, object.matrix);
       const age = (phase + 0.15) % 1;
@@ -102,15 +109,33 @@ export function StormRain({
   });
   if (!count) return null;
   return (
-    <group>
-      <instancedMesh ref={drops} args={[undefined, undefined, count]} frustumCulled={false}>
+    <group name="storm-rain" userData={{ bounds, colour: rainColour }}>
+      <instancedMesh
+        name="rain-streaks"
+        ref={drops}
+        args={[undefined, undefined, count]}
+        frustumCulled={false}
+      >
         <boxGeometry args={[1, 1, 1]} />
         <meshBasicMaterial
-          color="#748e95"
+          color={rainColour}
           transparent
-          opacity={0.55}
+          opacity={Math.min(0.8, 0.3 + ((frame?.rain ?? 0) * 3.6e6) / 160)}
+          onBeforeCompile={(shader) => {
+            shader.vertexShader =
+              'varying float rainFade;\n' +
+              shader.vertexShader.replace(
+                '#include <project_vertex>',
+                '#include <project_vertex>\nrainFade = clamp(1.3 - abs(mvPosition.z) / 55.0, 0.3, 1.0);',
+              );
+            shader.fragmentShader =
+              'varying float rainFade;\n' +
+              shader.fragmentShader.replace(
+                '#include <color_fragment>',
+                '#include <color_fragment>\ndiffuseColor.a *= rainFade;',
+              );
+          }}
           depthWrite={false}
-          clippingPlanes={plane ? [plane] : []}
         />
       </instancedMesh>
       <instancedMesh ref={impacts} args={[undefined, undefined, count]} frustumCulled={false}>
@@ -121,7 +146,6 @@ export function StormRain({
           transparent
           opacity={0.45}
           depthWrite={false}
-          clippingPlanes={plane ? [plane] : []}
         />
       </instancedMesh>
     </group>
@@ -168,9 +192,9 @@ export function WaterMaterial({
   if (low)
     return (
       <meshBasicMaterial
-        color="#88afa5"
+        color="#78a99c"
         transparent
-        opacity={0.35}
+        opacity={0.6}
         depthWrite={false}
         side={THREE.DoubleSide}
         clippingPlanes={plane ? [plane] : []}
@@ -186,7 +210,7 @@ export function WaterMaterial({
             'varying float flowPosition; uniform float waterTime; uniform float waterSpeed;\n' +
             shader.fragmentShader.replace(
               '#include <color_fragment>',
-              '#include <color_fragment>\ndiffuseColor.rgb *= 0.94 + 0.06 * sin(flowPosition * 15.0 - waterTime * waterSpeed * 15.0);',
+              '#include <color_fragment>\ndiffuseColor.rgb *= 0.8 + 0.2 * sin(flowPosition * 15.0 - waterTime * waterSpeed * 15.0);',
             );
         }}
       />
@@ -223,8 +247,8 @@ export function WaterMaterial({
           ${
             !flow
               ? `float localDepth = max(0.0, waterDepth - max(0.0, (abs(waterPosition.z) - ${(design.bedWidth / 2).toFixed(8)}) / ${Math.max(0.0001, design.sideSlope).toFixed(8)}));
-          diffuseColor.a *= smoothstep(0.0, 0.008, localDepth);
-          diffuseColor.rgb = mix(vec3(0.98), diffuseColor.rgb, 1.0 - exp(-localDepth * 3.0));`
+          diffuseColor.a *= smoothstep(0.0, 0.004, localDepth);
+          diffuseColor.rgb = mix(vec3(0.98), diffuseColor.rgb, 1.0 - exp(-localDepth * 10.0));`
               : ''
           }`,
             )
@@ -241,7 +265,7 @@ export function WaterMaterial({
               `
           float fresnel = 0.02 + 0.98 * pow(1.0 - abs(dot(normal, normalize(vViewPosition))), 5.0);
           outgoingLight = mix(outgoingLight, vec3(0.76, 0.83, 0.85), fresnel * 0.6);
-          ${flow ? 'outgoingLight *= 0.94 + 0.06 * sin(phase);' : ''}
+          ${flow ? 'outgoingLight *= 0.8 + 0.2 * sin(phase);' : ''}
           #include <opaque_fragment>`,
             );
       }}
@@ -250,7 +274,15 @@ export function WaterMaterial({
   );
 }
 
-export function Seepage({ physics, low = false }: { physics: ModelPhysics; low?: boolean }) {
+export function Seepage({
+  physics,
+  low = false,
+  plane,
+}: {
+  physics: ModelPhysics;
+  low?: boolean;
+  plane?: THREE.Plane;
+}) {
   const q = physics.frame?.flux.drain ?? 0,
     d = drainDesign(physics.config);
   const count = seepageCount(q, low);
@@ -281,7 +313,7 @@ export function Seepage({ physics, low = false }: { physics: ModelPhysics; low?:
   return (
     <instancedMesh ref={mesh} args={[undefined, undefined, count]} frustumCulled={false}>
       <boxGeometry />
-      <meshBasicMaterial color="#789f9b" />
+      <meshBasicMaterial color="#789f9b" clippingPlanes={plane ? [plane] : []} />
     </instancedMesh>
   );
 }

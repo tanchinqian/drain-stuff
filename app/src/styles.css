@@ -2438,3 +2438,9 @@ main > .about {
     margin-left: auto;
   }
 }
+
+/* Feature models keep the visible flow path large, including narrow desktop windows. */
+.model-workspace:not(.compost-model) .cad-scene { height: max(60vh, 420px); width: 100%; position: relative; }
+.model-label-layout { overflow: hidden; font-family: inherit; }
+.scene-performance { position: absolute; left: 10px; bottom: 8px; padding: 5px 8px; background: #f4f0e6; color: #2f2b26; font-size: 12px; pointer-events: none; }
+.quality-status { font-size: 12px; color: #5e564b; margin-right: auto; align-self: center; }

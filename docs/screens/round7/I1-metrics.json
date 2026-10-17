@@ -1,0 +1,160 @@
+{
+  "projectedWidth": 0.6455608983169112,
+  "hardware": {
+    "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 4060 Laptop GPU (0x000028A0) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "fps": "0.5",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.7922.34 Safari/537.36"
+  },
+  "frontNonDecreasingDuringRain": true,
+  "metrics": [
+    {
+      "name": "zero",
+      "frame": {
+        "front": 0,
+        "second": 0,
+        "rain": 0,
+        "inlet": 0,
+        "outfall": 0,
+        "overflow": 0,
+        "sample100mm": null
+      },
+      "scene": {
+        "modelKind": "inlet",
+        "pondingMm": "0",
+        "explode": "65",
+        "partCount": "6",
+        "quality": "low",
+        "rainCount": "0",
+        "pipeFill": "0",
+        "pipeVelocity": "0",
+        "underdrainFlow": "0",
+        "overflowVisible": "false",
+        "frameSecond": "0",
+        "waterSurfaceHeight": "0",
+        "renderedPipeFill": "0",
+        "renderedPipeSpeed": "0",
+        "faultOutlines": "0",
+        "outlineParts": "",
+        "outlineClipped": "false",
+        "drawCalls": "131",
+        "rainBounds": "null",
+        "projectedWidth": "0.6455608983169112",
+        "inletSpeed": "0",
+        "jetVisible": "false",
+        "spillVisible": "false"
+      }
+    },
+    {
+      "name": "mid-rise",
+      "frame": {
+        "front": 0,
+        "second": 780,
+        "rain": 0.0000035187860948061795,
+        "inlet": 0.0002606236474680037,
+        "outfall": 0.0002250720455347508,
+        "overflow": 0,
+        "sample100mm": null
+      },
+      "scene": {
+        "modelKind": "inlet",
+        "pondingMm": "0",
+        "explode": "0",
+        "partCount": "6",
+        "quality": "low",
+        "rainCount": "51",
+        "pipeFill": "0.1530009638518095",
+        "pipeVelocity": "0.2960437928676462",
+        "underdrainFlow": "0.00026388628182753214",
+        "overflowVisible": "false",
+        "frameSecond": "780",
+        "waterSurfaceHeight": "0",
+        "renderedPipeFill": "0.1530009638518095",
+        "renderedPipeSpeed": "0.2960437928676462",
+        "faultOutlines": "0",
+        "outlineParts": "",
+        "outlineClipped": "false",
+        "drawCalls": "154",
+        "rainBounds": "{\"length\":6.5,\"width\":5,\"height\":4.800000000000001}",
+        "projectedWidth": "0.6455608983169112",
+        "inletSpeed": "0.052124729493600745",
+        "jetVisible": "true",
+        "spillVisible": "false"
+      }
+    },
+    {
+      "name": "peak",
+      "frame": {
+        "front": 0,
+        "second": 1560,
+        "rain": 0.000006629214106565019,
+        "inlet": 0.001681900135350814,
+        "outfall": 0.001679424647937566,
+        "overflow": 0,
+        "sample100mm": null
+      },
+      "scene": {
+        "modelKind": "inlet",
+        "pondingMm": "0",
+        "explode": "0",
+        "partCount": "6",
+        "quality": "low",
+        "rainCount": "96",
+        "pipeFill": "0.39132693596184254",
+        "pipeVelocity": "0.5895039003881866",
+        "underdrainFlow": "0.0016899303021070192",
+        "overflowVisible": "false",
+        "frameSecond": "1560",
+        "waterSurfaceHeight": "0",
+        "renderedPipeFill": "0.1530009638518095",
+        "renderedPipeSpeed": "0.2960437928676462",
+        "faultOutlines": "0",
+        "outlineParts": "",
+        "outlineClipped": "false",
+        "drawCalls": "154",
+        "rainBounds": "{\"length\":6.5,\"width\":5,\"height\":4.800000000000001}",
+        "projectedWidth": "0.6455608983169112",
+        "inletSpeed": "0.052124729493600745",
+        "jetVisible": "true",
+        "spillVisible": "false"
+      }
+    },
+    {
+      "name": "after-two-hours",
+      "frame": {
+        "front": 0,
+        "second": 9900,
+        "rain": 0,
+        "inlet": 1.9853656605858558e-7,
+        "outfall": 2.1274364038267057e-7,
+        "overflow": 0,
+        "sample100mm": null
+      },
+      "scene": {
+        "modelKind": "inlet",
+        "pondingMm": "0",
+        "explode": "0",
+        "partCount": "6",
+        "quality": "low",
+        "rainCount": "0",
+        "pipeFill": "0.0063772257417440414",
+        "pipeVelocity": "0.03139082924438369",
+        "underdrainFlow": "1.9853656605858558e-7",
+        "overflowVisible": "false",
+        "frameSecond": "9900",
+        "waterSurfaceHeight": "0",
+        "renderedPipeFill": "0.39132693596184254",
+        "renderedPipeSpeed": "0.5895039003881866",
+        "faultOutlines": "0",
+        "outlineParts": "",
+        "outlineClipped": "false",
+        "drawCalls": "94",
+        "rainBounds": "{\"length\":6.5,\"width\":5,\"height\":4.800000000000001}",
+        "projectedWidth": "0.6455608983169112",
+        "inletSpeed": "0.3363800270701628",
+        "jetVisible": "true",
+        "spillVisible": "false"
+      }
+    }
+  ],
+  "errors": []
+}

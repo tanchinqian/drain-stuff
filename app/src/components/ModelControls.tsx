@@ -64,11 +64,7 @@ export function AssemblyControls({
               if (value === 'exploded' && !explode) setExplode(65);
             }}
           >
-            {value === 'exploded'
-              ? 'Exploded'
-              : value === 'assembled'
-                ? 'Assembled'
-                : 'Cross-section'}
+            {value === 'exploded' ? 'Exploded' : value === 'assembled' ? 'Assembled' : 'Cutaway'}
           </button>
         ))}
       </div>

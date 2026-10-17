@@ -16,7 +16,12 @@ export default function SectionCaps({
   orderBase: number;
 }) {
   const field = physics?.frame?.soil;
-  const texture = useMemo(() => (field ? moistureTexture(field) : undefined), [field]);
+  const texture = useMemo(() => {
+    if (!field) return;
+    const texture = moistureTexture(field);
+    texture.userData.amendmentDepth = physics?.amendment?.depth ?? 0;
+    return texture;
+  }, [field, physics?.amendment?.depth]);
   const caps = useMemo(() => {
     const root = new THREE.Group();
     let order = orderBase;
@@ -57,6 +62,7 @@ export default function SectionCaps({
       // Material.clone copies userData, but not the shader callback that owns these uniforms.
       delete material.userData.moistureUniform;
       delete material.userData.wetBandUniform;
+      delete material.userData.amendmentUniform;
       if (source.map) {
         material.map = source.map.clone();
         material.map.repeat.set(100, 100);

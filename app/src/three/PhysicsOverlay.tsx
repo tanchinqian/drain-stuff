@@ -1,5 +1,5 @@
 import { useMemo, useEffect } from 'react';
-import { Html, Line } from '@react-three/drei';
+import { Line } from '@react-three/drei';
 import {
   ExtrudeGeometry,
   Shape,
@@ -16,6 +16,7 @@ import { drainDesign } from '../simulation/physics/design';
 import { channelPrism } from './physicsGeometry';
 import { StormRain, WaterMaterial, Seepage } from './WaterEffects';
 import SectionCaps from './SectionCaps';
+import { flowSpeed } from './visibility';
 function FluidCap({
   geometry,
   plane,
@@ -128,16 +129,7 @@ export function PhysicsWater({
         {h > 0 && plane && geometry && <FluidCap geometry={geometry} plane={plane} order={10000} />}
       </group>
     );
-  if (id === 'media' && physics.amendment)
-    return (
-      <Html position={[0, -0.05, d.bedWidth / 2 + 0.2]} center>
-        <span className="dimension-label">
-          Compost amended · {(physics.amendment.depth * 1000).toFixed(0)} mm ·{' '}
-          {physics.amendment.dose}
-        </span>
-      </Html>
-    );
-  if (id === 'drainage') return <Seepage physics={physics} low={low} />;
+  if (id === 'drainage') return <Seepage physics={physics} low={low} plane={plane} />;
   if (id === 'underdrain' || id === 'outfall') {
     const x = id === 'outfall' ? d.length / 2 + 0.75 : 0;
     const tail = Math.max(0, v.tailwater.value - v.outfallInvert.value);
@@ -162,7 +154,11 @@ export function PhysicsWater({
           />
         )}
         {id === 'outfall' && f.flux.outfall > 0 && (
-          <mesh position={[d.length / 2 + 1.65, d.pipeY - 0.08, 0]} rotation={[0, 0, -0.45]}>
+          <mesh
+            name="outfall-jet"
+            position={[d.length / 2 + 1.65, d.pipeY - 0.08, 0]}
+            rotation={[0, 0, -0.45]}
+          >
             <cylinderGeometry
               args={[
                 Math.min(r, Math.sqrt(f.flux.outfall / Math.max(0.01, f.pipeVelocity) / Math.PI)),
@@ -180,11 +176,6 @@ export function PhysicsWater({
               <boxGeometry args={[0.7, tail, 0.9]} />
               {water(tail)}
             </mesh>
-            <Html position={[d.length / 2 + 1.8, d.pipeY + tail + 0.12, 0]}>
-              <span className="dimension-label">
-                Tailwater {tail.toFixed(2)} m{tail >= d.pipeDiameter ? ' · submerged' : ''}
-              </span>
-            </Html>
           </group>
         )}
       </group>
@@ -192,7 +183,7 @@ export function PhysicsWater({
   }
   if (id === 'overflow' && f.flux.overflow > 0)
     return (
-      <mesh position={[d.length / 2 - 0.5, v.crest.value, -d.bedWidth / 3]}>
+      <mesh name="overflow-spill" position={[d.length / 2 - 0.5, v.crest.value, -d.bedWidth / 3]}>
         <cylinderGeometry args={[0.17, 0.14, Math.max(0.002, h - v.crest.value), 24, 1, true]} />
         {water(Math.max(0.002, h - v.crest.value), f.flux.overflow / (0.32 * 0.01))}
       </mesh>
@@ -216,9 +207,14 @@ export function PhysicsWater({
           </mesh>
         )}
         {q > 0 && (
-          <mesh position={[x, Math.max(0.002, h), 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <mesh
+            name="inlet-stream"
+            userData={{ velocity: flowSpeed(q) }}
+            position={[x, Math.max(0.002, h), 0]}
+            rotation={[-Math.PI / 2, 0, 0]}
+          >
             <planeGeometry args={[id === 'inlet' ? 1.1 : 0.55, width]} />
-            {water(0.005, q / (width * 0.005))}
+            {water(0.005, flowSpeed(q))}
           </mesh>
         )}
       </group>
@@ -256,9 +252,6 @@ export function DimensionLines({ config }: { config: PhysicsConfig }) {
           color="#5e564b"
         />
       ))}
-      <Html position={[0, bottom - 0.24, z]} center>
-        <span className="dimension-label">{l.toFixed(2)} m</span>
-      </Html>
       <Line
         points={[
           [l / 2 + 0.25, top, -w / 2],
@@ -266,9 +259,6 @@ export function DimensionLines({ config }: { config: PhysicsConfig }) {
         ]}
         color="#5e564b"
       />
-      <Html position={[l / 2 + 0.3, (top + bottom) / 2, -w / 2]}>
-        <span className="dimension-label">{(top - bottom).toFixed(2)} m</span>
-      </Html>
       <Line
         points={[
           [-l / 2, 0, -w / 2],
@@ -276,9 +266,6 @@ export function DimensionLines({ config }: { config: PhysicsConfig }) {
         ]}
         color="#5e564b"
       />
-      <Html position={[-l / 2 - 0.6, 0, -w / 2]} center>
-        <span className="dimension-label">RL 0.00 m</span>
-      </Html>
     </group>
   );
 }
