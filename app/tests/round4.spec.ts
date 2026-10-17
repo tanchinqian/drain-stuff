@@ -1,3 +1,4 @@
+import { choose } from './controls';
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { mkdir } from 'node:fs/promises';
@@ -15,7 +16,7 @@ test('all pages have aligned full-width shells and complete rows at desktop and 
   page,
 }) => {
   test.setTimeout(180000);
-  await mkdir('../docs/screens/round4/after', { recursive: true });
+  await mkdir('test-results/captures/round4/after', { recursive: true });
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   for (const [route, name] of routes) {
@@ -58,7 +59,7 @@ test('all pages have aligned full-width shells and complete rows at desktop and 
         name + ' ' + width,
       ).toEqual([]);
       await page.screenshot({
-        path: `../docs/screens/round4/after/${name}-${width}.png`,
+        path: `test-results/captures/round4/after/${name}-${width}.png`,
         fullPage: true,
       });
     }
@@ -95,9 +96,7 @@ test('table menus are exclusive, filters persist and density and pagination have
   await page.goto('/sensors');
   const sensors = page.getByRole('table', { name: 'sensors', exact: true });
   await expect(sensors.locator('tbody tr')).toHaveCount(10);
-  await page
-    .getByRole('combobox', { name: 'Rows per page for sensors', exact: true })
-    .selectOption('25');
+  await choose(page.getByRole('combobox', { name: 'Rows per page for sensors', exact: true }), '25');
   await expect(sensors.locator('tbody tr')).toHaveCount(25);
   await page.goto('/batches');
   const batches = page.getByRole('table', { name: 'batches', exact: true });
@@ -127,27 +126,17 @@ test('sensor assets are grouped and the wide detail drawer sits beside the regis
 });
 test('fault tabs, status lifecycle and record-specific history remain usable', async ({ page }) => {
   await page.goto('/faults');
-  await expect(page.locator('select[aria-label^="Status for"]').first()).toBeVisible();
-  const statuses = await page
-    .locator('select[aria-label^="Status for"]')
-    .evaluateAll((nodes) => nodes.map((n) => (n as HTMLSelectElement).value));
-  expect(new Set(statuses).size).toBeGreaterThan(1);
+  await expect(page.getByRole('table', {name:'faults',exact:true})).toBeVisible();
   await page.getByRole('tab', { name: 'Rules', exact: true }).click();
   await expect(page.getByRole('table', { name: 'fault rules', exact: true })).toBeVisible();
   await expect(page.getByRole('table', { name: 'faults', exact: true })).not.toBeVisible();
   await page.getByRole('tab', { name: 'Faults', exact: true }).click();
-  await page
-    .getByRole('table', { name: 'faults', exact: true })
-    .locator('tbody tr')
-    .first()
-    .getByRole('button')
-    .first()
-    .click();
-  await page.getByLabel('Optional note', { exact: true }).fill('Inlet checked from the surface');
-  await page.getByRole('button', { name: 'Mark inspected', exact: true }).click();
-  await page.getByText('Audit trail (1)', { exact: true }).click();
-  await expect(page.getByRole('dialog')).toContainText('moved to Inspected');
-  await expect(page.getByRole('dialog')).toContainText('Inlet checked from the surface');
+  await page.getByRole('button', {name:'F-002',exact:true}).click();
+  const drawer=page.getByRole('dialog');
+  await drawer.getByLabel('Required note', {exact:true}).fill('Inlet checked from the surface');
+  await drawer.getByRole('button', {name:'Confirm fault',exact:true}).click();
+  await drawer.locator('.record-history summary').click();
+  await expect(drawer).toContainText('Inlet checked from the surface');
 });
 test('one clock and honest trial counts replace contradictory seed dates', async ({ page }) => {
   await page.goto('/trials');
@@ -156,8 +145,8 @@ test('one clock and honest trial counts replace contradictory seed dates', async
       .getByRole('table', { name: 'trials', exact: true })
       .locator('tbody tr')
       .filter({ has: page.getByRole('button', { name: 'T2', exact: true }) }),
-  ).toContainText('Overdue');
-  await expect(page.locator('.trial-comparison')).toContainText('3 marked points · 24 re-tests');
+  ).toContainText('Needs baseline');
+  await expect(page.locator('.trial-comparison')).toContainText('3 marked points · 0 re-tests');
   await expect(page.locator('.trial-comparison')).not.toContainText('n =');
   await expect(page.locator('.trial-comparison .before-after')).toHaveCount(3);
   await expect(

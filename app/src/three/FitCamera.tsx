@@ -1,5 +1,5 @@
 import { useEffect, type ComponentRef, type RefObject } from 'react';
-import { useThree } from '@react-three/fiber';
+import { useThree, useFrame } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import { OrthographicCamera } from 'three';
 export default function FitCamera({
@@ -17,6 +17,9 @@ export default function FitCamera({
 }) {
   const { camera, size, invalidate } = useThree();
   const fittedZoom = Math.min(size.width / width, size.height / height);
+  useFrame(({ gl }) => {
+    if (camera instanceof OrthographicCamera) gl.domElement.dataset.cameraZoom = String(camera.zoom);
+  });
   useEffect(() => {
     if (camera instanceof OrthographicCamera) {
       camera.zoom = fittedZoom;

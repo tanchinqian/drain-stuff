@@ -9,7 +9,7 @@ test.use({
 });
 test('storm board calculates five assets and selects their map marker', async ({ page }) => {
   test.setTimeout(180000);
-  await mkdir('../docs/screens/round8', { recursive: true });
+  await mkdir('test-results/captures/round8', { recursive: true });
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Set the storm to compare' })).toBeVisible({
     timeout: 30000,
@@ -23,7 +23,7 @@ test('storm board calculates five assets and selects their map marker', async ({
   await page.getByRole('button', { name: 'Plan', exact: true }).click();
   await page.locator('.triage-asset').filter({ hasText: 'R1' }).click();
   await expect(page.locator('.triage-row.selected')).toContainText('R1');
-  await page.screenshot({ path: '../docs/screens/round8/board-storm.png', fullPage: true });
+  await page.screenshot({ path: 'test-results/captures/round8/board-storm.png', fullPage: true });
   await page.setViewportSize({ width: 390, height: 844 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(
     true,

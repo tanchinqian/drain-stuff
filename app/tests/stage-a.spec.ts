@@ -9,7 +9,7 @@ test.use({
 });
 test('Demo opens directly and uses the real API proxy', async ({ page }) => {
   test.setTimeout(60000);
-  await mkdir('../docs/screens/round8', { recursive: true });
+  await mkdir('test-results/captures/round8', { recursive: true });
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto('/');
@@ -31,7 +31,7 @@ test('Demo opens directly and uses the real API proxy', async ({ page }) => {
     .click();
   await expect(page.getByRole('heading', { name: 'Sensors', exact: true })).toBeVisible();
   await expect(page.locator('tbody tr').first()).toBeVisible();
-  await page.screenshot({ path: '../docs/screens/round8/stage-a-sensors.png', fullPage: true });
+  await page.screenshot({ path: 'test-results/captures/round8/stage-a-sensors.png', fullPage: true });
   expect(errors).toEqual([]);
 });
 test('Stage A automatic discovery fallback opens the existing local app', async ({ page }) => {

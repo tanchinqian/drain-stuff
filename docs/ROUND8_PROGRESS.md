@@ -1,8 +1,8 @@
 # Round 8 implementation progress
 
-## Current demonstration access — 16 October 2026
+## Current demonstration access — 17 October 2026
 
-The owner requested removal of visitor authentication after the Round 8 delivery. Contract **4.2.0** opens directly, with anonymous application reads/writes and evidence-photo access. Audit actors are now “Demo visitor”. The obsolete operator token has been removed from local configuration; historical audit entries are retained. External AI and device-integration credentials are separate. Existing checks were updated but not rerun for this change. The stage reports and passing counts below describe the preceding authenticated checkpoint where noted.
+The owner requested removal of visitor authentication after the Round 8 delivery. Contract **4.3.0** opens directly, with anonymous application reads/writes and evidence-photo access. Audit actors are now “Demo visitor”. The obsolete operator token has been removed from local configuration; historical audit entries are retained. External AI and device-integration credentials are separate. Existing checks were updated but not rerun for this change. The stage reports and passing counts below describe the preceding authenticated checkpoint where noted.
 
 The owner authorised continuing through the remaining stages without routine approval on 16 October 2026. Local-first remains the deployment requirement. Stage A is committed as `fc63e21`.
 
@@ -26,7 +26,7 @@ The owner authorised continuing through the remaining stages without routine app
 ## Stage C — work orders
 
 - Done: fault drawer uses the six-state lifecycle, searchable/free-text crew names, required notes, and the recorded audit history. Existing status shortcuts are replaced by workflow controls.
-- Done: verification offers trusted registered sensor/unit, saved storm re-run with before/after overflow, or a bounded uploaded photo. Photos are stored beside the configured database, require operator auth to retrieve, accept PNG/JPEG/WebP signatures only, and have a 5 MB limit. No photo upload is claimed in standalone mock mode.
+- Done: verification offers trusted registered sensor/unit, saved storm re-run with before/after overflow, or a bounded uploaded photo. Photos are stored beside the configured database, are accessible to reachable demo visitors, accept PNG/JPEG/WebP signatures only, and have a 5 MB limit. No photo upload is claimed in standalone mock mode.
 - Done: capacity-limited assets open owner escalation with saved three-mode evidence, recipient, note, acknowledgement/resolution and immutable audit. This records a hand-off; it sends no email or message.
 - Done: unconfirmed preview is explicit on the board; changes affect subsequent runs, not past snapshots. Re-run after workflow changes to refresh the board's calculated evidence.
 - Verification: 38 backend/shared tests pass, covering photo rejection/storage, escalation persistence/status audit, lifecycle and rerun verification. App TypeScript passes.
@@ -61,16 +61,16 @@ The owner authorised continuing through the remaining stages without routine app
 - F1 done: **57 backend/shared tests and 67 frontend tests pass**. Four browser checks pass against an isolated real API/SQLite database, covering first connection, unreachable-API fallback, board results and the full operator workflow. The full workflow was repeated after adding an explicit wait for the 3D calculation and advancing the saved replay to minute 20. `npm run build:all` passes server/app TypeScript and the production bundle. The final malformed-uplink check returns 422 for non-object JSON instead of a server error.
 - F1 done: browser evidence covers three modes per asset, capacity escalation, confirmation changing overflow, all six work-order states, saved before/after verification, sourced deterministic diagnosis with logged accept/reject, device commissioning/TTN ingest, registered 3D markers, saved replay toggle and 2D section. T1/T2 and the old Batches navigation are absent from the board. Layouts were checked at 1440, 1920 and 390 px. Axe WCAG A/AA reports no violations on the checked board and materials screens; this is not an app-wide accessibility certification. No browser page errors occurred.
 - F1 done: the Impeccable finish reviewer approved the scored fixes after the mobile Plan map and current product description were corrected. The documenter found no change to the established design system was needed. No DESIGN.md or sidecar edits were made. The existing palette, radar and water appearance remain.
-- F2 done: backend handoff, deployment instructions, AI evaluation, physics ownership, contract changelog, README and current product scope are updated. Contract version is **4.1.0**. Earlier stage counts describe those checkpoints only.
+- F2 done: backend handoff, deployment instructions, AI evaluation, physics ownership, contract changelog, README and current product scope are updated. Contract version at that checkpoint was **4.1.0**; the current version is **4.3.0**. Earlier stage counts describe those checkpoints only.
 - F3 done: screenshots in `docs/screens/round8/` include board before/after, desktop/mobile, verified work order, diagnosis, capacity escalation, device reading, materials and the typical roadside replay. The three editable sensor SVGs were rendered and visually inspected, with automated text-boundary checks; PNG evidence uses the `schematic-` prefix.
-- F4 done: `docs/LIMITS.md` records the uncalibrated model, unsurveyed geometry, scenario rainfall, small sourced library, draft procedures, shared-token identity and hardware limits.
+- F4 done: `docs/LIMITS.md` records the uncalibrated model, unsurveyed geometry, scenario rainfall, small sourced library, draft procedures, public-demo identity and hardware limits.
 
 ## Item-by-item completion
 
 | Items | Status | Evidence / limit |
 |---|---|---|
 | A1 shared package; A2 persistence; A3 old contract; A4 new endpoints | Done | Canonical shared logic, migrations, worker calculations and API/mock contract checks. Stage A report retains the initial checkpoint details. |
-| A5 authentication and limits | Done | Local token, self-entered operator name, CORS, bounded requests/jobs, rate limits and audited changes. Shared token is not individual identity authentication. |
+| A5 authentication and limits | Done | Visitor authentication was removed at the owner's request. CORS, bounded requests/jobs, rate limits and audited changes remain. Audit actors use Demo visitor. |
 | A6 local launch and optional deployment files | Done for revised scope | `dev:all` seeds/starts the persistent local API and React app. Docker/Render files and persistent-disk instructions supplied. Cloud hosting was explicitly made optional. |
 | A7 tests | Done | Endpoint, contract, persistence and automatic fallback checks pass. |
 | B1 board; B2 ranked map; B3 typical inlet | Done | Five assets, three calculated modes, selectable ranked map, R1 section/config and fidelity label. |
@@ -92,10 +92,10 @@ The owner authorised continuing through the remaining stages without routine app
 
 ## Local operation, configuration and remaining limits
 
-- Local app: **http://127.0.0.1:5174**; API: **http://127.0.0.1:8080/api/v1**. The launcher chooses the next free port if necessary. The older preview occupying 5173 is separate. Start with `npm run dev:all` from the repository root; persistent working data is `data/drain.sqlite`.
-- The supplied key is saved as `OPERATOR_TOKEN` only in ignored `.env.local`. The launcher also maintains a separate simulator integration secret. Secrets, databases, build output and dependency folders are excluded from Git. The first connection asks for operator name and token.
-- Required local settings: `OPERATOR_TOKEN` (at least 24 characters), `DB_PATH`, and `LLM_PROVIDER=none`. The launcher supplies local host/ports and seeds an empty DB. `.env.example` documents `PORT`, `APP_PORT`, `HOST`, `SEED_DEMO` and optional exact `CORS_ORIGIN` values. No CORS setting is needed for same-origin production serving.
-- Optional explanations require `LLM_PROVIDER=anthropic` or `openai-compatible`, plus separate server-only `LLM_API_KEY` and `LLM_MODEL`; compatible endpoints may set `LLM_BASE_URL`. Without them, or on rejected/failed provider output, diagnosis remains sourced deterministic matching. No live paid provider request was made.
+- The managed local app is **http://127.0.0.1:5174** and the API is **http://127.0.0.1:8080/api/v1**. A separate Vite process on 5173 serves the same workspace and now uses the API proxy. The launcher prints its chosen free ports. Persistent data is `data/drain.sqlite`.
+- No operator token is used. The local server-only OpenCode credential is stored as `LLM_API_KEY` in ignored local configuration. A separate simulator integration secret is maintained. Credentials, databases, build output and dependency folders are excluded from Git.
+- Local configuration uses `DB_PATH` and optional server-only model settings. The launcher supplies local host/ports and seeds an empty DB. `.env.example` documents those settings. No CORS setting is needed for same-origin production serving.
+- Part-level explanations are configured for OpenCode `deepseek-v4.1-flash` through the compatible adapter. Provider failures and missing configuration explicitly log FALLBACK and its reason; no live provider verification is claimed. See `PART_AI_DIAGNOSIS.md`.
 - Optional physical ingest requires `LORAWAN_INGEST_SECRET`; the simulator uses distinct `LORAWAN_SIM_SECRET`. Either integration secret must be at least 24 characters. Commission a device before ingest. The simulated integration never claims physical-device provenance.
-- No new deployed URL: the owner explicitly replaced deployment with the local-first outcome. Optional hosting templates have not been built or deployed. No changes are pushed by this delivery.
+- Cloud deployment remains optional. Round 8 and the continuous-cloud work were pushed on `codex/drain-trial-console` through `d17c75b`. Later part-level AI and cleanup commits are local unless separately reported as pushed.
 - No settled-decision conflict remains. All geometry/calibration inputs are illustrative; no surveyed township network, rainfall prediction, flood reduction, compost efficacy, field-tested hardware or measured battery life is claimed. Estimated/unverified IoT figures are enumerated under Stage G and in its source documents.

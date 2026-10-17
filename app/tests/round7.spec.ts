@@ -10,7 +10,7 @@ if (process.env.ROUND7_HARDWARE_GPU === '1')
 for (const id of ['S1', 'I1', 'S3', 'T1'])
   test('Round 7 visibility ' + id, async ({ page }) => {
     test.setTimeout(150000);
-    await mkdir('../docs/screens/round7', { recursive: true });
+    await mkdir('test-results/captures/round7', { recursive: true });
     const errors: string[] = [];
     page.on('pageerror', (e) => errors.push(e.message));
     page.on('console', (m) => {
@@ -110,11 +110,11 @@ for (const id of ['S1', 'I1', 'S3', 'T1'])
         await page.getByRole('button', { name: 'Cutaway', exact: true }).click();
         await page
           .locator('.cad-scene')
-          .screenshot({ path: `../docs/screens/round7/${id}-${name}-cutaway.png` });
+          .screenshot({ path: `test-results/captures/round7/${id}-${name}-cutaway.png` });
         await page.getByRole('button', { name: 'Assembled', exact: true }).click();
         await page
           .locator('.cad-scene')
-          .screenshot({ path: `../docs/screens/round7/${id}-${name}-assembled.png` });
+          .screenshot({ path: `test-results/captures/round7/${id}-${name}-assembled.png` });
         await page.getByRole('button', { name: 'Cutaway', exact: true }).click();
       }
     }
@@ -123,6 +123,12 @@ for (const id of ['S1', 'I1', 'S3', 'T1'])
       expect(end.sample100mm!).toBeGreaterThan(state.frames[0].sample100mm!);
     }
     if (id === 'S1') {
+      await timeline.fill(String(Math.round(state.peak / 60)));
+      await page.locator('.storm-disclosure > summary').click();
+      await page.getByRole('combobox', {name:'Simulation scenario',exact:true}).fill('Clogged sock');
+      await page.getByRole('option', {name:'Clogged sock',exact:true}).click();
+      await expect(timeline).toBeEnabled({timeout:60000});
+      await timeline.fill('25');
       await page
         .locator('.part-list')
         .getByRole('button', { name: 'Compost filter sock', exact: true })
@@ -152,7 +158,7 @@ for (const id of ['S1', 'I1', 'S3', 'T1'])
     );
     expect(frontRecedes).toBe(false);
     await writeFile(
-      `../docs/screens/round7/${id}-metrics.json`,
+      `test-results/captures/round7/${id}-metrics.json`,
       JSON.stringify(
         { projectedWidth, hardware, frontNonDecreasingDuringRain: !frontRecedes, metrics, errors },
         null,

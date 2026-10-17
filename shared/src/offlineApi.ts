@@ -109,6 +109,7 @@ export function createOfflineApi(
           row.result = await calculate(input, snapshot.faults, snapshot.trials,
             (progress) => { row.progress = progress; });
           row.status = "completed";
+          row.progress = null;
         } catch (e) {
           row.status = "failed";
           row.error = (e as Error).message;
@@ -302,7 +303,7 @@ export function createOfflineApi(
         return clone(item);
       }
     }
-    if(p[0]==='ai'&&p[1]==='config')return {promptVersion:'offline-deterministic-v2',provider:'none',mode:'Matched from cases'};
+    if(p[0]==='ai'&&p[1]==='config')return {promptVersion:'offline-deterministic-v2',provider:'none',mode:'Matched from cases',model:null,configured:false};
     if(p[0]==='ai'&&p[1]==='hints') {
       const state=store.snapshot();return Object.fromEntries(state.features.map(asset=>{const f=state.faults.find(f=>f.featureId===asset.id&&f.status!=='closed');return [asset.id,f?deterministicDiagnosis(f,asset.kind,cases,referenceGuidance).diagnosis:'No open fault for diagnosis'];}));
     }

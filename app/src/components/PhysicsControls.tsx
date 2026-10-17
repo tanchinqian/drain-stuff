@@ -21,11 +21,6 @@ export default function PhysicsControls({ ownerId }: { ownerId: string }) {
     return () => q.removeEventListener('change', change);
   }, []);
   const state = useSimulation.getState();
-  useEffect(() => {
-    if (!run || useSimulation.getState().replay) return;
-    const peak = peakFrame(run);
-    useSimulation.getState().seek(peak.second);
-  }, [run]);
   return (
     <div
       className="physics-playback"

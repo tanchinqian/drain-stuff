@@ -28,7 +28,7 @@ npm.cmd run dev
 
 ## Current operator flow
 
-Overview combines a fixed map with fault cards, zone filtering, dated rainfall and drain-down charts. Only the 24 pilot houses and six feature destinations are interactive; context houses provide geometry. A pilot-house drawer closes with Close, Esc, map background selection or another map item. Last storm, 7 days and 8 weeks drive history requests and chart titles. Radar colours remain approved; rainfall is interpolated from dated zone records, not live radar.
+Overview provides the calculated storm triage board, saved rainfall replay and ranked map. Observation history at `/observations` retains zone filters, dated rainfall and drain-down charts. Only the 24 pilot houses and six feature destinations are interactive; context houses provide geometry. Pilot-house records open in the shared detail drawer. Last storm, 7 days and 8 weeks drive history requests and chart titles. Radar colours remain approved; rainfall is interpolated from dated zone records, not live radar.
 
 Registers share a compact search/filter toolbar, sortable columns, saved column visibility, 10/20/25-row pagination (10 by default), density and CSV export. Native filter/Columns menus open one at a time; IDs use plain monospace text and there are no row-selection checkboxes. Tables have panel-contained horizontal scrolling without internal vertical clipping. Long lists use a single combobox; fewer than eight options use a plain select or segmented controls. Technical terms use glossary popovers. Writes show the saved destination/time; collapsed record histories show the latest five distinct entries with Show all. Faults / Rules tabs organise the register; status changes in the status cell refresh Overview counts.
 

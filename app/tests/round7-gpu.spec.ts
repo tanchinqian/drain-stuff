@@ -15,7 +15,7 @@ for (const [id, width] of [
   test(`Round 7 GPU ${id} ${width}`, async ({ page }) => {
     test.skip(process.platform !== 'win32', 'Direct3D11 hardware measurement requires Windows');
     test.setTimeout(90000);
-    await mkdir('../docs/screens/round7', { recursive: true });
+    await mkdir('test-results/captures/round7', { recursive: true });
     await page.setViewportSize({ width, height: 1000 });
     await page.goto('/feature/' + id);
     await expect(page.getByRole('slider', { name: 'Storm timeline', exact: true })).toBeEnabled({
@@ -57,9 +57,9 @@ for (const [id, width] of [
     };
     await page
       .locator('.cad-scene')
-      .screenshot({ path: `../docs/screens/round7/${id}-${width}-gpu.png` });
+      .screenshot({ path: `test-results/captures/round7/${id}-${width}-gpu.png` });
     await writeFile(
-      `../docs/screens/round7/${id}-${width}-gpu.json`,
+      `test-results/captures/round7/${id}-${width}-gpu.json`,
       JSON.stringify(metrics, null, 2),
     );
     expect(Number(metrics.renderFps)).toBeGreaterThan(0);
@@ -75,7 +75,7 @@ for (const [id, width] of [
       await expect(page.locator('[data-scene-label="inlet"]')).toContainText('L/min');
       await page
         .locator('.cad-scene')
-        .screenshot({ path: '../docs/screens/round7/S2-720-troubleshoot.png' });
+        .screenshot({ path: 'test-results/captures/round7/S2-720-troubleshoot.png' });
     }
     if (id === 'S1' && width === 1440) {
       await page.getByRole('button', { name: 'Operator', exact: true }).click();
@@ -92,7 +92,7 @@ for (const [id, width] of [
           await page.getByRole('button', { name: view, exact: true }).click();
           await page
             .locator('.cad-scene')
-            .screenshot({ path: `../docs/screens/round7/S1-${name}-${view.toLowerCase()}.png` });
+            .screenshot({ path: `test-results/captures/round7/S1-${name}-${view.toLowerCase()}.png` });
         }
       }
       await page.getByRole('button', { name: 'Cutaway', exact: true }).click();

@@ -1,3 +1,4 @@
+import { choose } from './controls';
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { mkdir } from 'node:fs/promises';
@@ -11,11 +12,9 @@ test('baseline, safety checks and compost allocation remain guarded', async ({ p
     .getByRole('button', { name: 'Record baseline', exact: true })
     .click();
   const drawer = page.getByRole('dialog');
-  await drawer
-    .getByRole('combobox', { name: 'Soil texture', exact: true })
-    .selectOption('Clay loam');
+  await choose(drawer.getByRole('combobox', { name: 'Soil texture', exact: true }), 'Clay loam');
   for (const point of ['T1-P1', 'T1-P2', 'T1-P3']) {
-    await drawer.getByRole('combobox', { name: 'Marked point', exact: true }).selectOption(point);
+    await choose(drawer.getByRole('combobox', { name: 'Marked point', exact: true }), point);
     await drawer.getByRole('button', { name: 'Record baseline point', exact: true }).click();
     await expect(
       page.getByRole('status').filter({ hasText: 'Saved to trial record T1' }),
@@ -29,7 +28,7 @@ test('baseline, safety checks and compost allocation remain guarded', async ({ p
   await expect(page.getByRole('status').filter({ hasText: 'Saved safety checks' })).toBeVisible();
   await page.keyboard.press('Escape');
   await page.getByRole('button', { name: 'Allocate mature compost', exact: true }).click();
-  await page.getByRole('combobox', { name: 'Batch', exact: true }).selectOption('B-03');
+  await choose(page.getByRole('combobox', { name: 'Batch', exact: true }), 'B-03');
   await expect(page.getByRole('button', { name: 'Allocate to T1', exact: true })).toBeEnabled();
   await page.getByRole('button', { name: 'Allocate to T1', exact: true }).click();
   await expect(
@@ -40,8 +39,8 @@ test('all pages meet axe, width and mobile containment and have review captures'
   page,
 }) => {
   test.setTimeout(180000);
-  await mkdir('../docs/screens', { recursive: true });
-  await mkdir('../docs/screens/round4/after/round3', { recursive: true });
+  await mkdir('test-results/captures', { recursive: true });
+  await mkdir('test-results/captures/round4/after/round3', { recursive: true });
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   for (const [path, name] of [
@@ -77,12 +76,12 @@ test('all pages meet axe, width and mobile containment and have review captures'
         name + ' ' + width,
       ).toEqual([]);
       await page.screenshot({
-        path: `../docs/screens/round4/after/${name}-${width}.png`,
+        path: `test-results/captures/round4/after/${name}-${width}.png`,
         fullPage: true,
       });
       if (width !== 1920)
         await page.screenshot({
-          path: `../docs/screens/round4/after/${name}-${width === 1440 ? 'desktop' : 'mobile'}.png`,
+          path: `test-results/captures/round4/after/${name}-${width === 1440 ? 'desktop' : 'mobile'}.png`,
           fullPage: true,
         });
     }

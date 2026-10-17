@@ -15,7 +15,7 @@ test('rain, wetting and peak water are understandable without opening settings',
   await timeline.fill('2');
   await expect(page.locator('.water-story')).toContainText(/soaking|travelling|pooling/);
   await page.screenshot({
-    path: '../docs/screens/round4/after/water-early-desktop.png',
+    path: 'test-results/captures/round4/after/water-early-desktop.png',
     fullPage: true,
   });
   await page.getByRole('button', { name: 'Jump to peak water', exact: true }).click();
@@ -35,7 +35,7 @@ test('rain, wetting and peak water are understandable without opening settings',
       .analyze();
     expect(axe.violations.map((v) => v.id)).toEqual([]);
     await page.screenshot({
-      path: `../docs/screens/round4/after/water-peak-${width === 1440 ? 'desktop' : 'mobile'}.png`,
+      path: `test-results/captures/round4/after/water-peak-${width === 1440 ? 'desktop' : 'mobile'}.png`,
       fullPage: true,
     });
   }

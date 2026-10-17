@@ -64,6 +64,6 @@ An ephemeral filesystem loses SQLite data on redeploy. Back up the complete SQLi
 
 ## Provider and device demonstration
 
-Set `LLM_PROVIDER`, `LLM_API_KEY` and `LLM_MODEL` only in root `.env.local`, then restart. The retired operator token is not repurposed as an AI credential. Both provider envelopes are checked with mocks; a live paid provider call is not verified. Eight-second timeouts and one retry fall back to sourced matching. Prompt rules/version live in `server/ai/prompts/diagnosis.system.md`.
+Set `LLM_PROVIDER`, `LLM_API_KEY` and `LLM_MODEL` only in root `.env.local`, then restart. Both provider envelopes are checked with mocks; a live paid provider call is not verified. Twenty-five-second timeouts and one retry fall back to sourced matching. Prompt rules/version live in `server/ai/prompts/diagnosis.system.md`.
 
 Run `npm run sim:device` after `dev:all`. It registers a fresh R1 node and sends a backdated ramp plus fault cases. Set `SIM_API_BASE` if the API port differs from 8080. Real TTN/ChirpStack installations need their own integration credential and commissioned device; no hardware is assumed. See `docs/iot/` for payload, electrical design and unverified conditions.

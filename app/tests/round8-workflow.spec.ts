@@ -1,11 +1,9 @@
 import { test, expect, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { readFileSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { randomBytes } from 'node:crypto';
 import { encodeUplink } from '../../shared/src/iot';
-const env = readFileSync('../.env.local', 'utf8'),
-  simSecret = env.match(/^LORAWAN_SIM_SECRET=(.+)$/m)![1].trim();
+const simSecret = 'round8b-isolated-simulator-key';
 const headers = {};
 test.use({
   baseURL: process.env.ROUND8_APP_URL || 'http://127.0.0.1:5175',
@@ -41,31 +39,31 @@ test('Round 8 full workflow, real API, replay, devices and responsive accessibil
   test.setTimeout(360000);
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
-  await mkdir('../docs/screens/round8', { recursive: true });
+  await mkdir('test-results/captures/round8', { recursive: true });
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Set the storm to compare' })).toBeVisible({
     timeout: 30000,
   });
-  await page.screenshot({ path: '../docs/screens/round8/board-before.png', fullPage: true });
+  await page.screenshot({ path: 'test-results/captures/round8/board-before.png', fullPage: true });
   let jobId = await runBoard(page);
   await expect(page.locator('.triage-row').filter({ hasText: 'S2' })).toContainText(
     'Capacity-limited: escalate to owner',
   );
   await page.getByRole('button', { name: 'Plan', exact: true }).click();
   await page.evaluate(() => scrollTo(0, 0));
-  await page.screenshot({ path: '../docs/screens/round8/desktop.png', fullPage: true });
+  await page.screenshot({ path: 'test-results/captures/round8/desktop.png', fullPage: true });
   const axe = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
-  await writeFile('../docs/screens/round8/axe-board.json', JSON.stringify(axe.violations, null, 2));
+  await writeFile('test-results/captures/round8/axe-board.json', JSON.stringify(axe.violations, null, 2));
   expect(axe.violations).toEqual([]);
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.evaluate(() => scrollTo(0, 0));
-  await page.screenshot({ path: '../docs/screens/round8/desktop-1920.png', fullPage: true });
+  await page.screenshot({ path: 'test-results/captures/round8/desktop-1920.png', fullPage: true });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.evaluate(() => scrollTo(0, 0));
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(
     true,
   );
-  await page.screenshot({ path: '../docs/screens/round8/mobile.png', fullPage: true });
+  await page.screenshot({ path: 'test-results/captures/round8/mobile.png', fullPage: true });
   await page.setViewportSize({ width: 1440, height: 1000 });
   // Clear only the isolated verification database's prior S1 fixture faults.
   const existing = await (await page.request.get('/api/v1/faults', { headers })).json();
@@ -144,7 +142,7 @@ test('Round 8 full workflow, real API, replay, devices and responsive accessibil
   await panel.getByRole('button', { name: 'Verify clearance', exact: true }).click();
   await expect(panel.locator('[aria-current=step]')).toHaveText('Verified', { timeout: 180000 });
   await expect(panel).toContainText('Verification re-run: overflow');
-  await page.screenshot({ path: '../docs/screens/round8/work-order-verified.png', fullPage: true });
+  await page.screenshot({ path: 'test-results/captures/round8/work-order-verified.png', fullPage: true });
   await panel
     .getByRole('textbox', { name: 'Required note' })
     .fill('Evidence reviewed and accepted');
@@ -153,11 +151,11 @@ test('Round 8 full workflow, real API, replay, devices and responsive accessibil
   const diag = page.locator('.diagnosis-panel');
   await diag.getByRole('button', { name: 'Retrieve suggestion' }).click();
   await expect(diag).toContainText('Matched from cases', { timeout: 30000 });
-  await expect(diag).toContainText('Cited evidence');
+  await expect(diag).toContainText('Retrieved evidence');
   await diag.getByRole('button', { name: 'Accept', exact: true }).click();
   await expect(diag).toContainText('Recorded: accept');
-  await page.screenshot({ path: '../docs/screens/round8/diagnosis.png', fullPage: true });
-  await diag.getByRole('button', { name: 'Refresh suggestion' }).click();
+  await page.screenshot({ path: 'test-results/captures/round8/diagnosis.png', fullPage: true });
+  await diag.getByRole('button', { name: 'Refresh analysis' }).click();
   await expect(diag.getByRole('button', { name: 'Reject', exact: true })).toBeEnabled({
     timeout: 30000,
   });
@@ -170,7 +168,7 @@ test('Round 8 full workflow, real API, replay, devices and responsive accessibil
     .fill('Capacity remains insufficient after clearing');
   await page.getByRole('button', { name: 'Record escalation', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Township owner · recorded' })).toBeVisible();
-  await page.screenshot({ path: '../docs/screens/round8/capacity-escalation.png', fullPage: true });
+  await page.screenshot({ path: 'test-results/captures/round8/capacity-escalation.png', fullPage: true });
   const id = randomBytes(8).toString('hex');
   await page.goto('/sensors');
   await page.getByRole('button', { name: 'Register device', exact: true }).click();
@@ -211,7 +209,7 @@ test('Round 8 full workflow, real API, replay, devices and responsive accessibil
   await page.goto('/sensors?sensor=DEV-' + id);
   await expect(page.getByRole('dialog')).toContainText('Ultrasonic level', { timeout: 15000 });
   await expect(page.getByRole('dialog')).toContainText('50');
-  await page.screenshot({ path: '../docs/screens/round8/device-reading.png', fullPage: true });
+  await page.screenshot({ path: 'test-results/captures/round8/device-reading.png', fullPage: true });
   await page.goto('/feature/R1?stormRunId=' + jobId + '&part=inlet');
   await expect(page.getByText('Typical design, not surveyed', { exact: false })).toBeVisible({
     timeout: 30000,
@@ -227,7 +225,7 @@ test('Round 8 full workflow, real API, replay, devices and responsive accessibil
   await timeline.press('Home');
   for (let minute = 0; minute < 20; minute++) await timeline.press('ArrowRight');
   await expect(page.locator('.physics-playback')).toHaveAttribute('data-model-minute', '20');
-  await page.screenshot({ path: '../docs/screens/round8/typical-roadside.png', fullPage: true });
+  await page.screenshot({ path: 'test-results/captures/round8/typical-roadside.png', fullPage: true });
   await page.getByRole('button', { name: 'If cleared', exact: true }).click();
   await expect(page.getByRole('button', { name: 'If cleared', exact: true })).toHaveAttribute(
     'aria-pressed',
@@ -242,7 +240,7 @@ test('Round 8 full workflow, real API, replay, devices and responsive accessibil
     page.getByRole('heading', { name: 'Materials and trial', exact: true }),
   ).toBeVisible();
   await expect(page.getByText('No re-tests recorded yet', { exact: true })).toHaveCount(3);
-  await page.screenshot({ path: '../docs/screens/round8/materials.png', fullPage: true });
+  await page.screenshot({ path: 'test-results/captures/round8/materials.png', fullPage: true });
   expect(
     (await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze()).violations,
   ).toEqual([]);

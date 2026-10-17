@@ -1,0 +1,25 @@
+# Round 8B cleanup — 17 October 2026
+
+The owner approved the full cleanup brief after completion of the selected-part AI integration (`ae60bf4`). The existing Map desk design, radar palette and honesty rules are retained. Each numbered section receives its own commit. No live model verification is claimed.
+
+## Progress
+
+| Section | Status | Evidence / next work |
+|---|---|---|
+| 0 Verification and stale docs | Done | Build and lint pass. Backend/shared 57/57, frontend 67/67. Full browser baseline: 20/43; updated run 35/43, remaining eight checks pass in targeted reruns (6/8 then 2/2). A final full suite will follow the UI changes. |
+| 1 Shared drawers | Not started | Scrim, focus, Back, unsaved guard, sticky shell and checks. |
+| 2 Fault layout | Not started | Header, stepper, sections, evidence table and audit. |
+| 3 Suggested diagnosis | Not started | Cached auto retrieval, numbered sources, feedback and insufficient state. |
+| 4 Board fixable case | Not started | Confirm seed/effects and explain computed differences. |
+| 5 R1 / 3D framing | Not started | Fit, controls, stage readings and device labels. |
+| 6 Page structure | Not started | Section navigation and three viewport review. |
+| 7 Live AI check tooling | Not started | User-run script and exact setup; no live call until the user runs it. |
+| 8 Demo readiness | Not started | Fresh setup, explicit reset and five-minute runbook. |
+
+## Initial verification notes
+
+The Windows sandbox blocked Vitest temporary-file renames before import. Repeating the same unit command with the normal host file permissions ran the checks. A real offline/backend completed-job shape mismatch was corrected by clearing transient progress on completion. Browser tests use an isolated temporary SQLite file on API port 8091 and separate Vite servers on 5191 (mock) and 5192 (API); model requests are disabled in this harness. The working demo database is not used.
+
+Earlier Round 7 and Round 8 test counts are preserved as checkpoint evidence, not presented as current verification. Current public demo access is described in README and DEPLOY; obsolete operator-token requirements and outdated push claims were removed.
+
+The browser repairs update searchable controls, the observations route, five operational map assets, archived trial counts and the six-state work-order flow. Captures now go to ignored test-results instead of overwriting historical checkpoint images. Rendering metadata updates during idle frames; the duplicate playback-control peak seek was removed. Camera zoom checks read actual camera zoom rather than label wording.

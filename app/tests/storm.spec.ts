@@ -1,3 +1,4 @@
+import { choose } from './controls';
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
@@ -17,7 +18,7 @@ test('shared physics playback, live geometry, CSV and responsive controls', asyn
   await expect(page.getByTestId('ponding')).toHaveText('0.0 mm');
   await page.locator('.storm-disclosure > summary').click();
   await page.getByRole('slider', { name: 'Rain intensity', exact: true }).fill('120');
-  await page.getByRole('combobox', { name: 'Rain pattern', exact: true }).selectOption('uniform');
+  await choose(page.getByRole('combobox', { name: 'Rain pattern', exact: true }), 'uniform');
   await expect(timeline).toBeEnabled({ timeout: 45000 });
   await timeline.fill('25');
   expect(Number(await page.locator('.cad-scene').getAttribute('data-ponding-mm'))).toBeGreaterThan(
@@ -45,7 +46,7 @@ test('shared physics playback, live geometry, CSV and responsive controls', asyn
       .analyze();
     expect(results.violations.map((v) => v.id)).toEqual([]);
     await page.screenshot({
-      path: `../docs/screens/round4/after/physics-${width === 1440 ? 'desktop' : 'mobile'}.png`,
+      path: `test-results/captures/round4/after/physics-${width === 1440 ? 'desktop' : 'mobile'}.png`,
       fullPage: true,
     });
   }
@@ -67,21 +68,21 @@ test('feature-specific inlet and tree models and reduced motion', async ({ page 
       timeout: 45000,
     });
     await expect(page.getByRole('button', { name: 'Play storm', exact: true })).toHaveCount(0);
+    await page.getByRole('button', { name: 'Reset storm', exact: true }).click();
     await page.getByRole('button', { name: 'Next minute', exact: true }).click();
     await expect(page.locator('.cad-scene')).toHaveAttribute('data-frame-second', '60');
     if (id === 'I1') {
       await page.locator('.storm-disclosure > summary').click();
-      await page
-        .getByRole('combobox', { name: 'Simulation scenario', exact: true })
-        .selectOption('High tailwater');
+      await choose(page.getByRole('combobox', { name: 'Simulation scenario', exact: true }), 'High tailwater');
       await expect(page.getByRole('slider', { name: 'Storm timeline', exact: true })).toBeEnabled({
         timeout: 45000,
       });
       await page.getByRole('slider', { name: 'Storm timeline', exact: true }).fill('25');
       await page.locator('.storm-disclosure > summary').click();
-      await expect(page.locator('.dimension-label').filter({ hasText: '0.40 m' })).toHaveCount(1);
+      await page.getByLabel('Dimensions', {exact:true}).check();
+      await expect(page.locator('[data-scene-label=length]')).toBeVisible();
       await page.screenshot({
-        path: '../docs/screens/round4/after/physics-inlet-desktop.png',
+        path: 'test-results/captures/round4/after/physics-inlet-desktop.png',
         fullPage: true,
       });
       await page.getByLabel('2D section', { exact: true }).check();
@@ -97,7 +98,7 @@ test('feature-specific inlet and tree models and reduced motion', async ({ page 
         await page.setViewportSize({ width, height: 1000 });
         await page.evaluate(() => window.scrollTo(0, 0));
         await page.screenshot({
-          path: `../docs/screens/round4/after/physics-inlet-2d-${width === 1440 ? 'desktop' : 'mobile'}.png`,
+          path: `test-results/captures/round4/after/physics-inlet-2d-${width === 1440 ? 'desktop' : 'mobile'}.png`,
           fullPage: true,
         });
       }

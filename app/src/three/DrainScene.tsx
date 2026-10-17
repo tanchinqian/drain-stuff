@@ -515,7 +515,7 @@ function RenderBudget({
     const surface = scene.getObjectByName('ponded-water');
     const element = gl.domElement.closest<HTMLElement>('.cad-scene');
     metadataTime.current += delta;
-    if (element && metadataTime.current >= 0.2) {
+    if (element && (!active || metadataTime.current >= 0.2)) {
       metadataTime.current = 0;
       element.dataset.waterSurfaceHeight = surface
         ? new Box3().setFromObject(surface).max.y.toString()

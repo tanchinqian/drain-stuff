@@ -17,7 +17,7 @@ test('record search, selection and saved columns recover from no results', async
   await expect(page.getByRole('columnheader', { name: /Updated/ })).toHaveCount(0);
 });
 test('map selection is direct and short controls stay simple', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/observations');
   await expect(page.getByRole('combobox', { name: 'Pilot house', exact: true })).toHaveCount(0);
   await page.getByRole('button', { name: 'Plan', exact: true }).click();
   await page.locator('.plan-svg [data-house-id="A01"]').click();
