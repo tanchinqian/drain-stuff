@@ -94,7 +94,7 @@ test('feature water path, model drawer and recorded compost are visible', async 
   });
   await expect(page.getByRole('heading', { name: 'Compost applied', exact: true })).toBeVisible();
   await expect(page.getByRole('region', { name: 'Water path', exact: true })).toContainText(
-    'Outlet',
+    'Outfall',
   );
   await page.getByRole('button', { name: 'Jump to peak water', exact: true }).click();
   await page.getByRole('button', { name: 'Model details', exact: true }).click();

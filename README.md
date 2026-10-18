@@ -2,6 +2,8 @@
 
 From this folder, run `npm ci`, `npm --prefix app ci`, then **`npm run dev:all`**. It starts the local API and React app and seeds an empty SQLite database. The demonstration opens directly without a login or token. Anyone who can reach the server can read and change demo records; audit entries use “Demo visitor”. The terminal prints the app URL. Existing database records are preserved. Node 20.12+ is required.
 
+Round 9 adds realistic drainage-scene materials, storm effects, camera/Record presets and a shared cross-section slider. See [requirement status and limits](docs/ROUND9_REALISM.md), [captures and storm GIFs](docs/screens/round9/README.md) and [procedural asset provenance](docs/ASSETS.md).
+
 ```sh
 npm ci
 npm --prefix app ci

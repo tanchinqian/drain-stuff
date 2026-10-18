@@ -8,10 +8,12 @@ export default function PartHighlight({
   group,
   status,
   plane,
+  natural = false,
 }: {
   group: Group;
   status: Status;
   plane?: Plane;
+  natural?: boolean;
 }) {
   const meshes = useMemo(() => {
     group.updateWorldMatrix(true, true);
@@ -40,20 +42,27 @@ export default function PartHighlight({
     return rows;
   }, [group]);
   return (
-    <group name="fault-outline" userData={{ partId: group.name }}>
-      {meshes.map(
-        (points, i) =>
-          points.length > 0 && (
-            <Line
-              key={i}
-              points={points}
-              segments
-              color={status === 'fault' ? '#8E3A2E' : '#B07A12'}
-              clippingPlanes={plane ? [plane] : []}
-              lineWidth={1.5}
-              raycast={() => undefined}
-            />
-          ),
+    <group
+      name={status === 'ok' ? 'selection-outline' : 'fault-outline'}
+      userData={{ partId: group.name }}
+    >
+      {meshes.length > 0 && (
+        <Line
+          points={meshes.flat()}
+          segments
+          color={
+            natural
+              ? status === 'fault'
+                ? '#7d6142'
+                : '#88784d'
+              : status === 'fault'
+                ? '#8E3A2E'
+                : '#B07A12'
+          }
+          clippingPlanes={plane ? [plane] : []}
+          lineWidth={natural ? 1 : 1.5}
+          raycast={() => undefined}
+        />
       )}
     </group>
   );

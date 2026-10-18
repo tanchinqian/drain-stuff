@@ -92,7 +92,7 @@ for (const featureId of ['S1', 'S3', 'I1', 'T1'])
       await page.getByRole('checkbox', { name: '2D section', exact: true }).uncheck();
       if (id === 'I1') {
         await page.getByRole('button', { name: 'Debug', exact: true }).click();
-        for (const [axis, cut] of [['X', '1'], ['Y', '0.1']] as const) {
+        for (const [axis, cut] of [['X', '0.2'], ['Y', '0.1']] as const) {
           await page.locator('[aria-label="Section axis"]').getByRole('button', { name: axis, exact: true }).click();
           await page.getByRole('slider', { name: 'Section cut position', exact: true }).fill(cut);
           await page.locator('.cad-scene').scrollIntoViewIfNeeded();

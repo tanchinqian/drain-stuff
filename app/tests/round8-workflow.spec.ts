@@ -205,7 +205,7 @@ test('Round 8 full workflow, real API, replay, devices and responsive accessibil
   await expect(page.getByRole('dialog')).toContainText('50');
   await page.screenshot({ path: 'test-results/captures/round8/device-reading.png', fullPage: true });
   await page.goto('/feature/R1?stormRunId=' + jobId + '&part=inlet');
-  await expect(page.getByText('Typical design, not surveyed', { exact: false })).toBeVisible({
+  await expect(page.locator('.cad-scene .scene-design-stamp')).toBeVisible({
     timeout: 30000,
   });
   await expect(page.locator('.cad-scene canvas')).toBeVisible({ timeout: 30000 });

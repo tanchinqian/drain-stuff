@@ -32,22 +32,24 @@ export interface ControlProps {
   showSensors: boolean;
   setShowSensors: Dispatch<SetStateAction<boolean>>;
 }
-export function AssemblyModes({assembly,setAssembly,explode,setExplode}: ControlProps) {
-  return (<div className="segments">
-        {(['exploded', 'assembled', 'section'] as const).map((value) => (
-          <button
-            key={value}
-            aria-pressed={assembly === value}
-            onClick={() => {
-              setAssembly(value);
-              if (value === 'assembled') setExplode(0);
-              if (value === 'exploded' && !explode) setExplode(65);
-            }}
-          >
-            {value === 'exploded' ? 'Exploded' : value === 'assembled' ? 'Assembled' : 'Cutaway'}
-          </button>
-        ))}
-      </div>);
+export function AssemblyModes({ assembly, setAssembly, explode, setExplode }: ControlProps) {
+  return (
+    <div className="segments">
+      {(['exploded', 'assembled', 'section'] as const).map((value) => (
+        <button
+          key={value}
+          aria-pressed={assembly === value}
+          onClick={() => {
+            setAssembly(value);
+            if (value === 'assembled') setExplode(0);
+            if (value === 'exploded' && !explode) setExplode(65);
+          }}
+        >
+          {value === 'exploded' ? 'Exploded' : value === 'assembled' ? 'Assembled' : 'Cutaway'}
+        </button>
+      ))}
+    </div>
+  );
 }
 export function AssemblyControls({
   mode,
@@ -66,7 +68,8 @@ export function AssemblyControls({
   setEdges,
   showSensors,
   setShowSensors,
-}: ControlProps) {
+  sectionControls = true,
+}: ControlProps & { sectionControls?: boolean }) {
   return (
     <>
       <div className="field">
@@ -86,7 +89,7 @@ export function AssemblyControls({
           }}
         />
       </div>
-      {mode === 'Debug' && (
+      {sectionControls && mode === 'Debug' && (
         <>
           <div className="field">
             <span>Section axis</span>

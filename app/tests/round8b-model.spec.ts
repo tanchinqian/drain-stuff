@@ -10,9 +10,9 @@ for(const width of [390,1440,1920]) test('R1 fit, close-up and stage flow at '+w
   await expect(page.locator('.quality-status')).toHaveCount(0);
   await expect(page.locator('.flow-legend')).toContainText('Bypass');
   const initial=Number(await scene.locator('canvas').getAttribute('data-camera-zoom'));
-  await page.getByRole('button',{name:'Inspect inlet close-up',exact:true}).click();
+  await page.getByRole('combobox',{name:'Camera preset',exact:true}).fill('Inlet');await page.getByRole('option',{name:'Inlet',exact:true}).click();
   await expect.poll(async()=>Number(await scene.locator('canvas').getAttribute('data-camera-zoom'))).toBeGreaterThan(initial);
-  await page.getByRole('button',{name:'Fit channel',exact:true}).click();
+  await page.getByRole('button',{name:'Return to default',exact:true}).click();
   if(width===390) {await page.getByRole('combobox',{name:'Model part',exact:true}).fill('Chamber water');await page.getByRole('option',{name:/Chamber water/}).click();}
   else await page.locator('.part-list').getByRole('button',{name:'Chamber water',exact:true}).click();
   await expect(page.locator('[data-scene-label=ponding]')).toContainText('L/min');

@@ -1,7 +1,18 @@
 import { useEffect, useMemo, useRef, useState, type ComponentRef } from 'react';
 import { Canvas, useThree, useFrame } from '@react-three/fiber';
 import { DragControls, OrbitControls, Edges } from '@react-three/drei';
-import { Box3, Line, Material, Matrix4, Mesh, MeshStandardMaterial, Plane, Vector3 } from 'three';
+import {
+  Box3,
+  Line,
+  Material,
+  Matrix4,
+  Mesh,
+  MeshStandardMaterial,
+  Plane,
+  Vector3,
+  InstancedMesh,
+  PCFSoftShadowMap,
+} from 'three';
 import type { Config, Part, PartId, Sensor } from '../api/types';
 import { createDrainParts, palette } from './geometry';
 import { useSelection } from '../state';
@@ -15,17 +26,25 @@ import { createCompostParts } from './compostGeometry';
 import { sensorMarkers } from '../api/sensorViews';
 import SectionCaps from './SectionCaps';
 import { moistureTexture, wetMaterial } from './soilMaterial';
-import { rainCount } from './WaterEffects';
+import { rainCount, useReducedMotion } from './WaterEffects';
 import { drainDesign } from '../simulation/physics/design';
 import CatchmentContext from './CatchmentContext';
 import SceneLabels, { type SceneLabel } from './SceneLabels';
-import { frontDepth } from './visibility';
+import FaultDeposits from './FaultDeposits';
+import StormAtmosphere from './StormAtmosphere';
+import CutPlane from './CutPlane';
+import { cutNormal, cutSample, type CameraPreset } from './sceneMetrics';
 export type Assembly = 'exploded' | 'assembled' | 'section';
 export type ViewMode = 'Operator' | 'Debug' | 'Troubleshoot';
 export type Offsets = Partial<Record<PartId, [number, number, number]>>;
 export interface Props {
   lowQuality?: boolean;
-  cameraPreset?: "overview" | "inlet";
+  cameraPreset?: CameraPreset;
+  recordQuality?: boolean;
+  cutActive?: boolean;
+  onCutChange?: (value: number) => void;
+  physicalFaults?: PartId[];
+  onSectionSample?: (depth: number, across: number) => void;
   inspectionActive?: boolean;
   onInspect?: (id?: PartId) => void;
   onPerformance?: (fps: number, quality: string) => void;
@@ -83,6 +102,7 @@ export const shifts = (id: PartId, e: number): [number, number, number] => {
 };
 function Model(props: Props) {
   const [hovered, setHovered] = useState<PartId>();
+  const [draggingCut, setDraggingCut] = useState(false);
   const design = props.physics ? drainDesign(props.physics.config) : undefined;
   const invalidate = useThree((s) => s.invalidate);
   const select = useSelection((s) => s.selectPart),
@@ -112,25 +132,41 @@ function Model(props: Props) {
       );
       geometries.forEach((g) => g.dispose());
       materials.forEach((m) => {
-        if (m instanceof MeshStandardMaterial) m.map?.dispose();
+        if (m instanceof MeshStandardMaterial) {
+          m.map?.dispose();
+          m.normalMap?.dispose();
+        }
         m.dispose();
       });
     },
     [groups],
   );
+  const normal: [number, number, number] = props.physics
+    ? cutNormal(props.cutAxis)
+    : [
+        props.cutAxis === 'X' ? -1 : 0,
+        props.cutAxis === 'Y' ? -1 : 0,
+        props.cutAxis === 'Z' ? -1 : 0,
+      ];
   const plane = useMemo(
-      () =>
-        new Plane(
-          new Vector3(
-            props.cutAxis === 'X' ? -1 : 0,
-            props.cutAxis === 'Y' ? -1 : 0,
-            props.cutAxis === 'Z' ? -1 : 0,
-          ),
-          props.cutPosition,
-        ),
-      [props.cutAxis, props.cutPosition],
+      () => new Plane(new Vector3(...normal), props.cutPosition),
+      [props.cutAxis, !!props.physics],
     ),
     controls = useRef<ComponentRef<typeof OrbitControls>>(null);
+  plane.constant = props.cutPosition;
+  const windTime = useRef(0);
+  const reduced = useReducedMotion();
+  useFrame((_, delta) => {
+    if (!reduced) windTime.current += Math.min(0.1, delta);
+    groups.planting?.traverse((o) => {
+      if (
+        o instanceof Mesh &&
+        o.material instanceof MeshStandardMaterial &&
+        o.material.userData.wind
+      )
+        o.material.userData.wind.value = windTime.current;
+    });
+  });
   const e = props.assembly === 'exploded' ? props.explode / 100 : 0;
   const field = props.physics?.frame?.soil;
   const texture = useMemo(() => {
@@ -159,17 +195,21 @@ function Model(props: Props) {
     });
   }, [props.physics?.frame?.cell.clog, groups]);
   useEffect(() => {
-    plane.normal.set(
-      props.cutAxis === 'X' ? -1 : 0,
-      props.cutAxis === 'Y' ? -1 : 0,
-      props.cutAxis === 'Z' ? -1 : 0,
-    );
+    groups.planting?.traverse((o) => {
+      if (o instanceof InstancedMesh && o.name === 'tropical-groundcover')
+        o.count = props.physicalFaults?.includes('planting') ? 145 : 580;
+    });
+  }, [groups, props.physicalFaults?.includes('planting')]);
+  useEffect(() => {
+    plane.normal.set(...normal);
     plane.constant = props.cutPosition;
     props.parts.forEach((part) => {
       groups[part.partId]?.traverse((object) => {
         if (object.userData.sectionFace)
           object.visible =
-            props.assembly === 'section' && props.cutAxis === 'Z' && props.cutPosition === 0;
+            props.assembly === 'section' &&
+            (props.physics ? props.cutAxis === 'X' : props.cutAxis === 'Z') &&
+            props.cutPosition === 0;
         if (!(object instanceof Mesh) && !(object instanceof Line)) return;
         const materials: Material[] = Array.isArray(object.material)
           ? object.material
@@ -201,17 +241,44 @@ function Model(props: Props) {
     props.edges,
     props.parts,
   ]);
-  const fitBounds = useMemo(()=>{
-    if(props.featureId!=='R1'||!design) return undefined;
-    if(props.cameraPreset==='inlet') return new Box3().setFromCenterAndSize(new Vector3(-design.length/2,props.physics!.config.values.crest.value/2,0),new Vector3(2,1.4,1.8));
-    const bounds=new Box3();Object.values(groups).forEach(g=>{if(g?.userData.localBounds) bounds.union(g.userData.localBounds);});return bounds;
-  },[groups,props.featureId,props.cameraPreset]);
-  const fitTarget=fitBounds?.getCenter(new Vector3());
+  const fitBounds = useMemo(() => {
+    if (!design) return undefined;
+    if (props.cameraPreset === 'inlet')
+      return new Box3().setFromCenterAndSize(
+        new Vector3(-design.length / 2, props.physics!.config.values.crest.value / 2, 0),
+        new Vector3(2, 1.4, 1.8),
+      );
+    if (props.cameraPreset === 'overview')
+      return new Box3(
+        new Vector3(
+          -design.length / 2 - design.catchment.roadWidth - 1,
+          design.bottomY,
+          -design.topWidth / 2 - 2,
+        ),
+        new Vector3(
+          design.length / 2 + 2,
+          design.catchment.roofArea > 0 ? 5.3 : 2,
+          design.topWidth / 2 + 2,
+        ),
+      );
+    if (props.featureId !== 'R1') return undefined;
+    const bounds = new Box3();
+    Object.values(groups).forEach((g) => {
+      if (g?.userData.localBounds) bounds.union(g.userData.localBounds);
+    });
+    return bounds;
+  }, [groups, props.featureId, props.cameraPreset]);
+  const fitTarget = fitBounds?.getCenter(new Vector3());
   const annotations: SceneLabel[] = [];
   const f = props.physics?.frame;
+  const cutReading = props.physics
+    ? cutSample(props.physics.config, f, props.cutAxis, props.cutPosition)
+    : undefined;
   const stageFlow: Partial<Record<PartId, number>> = {
     inlet: f?.flux.inlet,
-    pretreat:f?.flux.inlet, sock:f?.flux.inlet, ponding:f?.flux.inlet,
+    pretreat: f?.flux.inlet,
+    sock: f?.flux.inlet,
+    ponding: f?.flux.inlet,
     media: f?.flux.infiltration,
     underdrain: f?.flux.drain,
     outfall: f?.flux.outfall,
@@ -231,7 +298,10 @@ function Model(props: Props) {
     const q = stageFlow[id];
     if (q !== undefined) {
       const stage = {
-        inlet: 'Inlet', pretreat:'Chamber', sock:'Screen', ponding:'Chamber',
+        inlet: 'Inlet',
+        pretreat: 'Chamber',
+        sock: 'Screen',
+        ponding: 'Chamber',
         media: 'Media',
         underdrain: 'Underdrain',
         outfall: 'Outfall',
@@ -248,11 +318,15 @@ function Model(props: Props) {
       (['inlet', 'media', 'underdrain', 'outfall', 'overflow'] as PartId[]).forEach((id) =>
         addPartLabel(id),
       );
-    if (design && field && props.assembly === 'section')
+    if (design && field && cutReading && cutReading.front !== null && props.assembly === 'section')
       annotations.push({
         id: 'wetting-front',
-        text: `Wetting front ${(frontDepth(field, design.mediaDepth) * 1000).toFixed(0)} mm`,
-        anchor: [0, -design.mulchDepth - frontDepth(field, design.mediaDepth), props.cutPosition],
+        text: `Wetting front ${(cutReading.front * 1000).toFixed(0)} mm`,
+        anchor: [
+          props.cutAxis === 'Y' ? props.cutPosition : 0,
+          -design.mulchDepth - cutReading.front,
+          props.cutAxis === 'X' ? props.cutPosition : 0,
+        ],
       });
     if (props.physics && props.dimensionsVisible && design) {
       annotations.push({
@@ -277,10 +351,22 @@ function Model(props: Props) {
         addPartLabel(p.partId, `${i + 1} ${p.status === 'fault' ? 'Fault' : 'Watch'} · `),
       );
   }
+  if (
+    props.physics?.config.kind === 'inlet' &&
+    props.physics.config.values.sediment.value > 0 &&
+    !annotations.some((a) => a.id === 'sediment')
+  )
+    annotations.push({
+      id: 'sediment',
+      text: `Sediment ${(props.physics.config.values.sediment.value * 1000).toFixed(0)} mm · entered level`,
+      anchor: [0, props.physics.config.values.sediment.value, 0],
+    });
   return (
     <>
       <FitCamera
-        bounds={fitBounds} direction={fitBounds ? [-9,9,12] : undefined}
+        transition
+        bounds={fitBounds}
+        direction={fitBounds ? [-9, 9, 12] : undefined}
         width={
           props.physics
             ? Math.max(
@@ -302,15 +388,34 @@ function Model(props: Props) {
               : 9.6
         }
         controlsRef={controls}
-        enabled={!props.move}
-        target={fitTarget ? [fitTarget.x,fitTarget.y,fitTarget.z] : props.physics && props.assembly !== 'exploded' ? [-0.4, -0.1, -0.4] : [1.2, 1.2, 0]}
+        enabled={!props.move && !draggingCut}
+        target={
+          fitTarget
+            ? [fitTarget.x, fitTarget.y, fitTarget.z]
+            : props.physics && props.assembly !== 'exploded'
+              ? [-0.4, -0.1, -0.4]
+              : [1.2, 1.2, 0]
+        }
       />
-      <color attach="background" args={['#E2DCCB']} />
-      <ambientLight intensity={1.35} />
-      <directionalLight position={[-6, 13, 8]} intensity={1.65} />
-      <directionalLight position={[9, 5, -6]} intensity={0.35} />
       {props.physics ? (
-        <CatchmentContext physics={props.physics} low={!!props.lowQuality} />
+        <StormAtmosphere
+          physics={props.physics}
+          low={!!props.lowQuality}
+          record={props.recordQuality}
+        />
+      ) : (
+        <>
+          <color attach="background" args={['#E2DCCB']} />
+          <ambientLight intensity={1.35} />
+          <directionalLight position={[-6, 13, 8]} intensity={1.65} />
+        </>
+      )}
+      {props.physics ? (
+        <CatchmentContext
+          physics={props.physics}
+          low={!!props.lowQuality}
+          plane={props.assembly === 'section' ? plane : undefined}
+        />
       ) : (
         <mesh position={[1.2, -1.12, 0]}>
           <boxGeometry args={[10.35, 0.05, 4.55]} />
@@ -319,6 +424,17 @@ function Model(props: Props) {
         </mesh>
       )}
       <SceneLabels labels={annotations} />
+      {design && props.assembly === 'section' && props.onCutChange && (
+        <CutPlane
+          design={design}
+          axis={props.cutAxis}
+          plane={plane}
+          inlet={props.physics?.config.kind === 'inlet'}
+          visible={!!props.cutActive}
+          onChange={props.onCutChange}
+          onDrag={setDraggingCut}
+        />
+      )}
       {props.physics && props.dimensionsVisible && props.assembly !== 'exploded' && (
         <DimensionLines config={props.physics.config} />
       )}
@@ -334,7 +450,16 @@ function Model(props: Props) {
           geometry.userData.physicalPart = true;
           const visible = !props.hidden.includes(id) && (!props.isolate || selected === id);
           const content = (
-            <group visible={visible}>
+            <group
+              visible={visible}
+              onPointerMove={(event) => {
+                if (props.physics && props.assembly === 'section')
+                  props.onSectionSample?.(
+                    -(event.point.y - position[1]) - design!.mulchDepth,
+                    event.point.z - position[2],
+                  );
+              }}
+            >
               <primitive
                 object={geometry}
                 onPointerOver={() => setHovered(id)}
@@ -356,12 +481,21 @@ function Model(props: Props) {
                   />
                 )}
               {props.physics && part.installed && (
-                <PhysicsWater
-                  id={id}
-                  physics={props.physics}
-                  plane={props.assembly === 'section' ? plane : undefined}
-                  low={props.lowQuality}
-                />
+                <>
+                  <FaultDeposits
+                    id={id}
+                    physics={props.physics}
+                    plane={props.assembly === 'section' ? plane : undefined}
+                    confirmed={!!props.physicalFaults?.includes(id)}
+                  />
+                  <PhysicsWater
+                    id={id}
+                    physics={props.physics}
+                    plane={props.assembly === 'section' ? plane : undefined}
+                    low={props.lowQuality}
+                    record={props.recordQuality}
+                  />
+                </>
               )}
               {props.showSensors &&
                 part.installed &&
@@ -375,17 +509,28 @@ function Model(props: Props) {
                 part.status !== 'ok' &&
                 (props.mode === 'Troubleshoot' || (props.inspectionActive && selected === id)) && (
                   <PartHighlight
+                    natural={!!props.physics}
                     group={geometry}
                     status={part.status}
                     plane={props.assembly === 'section' ? plane : undefined}
                   />
                 )}
-              {props.inspectionActive && selected === id && part.status === 'ok' && (
-                <SelectedBounds
-                  group={geometry}
-                  plane={props.assembly === 'section' ? plane : undefined}
-                />
-              )}
+              {props.inspectionActive &&
+                selected === id &&
+                part.status === 'ok' &&
+                (props.physics ? (
+                  <PartHighlight
+                    natural
+                    group={geometry}
+                    status="ok"
+                    plane={props.assembly === 'section' ? plane : undefined}
+                  />
+                ) : (
+                  <SelectedBounds
+                    group={geometry}
+                    plane={props.assembly === 'section' ? plane : undefined}
+                  />
+                ))}
             </group>
           );
           return props.move ? (
@@ -421,8 +566,8 @@ function SelectedBounds({
   group: NonNullable<ReturnType<typeof createDrainParts>[PartId]>;
   plane?: Plane;
 }) {
-  const box = useMemo(() => group.userData.localBounds as Box3, [group]);
-  const size = box.getSize(new Vector3()),
+  const box = useMemo(() => group.userData.localBounds as Box3, [group]),
+    size = box.getSize(new Vector3()),
     centre = box.getCenter(new Vector3());
   return (
     <mesh position={centre}>
@@ -435,10 +580,10 @@ function SelectedBounds({
 export default function DrainScene(props: Props) {
   const [automaticLow, setAutomaticLow] = useState(false);
   const [fps, setFps] = useState(0);
-  const low = props.lowQuality || automaticLow;
+  const low = !props.recordQuality && (props.lowQuality || automaticLow);
   return (
     <div
-      className={"scene cad-scene"+(props.featureId==='R1'?' channel-scene':'')}
+      className={'scene cad-scene' + (props.featureId === 'R1' ? ' channel-scene' : '')}
       aria-label={
         props.kind === 'compost'
           ? 'Selectable 3D compost bay parts'
@@ -449,8 +594,11 @@ export default function DrainScene(props: Props) {
       data-ponding-mm={(props.physics?.frame?.ponding ?? 0) * 1000}
       data-explode={props.explode}
       data-part-count={props.parts.length}
-      data-quality={low ? 'low' : 'high'}
-      data-rain-count={rainCount(props.physics?.frame?.rain ?? 0, low)}
+      data-quality={props.recordQuality ? 'record' : low ? 'low' : 'high'}
+      data-rain-count={rainCount(props.physics?.frame?.rain ?? 0, low, props.recordQuality)}
+      data-cut-axis={props.cutAxis}
+      data-cut-position={props.cutPosition}
+      data-camera-preset={props.cameraPreset ?? 'default'}
       data-pipe-fill={props.physics?.frame?.pipeFill ?? 0}
       data-pipe-velocity={props.physics?.frame?.pipeVelocity ?? 0}
       data-underdrain-flow={props.physics?.frame?.flux.drain ?? 0}
@@ -466,7 +614,8 @@ export default function DrainScene(props: Props) {
           near: 0.1,
           far: 180,
         }}
-        dpr={low ? 1 : [1, 1.5]}
+        dpr={props.recordQuality ? 2 : low ? 1 : [1, 1.5]}
+        shadows={{ type: PCFSoftShadowMap }}
         frameloop="demand"
         gl={{ antialias: !low, localClippingEnabled: true, stencil: true }}
         fallback={
@@ -489,14 +638,19 @@ export default function DrainScene(props: Props) {
           onBudget={(measured, nextLow) => {
             setFps(measured);
             setAutomaticLow(nextLow);
-            props.onPerformance?.(measured, props.lowQuality || nextLow ? 'Low' : 'High');
+            props.onPerformance?.(
+              measured,
+              props.recordQuality ? 'Record' : props.lowQuality || nextLow ? 'Low' : 'High',
+            );
           }}
         />
         <Model {...props} lowQuality={low} />
       </Canvas>
+      {props.physics && <span className="scene-design-stamp">Typical design, not surveyed</span>}
       {props.mode === 'Debug' && (
         <output className="scene-performance">
-          {fps ? fps.toFixed(0) + ' FPS' : 'Measuring FPS'} · {low ? 'Low' : 'High'} quality
+          {fps ? fps.toFixed(0) + ' FPS' : 'Measuring FPS'} ·{' '}
+          {props.recordQuality ? 'Record' : low ? 'Low' : 'High'} quality
         </output>
       )}
     </div>
@@ -519,6 +673,8 @@ function RenderBudget({
     metadataTime = useRef(0),
     wasActive = useRef(false),
     stable = useRef(0);
+  const warmup = useRef(0),
+    slowWindows = useRef(0);
   useFrame(({ scene, camera }, delta) => {
     if (active) invalidate();
     const surface = scene.getObjectByName('ponded-water');
@@ -554,6 +710,39 @@ function RenderBudget({
       element.dataset.outlineParts = outlined.join(',');
       element.dataset.outlineClipped = String(outlines > 0 && clipped);
       element.dataset.drawCalls = String(gl.info.render.calls);
+      element.dataset.mistVisible = String(!!scene.getObjectByName('ground-mist'));
+      const flows: Record<string, { discharge: number; width: number; velocity: number }> = {};
+      scene.traverse((o) => {
+        if (typeof o.userData.discharge === 'number')
+          flows[o.name] = {
+            discharge: o.userData.discharge,
+            width: o.userData.width,
+            velocity: o.userData.velocity,
+          };
+      });
+      element.dataset.flowElements = JSON.stringify(flows);
+      const cut = scene.getObjectByName('section-cut-plane');
+      element.dataset.planePosition = String(
+        cut?.userData.position ?? element.dataset.cutPosition ?? 0,
+      );
+      if (cut) {
+        const point = cut.getWorldPosition(new Vector3()),
+          a = point.clone().project(camera),
+          direction = new Vector3(...cutNormal(cut.userData.axis)),
+          b = point.clone().sub(direction).project(camera),
+          rect = gl.domElement.getBoundingClientRect();
+        element.dataset.cutPlaneScreen = JSON.stringify({
+          x: ((a.x + 1) * rect.width) / 2,
+          y: ((1 - a.y) * rect.height) / 2,
+          dx: ((b.x - a.x) * rect.width) / 2,
+          dy: (-(b.y - a.y) * rect.height) / 2,
+        });
+      }
+      const deposits: string[] = [];
+      scene.traverse((o) => {
+        if (o.userData.confirmedFault) deposits.push(o.name.replace('confirmed-deposit-', ''));
+      });
+      element.dataset.depositParts = deposits.join(',');
       element.dataset.rainBounds = JSON.stringify(
         scene.getObjectByName('storm-rain')?.userData.bounds ?? null,
       );
@@ -593,12 +782,19 @@ function RenderBudget({
       return;
     }
     elapsed.current += Math.min(delta, 2);
+    if (warmup.current < 3) {
+      warmup.current += Math.min(delta, 0.1);
+      elapsed.current = 0;
+      count.current = 0;
+      return;
+    }
     count.current++;
     if (elapsed.current < 2) return;
     const fps = count.current / elapsed.current;
     gl.domElement.dataset.renderFps = fps.toFixed(1);
     stable.current = fps >= 55 ? stable.current + elapsed.current : 0;
-    onBudget(fps, low ? stable.current < 8 : fps < 40);
+    slowWindows.current = fps < 45 ? slowWindows.current + 1 : 0;
+    onBudget(fps, low ? stable.current < 8 : slowWindows.current >= 2);
     elapsed.current = 0;
     count.current = 0;
   });

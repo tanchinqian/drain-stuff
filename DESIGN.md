@@ -136,6 +136,10 @@ components:
 ---
 # Design System: Drain Trial Console
 
+## Round 9 scene material exception
+
+On 18 October 2026 the owner approved realistic colours for the drainage scenes: mineral soil, dark mulch, varied gravel, muted planting, asphalt/concrete, and depth-tinted water. This exception applies inside the 3D canvas and its section drawing. Interface chrome, Archivo typography and the approved radar palette retain this design system. Scene highlights follow part geometry with thin neutral edges; no glow or opaque fault frames. Every scene retains the typical-design, not-surveyed disclosure. Asset provenance is listed in `docs/ASSETS.md`.
+
 ## Overview
 
 **Creative North Star: "Map desk"**

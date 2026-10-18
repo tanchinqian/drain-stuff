@@ -2559,3 +2559,18 @@ main > .about {
 .comparison-legend .legend-capacity { height: 2px; }
 .model-workspace:not(.compost-model) .cad-scene.channel-scene { height: clamp(320px,28vw,500px); min-height: 0; }
 .drawer-header .status-chip { margin-bottom: 4px; }
+
+/* Round 9: controls belong to the existing Map desk; realism is contained in the canvas. */
+.camera-presets { display:flex; align-items:end; gap:10px; margin-block:10px; flex-wrap:wrap; }
+.camera-presets > label { max-width:190px; }
+.section-cut { border-block:1px solid var(--border); padding:12px 0 8px; margin-top:10px; }
+.section-cut-heading { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.section-cut-heading > label { font-weight:600; margin-right:auto; }
+.section-cut-heading output { display:block; color:var(--ink2); font-size:12px; font-weight:400; margin-top:4px; font-variant-numeric:tabular-nums; }
+.section-cut > input[type=range] { display:block; width:100%; margin:12px 0; height:24px; accent-color:var(--ink2); }
+.cut-readouts { font-variant-numeric:tabular-nums; margin:4px 0; }
+.scene-design-stamp { position:absolute; right:10px; bottom:8px; padding:5px 8px; color:#2f2b26; background:#f2eee4e8; font-size:11px; pointer-events:none; z-index:26; }
+.flow-legend .flow-strip { display:flex; padding:0; margin:10px 0; list-style:none; }
+.flow-legend .flow-strip li { min-width:105px; flex:1; }
+.flow-strip { font-variant-numeric:tabular-nums; }
+@media(max-width:600px) { .section-cut-heading { gap:8px; } .section-cut-heading > label { width:100%; } .section-cut .segments button { padding:8px 10px; } .section-cut-heading .segments span { font-size:11px; } .scene-design-stamp { font-size:10px; bottom:6px; right:6px; } }

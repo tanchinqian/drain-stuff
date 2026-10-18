@@ -21,21 +21,28 @@ const random = (seed: number) => {
   const v = Math.sin(seed * 127.1 + 311.7) * 43758.5453;
   return v - Math.floor(v);
 };
-export const rainCount = (rain: number, low = false) =>
-  rain <= 0 ? 0 : Math.min(low ? 192 : 512, Math.ceil(rain * 3.6e6 * (low ? 4 : 9)));
+export const rainCount = (rain: number, low = false, record = false) =>
+  rain <= 0
+    ? 0
+    : Math.min(
+        record ? 4096 : low ? 512 : 2048,
+        Math.ceil(rain * 3.6e6 * (record ? 60 : low ? 10 : 28)),
+      );
 export const seepageCount = (q: number, low = false) =>
   q > 0 ? Math.min(low ? 12 : 40, Math.ceil(q * 60000 * 2)) : 0;
 export function StormRain({
   physics,
   low = false,
+  record = false,
 }: {
   physics: ModelPhysics;
   low?: boolean;
+  record?: boolean;
   plane?: THREE.Plane;
 }) {
   const d = drainDesign(physics.config),
     frame = physics.frame;
-  const count = rainCount(frame?.rain ?? 0, low),
+  const count = rainCount(frame?.rain ?? 0, low, record),
     reduced = useReducedMotion();
   const drops = useRef<THREE.InstancedMesh>(null),
     impacts = useRef<THREE.InstancedMesh>(null);
@@ -54,7 +61,10 @@ export function StormRain({
           : d.bottomY - d.nativeDepth;
         const c = d.catchment,
           roadX = -d.length / 2 - c.roadWidth / 2 - 0.7;
-        if (Math.abs(x - roadX) <= c.roadWidth / 2 && Math.abs(z) <= (d.topWidth + 1) / 2)
+        if (
+          Math.abs(x - roadX) <= c.roadWidth / 2 &&
+          Math.abs(z) <= Math.max(40, d.topWidth + 8) / 2
+        )
           y = c.kerbHeight;
         const footZ = -d.topWidth / 2 - c.footpathWidth / 2;
         if (Math.abs(x) < (d.length + 1) / 2 && Math.abs(z - footZ) < c.footpathWidth / 2)
@@ -62,9 +72,10 @@ export function StormRain({
         if (
           c.roofArea > 0 &&
           Math.abs(x) < d.length * 0.375 &&
-          Math.abs(z - (footZ - c.footpathWidth / 2 - 0.15)) < c.roofEdgeDepth / 2
+          Math.abs(z - (footZ - c.footpathWidth / 2 - c.roofEdgeDepth / 2 - 0.25)) <
+            c.roofEdgeDepth / 2
         )
-          y = c.kerbHeight + 1.09;
+          y = c.kerbHeight + 4.99;
         return { x, z, y };
       }),
     [
@@ -90,9 +101,12 @@ export function StormRain({
       object.rotation.set(0, 0, -0.08);
       const distanceFade = 0.5 + 0.5 * (z / bounds.width + 0.5);
       object.scale.set(
-        0.008 * distanceFade,
-        Math.min(0.18 + random(i + 8) * 0.14, Math.max(0.001, altitude - impactY)),
-        0.008 * distanceFade,
+        0.01 * distanceFade,
+        Math.min(
+          0.25 + Math.min(0.35, (frame?.rain ?? 0) * 3.6e6 * 0.004) + random(i + 8) * 0.14,
+          Math.max(0.001, altitude - impactY),
+        ),
+        0.01 * distanceFade,
       );
       object.updateMatrix();
       drops.current.setMatrixAt(i, object.matrix);
@@ -118,9 +132,9 @@ export function StormRain({
       >
         <boxGeometry args={[1, 1, 1]} />
         <meshBasicMaterial
-          color={rainColour}
+          color="#adbdbb"
           transparent
-          opacity={Math.min(0.8, 0.3 + ((frame?.rain ?? 0) * 3.6e6) / 160)}
+          opacity={Math.min(0.9, 0.5 + ((frame?.rain ?? 0) * 3.6e6) / 160)}
           onBeforeCompile={(shader) => {
             shader.vertexShader =
               'varying float rainFade;\n' +
@@ -192,7 +206,7 @@ export function WaterMaterial({
   if (low)
     return (
       <meshBasicMaterial
-        color="#78a99c"
+        color="#749a93"
         transparent
         opacity={0.6}
         depthWrite={false}
@@ -217,16 +231,16 @@ export function WaterMaterial({
     );
   return (
     <meshPhysicalMaterial
-      color="#a7c8bf"
+      color="#9cb8ae"
       roughness={low ? 0.24 : 0.12}
       metalness={0}
       ior={1.333}
-      transmission={low ? 0 : 0.65}
+      transmission={low ? 0 : 0.82}
       thickness={depth}
-      attenuationColor="#78a99c"
-      attenuationDistance={1.5}
+      attenuationColor="#688b7e"
+      attenuationDistance={2.5}
       transparent
-      opacity={low ? 0.4 : 0.65}
+      opacity={low ? 0.4 : 0.48}
       depthWrite={false}
       side={THREE.DoubleSide}
       clippingPlanes={plane ? [plane] : []}
@@ -248,7 +262,8 @@ export function WaterMaterial({
             !flow
               ? `float localDepth = max(0.0, waterDepth - max(0.0, (abs(waterPosition.z) - ${(design.bedWidth / 2).toFixed(8)}) / ${Math.max(0.0001, design.sideSlope).toFixed(8)}));
           diffuseColor.a *= smoothstep(0.0, 0.004, localDepth);
-          diffuseColor.rgb = mix(vec3(0.98), diffuseColor.rgb, 1.0 - exp(-localDepth * 10.0));`
+          diffuseColor.a *= 0.25 + 0.75 * (1.0 - exp(-localDepth * 30.0));
+          diffuseColor.rgb = mix(vec3(0.64, 0.71, 0.68), diffuseColor.rgb, 1.0 - exp(-localDepth * 10.0));`
               : ''
           }`,
             )
@@ -257,19 +272,23 @@ export function WaterMaterial({
               `#include <normal_fragment_maps>
           float phase = waterPosition.x * 15.0 - waterTime * waterSpeed * 15.0;
           float waves = sin(waterPosition.x * 12.0 + waterTime) * cos(waterPosition.z * 13.0 - waterTime * 0.7);
-          float rings = sin(length(fract(waterPosition.xz * 2.7) - 0.5) * 52.0 - waterTime * 9.0) * min(waterRain / 120.0, 1.0);
+          vec2 rippleCell = floor(waterPosition.xz * 2.7);
+          float rippleSeed = fract(sin(dot(rippleCell, vec2(127.1, 311.7))) * 43758.5453);
+          vec2 rippleCentre = vec2(fract(rippleSeed * 37.3), fract(rippleSeed * 83.7));
+          float ringRadius = length(fract(waterPosition.xz * 2.7) - rippleCentre);
+          float rings = sin(ringRadius * 52.0 - waterTime * 9.0 + rippleSeed * 6.28) * exp(-ringRadius * 4.0) * min(waterRain / 100.0, 1.0);
           normal = normalize(normal + vec3(waves + rings * 0.35, 0.0, cos(phase)) * 0.025);`,
             )
             .replace(
               '#include <opaque_fragment>',
               `
           float fresnel = 0.02 + 0.98 * pow(1.0 - abs(dot(normal, normalize(vViewPosition))), 5.0);
-          outgoingLight = mix(outgoingLight, vec3(0.76, 0.83, 0.85), fresnel * 0.6);
-          ${flow ? 'outgoingLight *= 0.8 + 0.2 * sin(phase);' : ''}
+          outgoingLight = mix(outgoingLight, vec3(0.76, 0.83, 0.85), fresnel * 0.35);
+          ${flow ? 'outgoingLight *= 0.8 + 0.2 * sin(phase); outgoingLight = mix(outgoingLight, vec3(0.82, 0.86, 0.82), smoothstep(0.9, 1.0, sin(phase)) * 0.22);' : ''}
           #include <opaque_fragment>`,
             );
       }}
-      customProgramCacheKey={() => 'water-v3-' + low + '-' + flow + '-' + design.bedWidth}
+      customProgramCacheKey={() => 'water-v4-' + low + '-' + flow + '-' + design.bedWidth}
     />
   );
 }
