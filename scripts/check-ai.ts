@@ -34,5 +34,5 @@ for(const id of ['F-001','F-002','F-003']) {
     console.error(JSON.stringify({faultId:id,mode:'unavailable',confidence:'unavailable',validated:'no',stepIds:[],citationIds:[],latencyMs:Math.round(performance.now()-start),fallbackReason:'check_failed'}));failed=true;
   }
 }
-if(failed) console.error('AI check failed: inspect the fallback reason above and the model configuration. No credential is printed.');
+if(failed) console.error('AI check failed: inspect fallbackReason and any validationDetails above. invalid_provider_output means the response was rejected, not that the API key is missing. No credential is printed.');
 process.exitCode=failed?1:0;

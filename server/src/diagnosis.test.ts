@@ -8,7 +8,7 @@ const valid={diagnosis:'The recorded inlet obstruction resembles a sourced examp
 const config={provider:'openai-compatible' as const,key:'fake-test-key',model:'configured-test-model'};
 const response=(value:unknown)=>new Response(JSON.stringify({choices:[{message:{content:typeof value==='string'?value:JSON.stringify(value)}}]}));
 test('prompt version loads and assembled evidence is stable and delimited',()=>{
- const p=loadPrompt();expect(p.version).toBe('diagnosis-2026-10-17-v2');expect(p.text).toContain('Format examples only');
+ const p=loadPrompt();expect(p.version).toBe('diagnosis-2026-10-18-v4');expect(p.text).toContain('Format examples only');
  const f=deterministicDiagnosis(fault,'swale',referenceCases,referenceGuidance);
  expect(assemblePrompt(fault,[],f)).toMatchSnapshot();
 });

@@ -10,6 +10,8 @@ npm --prefix app ci
 npm run dev:all
 ```
 
+Use the same Node installation when installing dependencies and starting the app. If startup reports that `better_sqlite3.node` was compiled against a different `NODE_MODULE_VERSION`, stop the launcher and run `npm rebuild better-sqlite3` from the repository root in the same terminal, then start `npm run dev:all` again. The rebuild replaces the native dependency for that terminal's Node version; it does not reset the database or environment settings.
+
 `dev:all` builds the server, creates local configuration if absent, starts the API, seeds an **empty** SQLite database, and starts Vite with an API proxy. Existing records are preserved. The terminal prints the app URL. Default ports are 8080 and 5173; occupied ports are skipped. `PORT` and `APP_PORT` choose starting ports. The current app uses `http://127.0.0.1:5174` because another preview occupies 5173.
 
 The demonstration opens directly with no name, login, token or account. Application reads, writes and evidence photos are public to anyone who can reach the server. Audit entries use **Demo visitor**, not a verified identity. Use Ctrl+C in the launcher terminal to stop both processes. Restart `dev:all` after server/shared-code edits; Vite handles frontend edits.

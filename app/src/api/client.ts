@@ -141,7 +141,8 @@ export const api = {
   cases: () => request<CaseRecord[]>('/cases'),
   guidance: () => request<GuidanceRecord[]>('/guidance'),
   diagnose: (faultId: string, partContext?: DiagnosisRequest['partContext']) =>
-    request<Suggestion>('/ai/diagnose', { faultId, ...(partContext ? { partContext } : {}) }, 65000),
+    // Allow both bounded provider attempts (up to 45 seconds each) to finish.
+    request<Suggestion>('/ai/diagnose', { faultId, ...(partContext ? { partContext } : {}) }, 105000),
   diagnosisFeedback: (input: {
     suggestionId: string;
     choice: 'accept' | 'edit' | 'reject';

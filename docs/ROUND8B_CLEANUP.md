@@ -1,6 +1,6 @@
 # Round 8B cleanup — 17 October 2026
 
-The owner approved the full cleanup brief after completion of the selected-part AI integration (`ae60bf4`). The existing Map desk design, radar palette and honesty rules are retained. Each numbered section receives its own commit. No live model verification is claimed.
+The owner approved the full cleanup brief after completion of the selected-part AI integration (`ae60bf4`). The existing Map desk design, radar palette and honesty rules are retained. Each numbered section receives its own commit. Follow-up on 18 October: the user supplied a successful live DeepSeek check for all three seeded faults; see [live verification evidence](AI_LIVE_CHECK.md). Original cleanup checks below remain checkpoint evidence.
 
 ## Progress
 
@@ -13,7 +13,7 @@ The owner approved the full cleanup brief after completion of the selected-part 
 | 4 Board fixable case | Done | Local DB F-001 was the older untouched rule-origin detected fixture. Only that untouched fixture is upgraded; entered lifecycle history is preserved. Heavy physics test confirms S1 fixable, S2 capacity-limited and S3 clear. Computed differences, three bar styles/legend and stale-confirmation notice added. Two new unit checks pass. |
 | 5 R1 / 3D framing | Done | Bounds-based R1 camera and inlet close-up; three viewport checks confirm at least 70% width. High-first adaptive quality, quality/FPS only in Debug. Visible assembly modes; collapsed advanced controls. Compact flow legend and selected chamber flow. Human device labels retain IDs in details. |
 | 6 Page structure | Done | Sticky section navigation on Overview and feature pages links Overview, Replay, Parts, Sensors and Model details. Empty states provide next actions. Six-page containment/axe matrix passes at 390, 1440 and 1920 (3 browser tests). Existing single primary-action patterns retained. Three-viewport screenshot review completed. |
-| 7 Live AI check tooling | Partly done: tooling done, live run awaits user | server/.env setup and npm run check:ai added. Three seeded faults print mode/confidence/validation/IDs/latency/fallback reason and fail on rejected/fallback output. Mocked self-test passes with no live calls. Actual provider verification is explicitly not claimed. |
+| 7 Live AI check tooling | Done, including user-run live verification | server/.env setup and npm run check:ai added. After follow-up response validation and token-budget fixes, the user's 18 October run validated F-001, F-002 and F-003 on the first attempt with no fallback. This verifies provider integration, not diagnostic accuracy. |
 | 8 Demo readiness | Done | Both locked installs and dev:all passed in a separate clean clone, with seeded data and zero browser console errors. Reset backup/restore and AI tooling self-tests pass. Video runbook and all 12 requested screenshots are saved. |
 
 ## Initial verification notes
@@ -75,7 +75,7 @@ The browser repairs update searchable controls, the observations route, five ope
 | 6.4 | Done | Containment and axe checks at 390/1440/1920; all 12 captures reviewed in one batch plus one confirmation. |
 | 7.1 | Done | `AI_LIVE_CHECK.md` gives ignored server/.env settings and a seeded-fault click path. |
 | 7.2 | Done | check:ai prints all requested fields for three seeded faults, validates outputs and fails on unexpected fallback without printing credentials. |
-| 7.3 | Done; live execution pending user | The self-test is explicitly mocked. The user must run the actual provider check before live verification can be claimed. |
+| 7.3 | Done | The self-test is explicitly mocked. The user subsequently ran the actual provider check and supplied all three validated outputs with no fallback on 18 October. |
 | 8.1 | Done | Three-command clean-clone startup verified with seeded API data and no browser console errors. |
 | 8.2 | Done | Explicit demo:reset backs up the current database, restores fresh seed state and refuses reset when a local API is detected. Stop the launcher before using it. |
 | 8.3 | Done | Five-minute recording guide includes starting state, click path, expected results and limits. |
@@ -86,4 +86,6 @@ The browser repairs update searchable controls, the observations route, five ope
 
 ## Delivery
 
-AI integration was committed first (`ae60bf4`), followed by one commit per numbered section: 0 `d6996a6`, 1 `b296957`, 2 `346df89`, 3 `9635d5f`, 4 `7166eb5`, 5 `7e084e7`, 6 `b35bf3a`, 7 `ab5fe4a`, 8 `cc396dd`. Final verification fixes and captures are saved in the subsequent local commit. Work remains on `codex/drain-trial-console`; no new push or deployment was performed.
+The 18 October follow-up aligns prompt constraints with validation, supplies safe rejection feedback on retries, and fixes OpenCode DeepSeek truncation using low reasoning effort and bounded larger token budgets. Both frontend and backend TypeScript checks passed after these changes; the full unit/browser suites were not rerun for this follow-up. SQLite was rebuilt locally for the user's Node 22 installation and app/API startup succeeded at `http://127.0.0.1:5173/`; native binaries, database files and API keys are not committed.
+
+AI integration was committed first (`ae60bf4`), followed by one commit per numbered section: 0 `d6996a6`, 1 `b296957`, 2 `346df89`, 3 `9635d5f`, 4 `7166eb5`, 5 `7e084e7`, 6 `b35bf3a`, 7 `ab5fe4a`, 8 `cc396dd`. Final verification fixes and captures are saved in `c73e3ad`. These remained local at the original cleanup checkpoint. The user requested pushing the cleanup and subsequent AI fixes on 18 October; the branch is `codex/drain-trial-console`. No deployment is included in that request.

@@ -1,6 +1,6 @@
 # User-run live AI check
 
-**Status: live provider verification has not been performed by this cleanup.** Automated checks use mocked responses or provider `none`. The command below can make paid provider requests. Run it yourself when ready.
+**Status: live verification passed in the user's terminal on 18 October 2026.** F-001, F-002 and F-003 each returned `Matched and explained`, `validated: yes` and no fallback on the first attempt with `deepseek-v4.1-flash`. Their latencies were 37,725 ms, 26,099 ms and 40,144 ms respectively. All three reported low confidence; F-001 and F-003 returned no ranked repair steps. This confirms validated provider responses, not diagnostic accuracy. Automated cleanup checks use mocked responses or provider `none`. The command below can make paid provider requests.
 
 ## Configure the server
 
@@ -29,6 +29,10 @@ npm run check:ai
 ```
 
 This runs F-001, F-002 and F-003 using the same diagnosis service, canonical part context and fresh illustrative seed records in memory. It does not change the working database. Each JSON line reports mode, confidence, validated yes/no, step IDs, citation IDs, latency and fallback reason. A rejected output, missing connection or unexpected fallback exits non-zero. An honest insufficient-information response can pass validation with no ranked steps; this is not proof of diagnostic accuracy.
+
+`invalid_provider_output` means the provider response failed parsing, schema validation or the evidence rules; it does not mean the API key is missing. The backend now logs safe `validationDetails` (field paths and rejection categories, never the response text or credential), and passes that feedback into its second attempt. The prompt includes the enforced citation counts and text restrictions. Rerun the live check after these changes; restart the app backend to use them in the UI.
+
+An earlier live run identified `response_truncated`: the provider reported its generation limit before completing an answer. OpenCode DeepSeek requests now use `reasoning_effort: low` and an 8,192-token budget, increasing to 16,384 only on a truncation retry. Other providers retain the 2,200-token limit. This leaves room for reasoning as well as final JSON; it does not relax field limits or accept partial output. DeepSeek attempts time out after 45 seconds each; the browser waits up to 105 seconds for both attempts. A larger budget can consume more provider credits. The successful user-run check above used the 8,192-token budget for all three first attempts. See [DeepSeek's thinking and token controls](https://api-docs.deepseek.com/api/create-chat-completion/) and [OpenCode's compatible inference endpoint](https://opencode.ai/v2/docs/console/api/inference/).
 
 For a key-free tooling check only:
 

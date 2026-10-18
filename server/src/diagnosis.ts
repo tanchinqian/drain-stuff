@@ -143,9 +143,14 @@ export function createDiagnosisService(
         };
       }
       let failure = 'provider_network_error';
+      let validationDetails: string[] = [];
       for (let attempt = 0; attempt < 2; attempt++)
         try {
-          const signal = AbortSignal.timeout(config.timeoutMs ?? 25000);
+          const wasTruncated = validationDetails.some(detail => detail.startsWith('response_truncated:'));
+          const retryMessages = attempt && validationDetails.length
+            ? [{role: 'user', content: 'The previous response failed validation: ' + validationDetails.join('; ') + '. Return a new complete JSON object following every output constraint. Do not add unsupported facts or repair steps to satisfy validation.'}]
+            : [];
+          validationDetails = [];
           const anthropic = config.provider === "anthropic";
           const url = anthropic
             ? "https://api.anthropic.com/v1/messages"
@@ -155,6 +160,11 @@ export function createDiagnosisService(
               ) + "/chat/completions";
           if (new URL(url).protocol !== "https:")
             throw new Error('provider_configuration_error');
+          const openCode = !anthropic && new URL(url).hostname === 'opencode.ai';
+          const deepSeek = openCode && config.model.startsWith('deepseek-');
+          // DeepSeek's generation budget includes reasoning before the final JSON.
+          const outputTokens = deepSeek ? (wasTruncated ? 16384 : 8192) : 2200;
+          const signal = AbortSignal.timeout(config.timeoutMs ?? (deepSeek ? 45000 : 25000));
           const response = await fetcher(url, {
             method: "POST",
             signal,
@@ -172,19 +182,21 @@ export function createDiagnosisService(
               anthropic
                 ? {
                     model: config.model,
-                    max_tokens: 2200,
+                    max_tokens: outputTokens,
                     temperature: 0,
                     system: prompt.text,
-                    messages: [{ role: "user", content: payload }],
+                    messages: [{ role: "user", content: payload }, ...retryMessages],
                   }
                 : {
                     model: config.model,
                     temperature: 0,
-                    ...(new URL(url).hostname === 'opencode.ai' ? {max_tokens: 2200} : {max_completion_tokens: 2200}),
+                    ...(openCode ? {max_tokens: outputTokens} : {max_completion_tokens: outputTokens}),
+                    ...(deepSeek ? {reasoning_effort: 'low'} : {}),
                     response_format: { type: "json_object" },
                     messages: [
                       { role: "system", content: prompt.text },
                       { role: "user", content: payload },
+                      ...retryMessages,
                     ],
                   },
             ),
@@ -196,34 +208,43 @@ export function createDiagnosisService(
           if (body.length > 100000)
             throw new Error('provider_response_too_large');
           let raw;
-          try { raw = JSON.parse(body); } catch { throw new Error('invalid_provider_output'); }
+          try { raw = JSON.parse(body); } catch {
+            validationDetails = ['response_envelope_invalid_json'];
+            throw new Error('invalid_provider_output');
+          }
           const content = anthropic
             ? raw.content
                 ?.filter((c: { type: string }) => c.type === "text")
                 .map((c: { text: string }) => c.text)
                 .join("")
             : raw.choices?.[0]?.message?.content;
-          let parsed;
-          try { parsed = outputSchema.parse(JSON.parse(content)); }
-          catch { throw new Error('invalid_provider_output'); }
-          if (
-            parsed.rankedStepIds.some((id) => !stepLibrary[id]) ||
-            parsed.citedCaseIds.some(
-              (id) => !fallback.citedCaseIds.includes(id),
-            ) ||
-            parsed.citedGuidanceIds.some(
-              (id) => !fallback.citedGuidanceIds.includes(id),
-            ) ||
-            (parsed.insufficientInformation && parsed.rankedStepIds.length) ||
-            (!context && !parsed.insufficientInformation &&
-              !parsed.citedCaseIds.length &&
-              !parsed.citedGuidanceIds.length) ||
-            (!context && /\d+\s*%/.test(parsed.diagnosis + ' ' + parsed.notes)) ||
-            /https?:\/\/|\b(I recommend|you should|guarantee|will prevent flooding)\b/i.test(
-              parsed.diagnosis + " " + parsed.notes,
-            )
-          )
+          if (anthropic ? raw.stop_reason === 'max_tokens' : raw.choices?.[0]?.finish_reason === 'length') {
+            validationDetails = ['response_truncated: reached the ' + outputTokens + '-token budget; keep explanations concise and finish the JSON'];
             throw new Error('invalid_provider_output');
+          }
+          let value;
+          try { value = JSON.parse(content); } catch {
+            validationDetails = ['content_invalid_json: return only a complete JSON object, without Markdown'];
+            throw new Error('invalid_provider_output');
+          }
+          const checked = outputSchema.safeParse(value);
+          if (!checked.success) {
+            // Only schema-owned field names and error codes; never log response text or unknown keys.
+            const fields = new Set([...Object.keys(outputSchema.shape), 'possibleCauses', 'cause', 'reasoning', 'checks', 'missingInformation']);
+            validationDetails = checked.error.issues.map(issue =>
+              'schema:' + issue.path.map(key => typeof key === 'number' ? key : fields.has(String(key)) ? key : '*').join('.') + ':' + issue.code);
+            throw new Error('invalid_provider_output');
+          }
+          const parsed = checked.data;
+          if (parsed.rankedStepIds.some(id => !stepLibrary[id])) validationDetails.push('unknown_step_id: use only allowedSteps keys');
+          if (parsed.citedCaseIds.some(id => !fallback.citedCaseIds.includes(id))) validationDetails.push('unknown_case_id: cite only retrievedCases IDs');
+          if (parsed.citedGuidanceIds.some(id => !fallback.citedGuidanceIds.includes(id))) validationDetails.push('unknown_guidance_id: cite only retrievedGuidance IDs');
+          if (parsed.insufficientInformation && parsed.rankedStepIds.length) validationDetails.push('insufficient_information_requires_empty_steps');
+          if (!context && !parsed.insufficientInformation && !parsed.citedCaseIds.length && !parsed.citedGuidanceIds.length) validationDetails.push('explanation_requires_retrieved_citation');
+          if (!context && /\d+\s*%/.test(parsed.diagnosis + ' ' + parsed.notes)) validationDetails.push('unsupported_percentage');
+          if (/https?:\/\/|\b(I recommend|you should|guarantee|will prevent flooding)\b/i.test(parsed.diagnosis + ' ' + parsed.notes)) validationDetails.push('prohibited_claim_or_url: omit URLs, guarantees, I recommend, and you should');
+          if (validationDetails.length) throw new Error('invalid_provider_output');
+          if (context && !parsed.analysis) validationDetails = ['selected_part_requires_analysis_object'];
           if (context && !parsed.analysis) throw new Error('missing_part_analysis');
           const result: Suggestion = {
             ...fallback,
@@ -235,7 +256,7 @@ export function createDiagnosisService(
           };
           if (cache.size >= 100) cache.delete(cache.keys().next().value!);
           cache.set(hash, result);
-          console.info('[diagnosis] MODEL ' + JSON.stringify({faultId: fault.id, model: config.model, attempt: attempt + 1}));
+          console.info('[diagnosis] MODEL ' + JSON.stringify({faultId: fault.id, model: config.model, attempt: attempt + 1, outputTokenBudget: outputTokens}));
           return result;
         } catch (error) {
           const message = error instanceof Error ? error.message : '';
@@ -244,6 +265,7 @@ export function createDiagnosisService(
               ? message : message === 'timeout' ? 'provider_timeout' : 'provider_network_error';
           console.warn('[diagnosis] ATTEMPT FAILED ' + JSON.stringify({
             faultId: fault.id, model: config.model, attempt: attempt + 1, reason: failure,
+            ...(validationDetails.length ? {validationDetails} : {}),
           }));
         }
       return fallbackResult(failure);
