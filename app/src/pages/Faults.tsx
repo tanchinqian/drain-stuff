@@ -1,3 +1,5 @@
+import FaultTableRegister from '../components/FaultTableRegister';
+import FaultMapRegister from '../components/FaultMapRegister';
 import SearchableSelect from '../components/SearchableSelect';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -20,6 +22,7 @@ import { drainParts, partName, partLink } from '../api/modelCatalog';
 export default function Faults() {
   const [params, setParams] = useSearchParams();
   const [tab, setTab] = useState<'faults' | 'rules'>('faults');
+  const [registerView, setRegisterView] = useState<'all' | 'models'>('all');
   const [asset, setAsset] = useState(params.get('asset') ?? ''),
     [selected, setSelected] = useState<Fault | null>(null),
     [rule, setRule] = useState<FaultRule | null>(null),
@@ -34,20 +37,22 @@ export default function Faults() {
   });
   const faults = useQuery({ queryKey: ['faults'], queryFn: () => api.faults() }),
     rules = useQuery({ queryKey: ['fault-rules'], queryFn: api.faultRules }),
-    features = useQuery({ queryKey: ['features'], queryFn: api.features });
+    features = useQuery({ queryKey: ['features'], queryFn: api.features }),
+    houses = useQuery({ queryKey: ['fault-assets-houses'], queryFn: api.houses }),
+    batches = useQuery({ queryKey: ['fault-assets-batches'], queryFn: api.batches });
   const create = useWrite(
     () => api.reportFault({ ...entry, note, user }),
     'Saved report to the fault register',
   );
-  const inputs = useQuery({queryKey:['fault-evidence-inputs'],queryFn:()=>api.sensors()});
+  const inputs = useQuery({ queryKey: ['fault-evidence-inputs'], queryFn: () => api.sensors() });
   const active = selected
     ? (faults.data?.find((f) => f.id === selected.id) ?? selected)
     : (faults.data?.find((f) => f.id === params.get('fault')) ?? null);
   const rows = (faults.data ?? [])
     .filter(
-      (f) =>
-        (!asset || f.featureId === asset) &&
-        (!params.get('rule') || f.ruleId === params.get('rule')),
+      (fault) =>
+        (!asset || fault.featureId === asset) &&
+        (!params.get('rule') || fault.ruleId === params.get('rule')),
     )
     .sort(faultOrder);
   const selectRule = (id: string) => {
@@ -90,7 +95,14 @@ export default function Faults() {
             label="Fault assets"
             value={asset}
             onChange={setAsset}
-            items={Array.from(new Set(faults.data?.map((f) => f.featureId) ?? [])).map((id) => ({
+            items={Array.from(
+              new Set([
+                ...(features.data?.map((feature) => feature.id) ?? []),
+                ...(houses.data?.map((house) => house.drainId) ?? []),
+                ...(batches.data?.map((batch) => batch.id) ?? []),
+                ...(faults.data?.map((f) => f.featureId) ?? []),
+              ]),
+            ).map((id) => ({
               id,
               detail:
                 (faults.data?.filter((f) => f.featureId === id && f.status !== 'closed').length ??
@@ -106,71 +118,36 @@ export default function Faults() {
             aria-labelledby="tab-faults"
             hidden={tab !== 'faults'}
           >
-            <DataTable
-              id="faults"
-              rows={rows}
-              rowId={(f) => f.id}
-              onSelect={setSelected}
-              filters={[
-                { key: 'zone', label: 'Zone', value: (f) => f.zone },
-                { key: 'type', label: 'Fault class', value: (f) => displayName(f.type) },
-                { key: 'status', label: 'Status', value: (f) => f.status },
-              ]}
-              columns={[
-                { key: 'id', label: 'ID', width: '7%', value: (f) => f.id },
-                { key: 'title', label: 'Title', width: '18%', value: (f) => displayName(f.type) },
-                { key: 'asset', label: 'Asset', width: '6%', value: (f) => f.featureId },
-                { key: 'part', label: 'Part', width: '16%', value: (f) => partName(f.partId) },
-                {
-                  key: 'severity',
-                  width: '9%',
-                  label: 'Severity',
-                  value: (f) => f.severity,
-                  render: (f) => (
-                    <Chip value={f.severity === 3 ? 'High' : f.severity === 2 ? 'Medium' : 'Low'} />
-                  ),
-                },
-                {
-                  key: 'opened',
-                  width: '16%',
-                  label: 'Opened',
-                  value: (f) => f.openedAt,
-                  render: (f) => <Timestamp value={f.openedAt} />,
-                },
-                {
-                  key: 'status',
-                  width: '11%',
-                  label: 'Status',
-                  value: (f) => f.status,
-                  render: (f) => (
-                    <button onClick={() => setSelected(f)}>
-                      {displayName(f.workOrder?.state ?? 'detected')}
-                    </button>
-                  ),
-                },
-                {
-                  key: 'rule',
-                  width: '17%',
-                  label: 'Rule',
-                  value: (f) =>
-                    rules.data?.find((r) => r.id === f.ruleId)?.label ?? 'Manual report',
-                  render: (f) => (
-                    <button
-                      className="text-link"
-                      title={
-                        (rules.data?.find((r) => r.id === f.ruleId)?.label ?? 'Manual report') +
-                        ' · ' +
-                        f.ruleId
-                      }
-                      disabled={f.ruleId === 'MANUAL'}
-                      onClick={() => selectRule(f.ruleId)}
-                    >
-                      {rules.data?.find((r) => r.id === f.ruleId)?.label ?? 'Manual report'}
-                    </button>
-                  ),
-                },
-              ]}
-            />
+            <div className="segments fault-register-view" aria-label="Fault register view">
+              <button aria-pressed={registerView === 'all'} onClick={() => setRegisterView('all')}>
+                All assets
+              </button>
+              <button
+                aria-pressed={registerView === 'models'}
+                onClick={() => setRegisterView('models')}
+              >
+                3D models
+              </button>
+            </div>
+            {registerView === 'all' ? (
+              <FaultTableRegister
+                rows={rows}
+                rules={rules.data ?? []}
+                onSelect={setSelected}
+                onRule={selectRule}
+              />
+            ) : (
+              <FaultMapRegister
+                faults={faults.data ?? []}
+                rules={rules.data ?? []}
+                features={features.data ?? []}
+                asset={asset}
+                onAsset={setAsset}
+                onSelect={setSelected}
+                onRule={selectRule}
+                ruleFilter={params.get('rule')}
+              />
+            )}
           </section>
           <section
             className="panel"
@@ -206,16 +183,81 @@ export default function Faults() {
         <Drawer
           title={active.id + ' · ' + displayName(active.type)}
           key={active.id}
-          status={<Chip value={active.workOrder?.state ?? 'detected'} tone={active.workOrder?.state==='closed'?'ok':'watch'}/>}
-          subtitle={<><p className="small">{active.featureId} · {partName(active.partId)} · Zone {active.zone}</p><p className="small">{active.raisedBy==='manual'?'Operator inspection':'Recorded rule finding'} · {timeLabel(active.openedAt)}</p></>}
+          status={
+            <Chip
+              value={active.workOrder?.state ?? 'detected'}
+              tone={active.workOrder?.state === 'closed' ? 'ok' : 'watch'}
+            />
+          }
+          subtitle={
+            <>
+              <p className="small">
+                {active.featureId} · {partName(active.partId)} · Zone {active.zone}
+              </p>
+              <p className="small">
+                {active.raisedBy === 'manual' ? 'Operator inspection' : 'Recorded rule finding'} ·{' '}
+                {timeLabel(active.openedAt)}
+              </p>
+            </>
+          }
           onClose={() => {
             setSelected(null);
             const next = new URLSearchParams(params);
             next.delete('fault');
-            setParams(next, {replace:true});
+            setParams(next, { replace: true });
           }}
         >
-          <section className="fault-summary"><h3>Summary</h3><p>{active.diagnosingInput}</p></section>
+          <dl className="fault-record-fields fault-detail-metadata">
+            <div>
+              <dt>Fault ID</dt>
+              <dd>{active.id}</dd>
+            </div>
+            <div>
+              <dt>Title</dt>
+              <dd>{displayName(active.type)}</dd>
+            </div>
+            <div>
+              <dt>Asset</dt>
+              <dd>{active.featureId}</dd>
+            </div>
+            <div>
+              <dt>Part</dt>
+              <dd>{partName(active.partId)}</dd>
+            </div>
+            <div>
+              <dt>Severity</dt>
+              <dd>
+                <Chip
+                  value={active.severity === 3 ? 'High' : active.severity === 2 ? 'Medium' : 'Low'}
+                />
+              </dd>
+            </div>
+            <div>
+              <dt>Opened</dt>
+              <dd>
+                <Timestamp value={active.openedAt} />
+              </dd>
+            </div>
+            <div>
+              <dt>Status</dt>
+              <dd>{displayName(active.status)}</dd>
+            </div>
+            <div>
+              <dt>Zone</dt>
+              <dd>{active.zone}</dd>
+            </div>
+            <div className="fault-record-rule">
+              <dt>Rule</dt>
+              <dd>
+                {rules.data?.find((item) => item.id === active.ruleId)?.label ??
+                  (active.ruleId === 'MANUAL' ? 'Manual report' : active.ruleId)}
+              </dd>
+            </div>
+          </dl>
+          <section className="fault-summary">
+            <h3>Summary</h3>
+            <p>{active.diagnosingInput}</p>
+          </section>
           <Link
             className="button"
             to={partLink(
@@ -228,14 +270,47 @@ export default function Faults() {
           </Link>
           <WorkOrderPanel key={active.id} fault={active} />
           <DiagnosisPanel key={'diagnosis-' + active.id} faultId={active.id} />
-          <details className="fault-section"><summary>Evidence and inputs <span>{active.sensorIds.length} recorded inputs</span></summary>
-            {!active.sensorIds.length ? <p>No linked input recorded; add an independent inspection note.</p> :
-            <div className="table-scroll"><table className="evidence-table"><thead><tr><th>Input</th><th>Value</th><th>Trust</th><th>Time</th></tr></thead><tbody>
-            {active.sensorIds.map(id => {const sensor=inputs.data?.find(s=>s.sensorId===id); return <tr key={id}>
-              <td><Link to={'/sensors?sensor='+encodeURIComponent(id)}>{id}</Link></td><td>{sensor?.lastText ?? sensor?.lastValue ?? 'Not recorded'} {sensor?.unit}</td>
-              <td>{displayName(active.sensorStatusesAtAlert[id] ?? 'Not recorded')}</td><td>{sensor?.lastAt ? timeLabel(sensor.lastAt) : 'Not recorded'}</td>
-            </tr>;})}</tbody></table></div>}
-            <p className="small">Trust is captured when the fault was raised. Values and time are the latest stored readings.</p>
+          <details className="fault-section">
+            <summary>
+              Evidence and inputs <span>{active.sensorIds.length} recorded inputs</span>
+            </summary>
+            {!active.sensorIds.length ? (
+              <p>No linked input recorded; add an independent inspection note.</p>
+            ) : (
+              <div className="table-scroll">
+                <table className="evidence-table">
+                  <thead>
+                    <tr>
+                      <th>Input</th>
+                      <th>Value</th>
+                      <th>Trust</th>
+                      <th>Time</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {active.sensorIds.map((id) => {
+                      const sensor = inputs.data?.find((s) => s.sensorId === id);
+                      return (
+                        <tr key={id}>
+                          <td>
+                            <Link to={'/sensors?sensor=' + encodeURIComponent(id)}>{id}</Link>
+                          </td>
+                          <td>
+                            {sensor?.lastText ?? sensor?.lastValue ?? 'Not recorded'} {sensor?.unit}
+                          </td>
+                          <td>{displayName(active.sensorStatusesAtAlert[id] ?? 'Not recorded')}</td>
+                          <td>{sensor?.lastAt ? timeLabel(sensor.lastAt) : 'Not recorded'}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            <p className="small">
+              Trust is captured when the fault was raised. Values and time are the latest stored
+              readings.
+            </p>
           </details>
           <RecordHistory entries={active.history ?? []} title="Audit trail" />
         </Drawer>
@@ -273,7 +348,8 @@ export default function Faults() {
       )}
       {report && (
         <Drawer title="Report a fault" onClose={() => setReport(false)}>
-          <form id="fault-report"
+          <form
+            id="fault-report"
             onSubmit={(e) => {
               e.preventDefault();
               create.mutate(undefined, {
@@ -356,7 +432,11 @@ export default function Faults() {
               <input required value={user} onChange={(e) => setUser(e.target.value)} />
             </label>
             <p className="small">Saves to the fault register.</p>
-            <DrawerFooter><button className="primary" form="fault-report" disabled={create.isPending}>Save fault report</button></DrawerFooter>
+            <DrawerFooter>
+              <button className="primary" form="fault-report" disabled={create.isPending}>
+                Save fault report
+              </button>
+            </DrawerFooter>
             {create.error && <p role="alert">{create.error.message}</p>}
           </form>
         </Drawer>

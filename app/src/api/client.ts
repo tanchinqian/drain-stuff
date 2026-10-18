@@ -1,4 +1,5 @@
 import { mockRequest } from './mock';
+import type { ForecastResponse } from '../../../shared/src/forecast';
 import type {
   Sensor,
   SensorReading,
@@ -127,6 +128,7 @@ export const api = {
     position: number;
     reason: string;
   }) => request<Ok>('/triage/overrides', input),
+  forecast: () => request<ForecastResponse>('/weather/forecast'),
   warnings: () => request<{ available: boolean; warnings?: unknown[] }>('/weather/warnings'),
   faultLifecycle: (
     id: string,

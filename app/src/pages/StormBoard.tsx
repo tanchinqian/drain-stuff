@@ -1,5 +1,3 @@
-import SectionIndex from '../components/SectionIndex';
-import ModelDetails from '../components/ModelDetails';
 import { sensorLabel } from '../utils';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -7,7 +5,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import { confirmed } from '../../../shared/src/physics/faults';
 import { useBoard } from '../triage';
-import { warningTitle, warningScenario } from '../../../shared/src/warnings';
+import { forecastPeriods, weatherCondition } from '../../../shared/src/forecast';
+import { useForecastImpact } from '../api/useForecastImpact';
+import WeatherForecast, {
+  forecastPeriodLabel,
+  periodCondition,
+} from '../components/WeatherForecast';
 import { assets, stormPresets, type TriageRow } from '../../../shared/src/contract';
 import SearchableSelect from '../components/SearchableSelect';
 import PlanMap from '../components/PlanMap';
@@ -24,10 +27,14 @@ const emptyRows: TriageRow[] = [];
 const MapScene = memo(NeighbourhoodScene);
 const MapPlan = memo(PlanMap);
 const modeNames: Record<string, string> = {
-  installed: 'As installed', cleared: 'If cleared', capacity: 'Capacity limit',
+  installed: 'As installed',
+  cleared: 'If cleared',
+  capacity: 'Capacity limit',
 };
 const parameterNames: Record<string, string> = {
-  ks: 'soil conductivity', drainC: 'outlet capacity', peak: 'rainfall peak',
+  ks: 'soil conductivity',
+  drainC: 'outlet capacity',
+  peak: 'rainfall peak',
 };
 export default function StormBoard() {
   const requestedJob = useRef<string | null>(null);
@@ -39,6 +46,19 @@ export default function StormBoard() {
     });
   }, []);
   const { jobId, setJob, selected, select } = useBoard();
+  const [mode, setMode] = useState<'forecast' | 'simulator'>('forecast');
+  const [forecastDay, setForecastDay] = useState<string | null>(null);
+  const [periodIndex, setPeriodIndex] = useState(() =>
+    Math.floor(
+      Number(
+        new Intl.DateTimeFormat('en-GB', {
+          timeZone: 'Asia/Kuala_Lumpur',
+          hour: '2-digit',
+          hourCycle: 'h23',
+        }).format(new Date()),
+      ) / 3,
+    ),
+  );
   const [preset, setPreset] = useState('heavy'),
     [peak, setPeak] = useState(63),
     [duration, setDuration] = useState(45),
@@ -86,19 +106,47 @@ export default function StormBoard() {
     queryFn: () => api.triage(jobId!),
   });
   const hints = useQuery({ queryKey: ['diagnosis-hints'], queryFn: api.diagnosisHints });
-  const warnings = useQuery({
-    queryKey: ['weather-warning'],
-    queryFn: api.warnings,
-    staleTime: 300000,
+  const forecast = useQuery({
+    queryKey: ['weather-forecast'],
+    queryFn: api.forecast,
+    staleTime: 900000,
+    refetchInterval: 900000,
     retry: false,
   });
+  const trials = useQuery({
+    queryKey: ['forecast-trials'],
+    queryFn: api.trials,
+    enabled: mode === 'forecast',
+  });
+  const forecastData = forecast.data?.available ? forecast.data : undefined;
+  const forecastDate =
+    forecastData?.days.find((day) => day.date === forecastDay)?.date ?? forecastData?.days[0]?.date;
+  const periods = useMemo(
+    () => (forecastData && forecastDate ? forecastPeriods(forecastData, forecastDate) : []),
+    [forecastData, forecastDate],
+  );
+  const period = periods[periodIndex] ?? periods[0];
+  const impact = useForecastImpact(
+    mode === 'forecast' ? period : undefined,
+    faults.data,
+    trials.data,
+  );
+  const forecastRain =
+    period && period.hours.every((h) => h.rainMm !== null)
+      ? period.hours.reduce((sum, h) => sum + h.rainMm!, 0) / 3
+      : null;
   const rows = triage.data?.rows ?? emptyRows;
   const rainPlayback = useMemo<RainPlayback | undefined>(() => {
     const config = rows[0]?.asInstalled.config;
-    return config ? { points: hyetograph(config, 'alternating-block'), peakMmHr: config.values.peak.value * 3.6e6 } : undefined;
+    return config
+      ? {
+          points: hyetograph(config, 'alternating-block'),
+          peakMmHr: config.values.peak.value * 3.6e6,
+        }
+      : undefined;
   }, [rows]);
   useEffect(() => {
-    if (!jobId || !rows.length) return;
+    if (mode !== 'simulator' || !jobId || !rows.length) return;
     useSimulation.getState().loadBoardReplay(rows, jobId);
     if (requestedJob.current === jobId) {
       requestedJob.current = null;
@@ -107,24 +155,41 @@ export default function StormBoard() {
       if (!matchMedia('(prefers-reduced-motion: reduce)').matches)
         useSimulation.setState({ playing: true });
     }
-  }, [rows, jobId, revealMap]);
+  }, [rows, jobId, revealMap, mode]);
   const watchStorm = () => {
     setLayer('rain');
-    useSimulation.setState({ second: 0, playing: !matchMedia('(prefers-reduced-motion: reduce)').matches });
+    useSimulation.setState({
+      second: 0,
+      playing: !matchMedia('(prefers-reduced-motion: reduce)').matches,
+    });
     revealMap();
   };
-  const scenarioPeak = preset === 'custom' ? peak : stormPresets[preset as keyof typeof stormPresets].peakMmHr;
-  const mapPeak = rainPlayback?.peakMmHr ?? scenarioPeak;
-  const rain = useMemo<ZoneRain[]>(() => mapPeak > 0
-    ? (data.data?.zones ?? []).map((zone) => ({
-        synthetic: true, zone: zone.id, peakMmPerHr: mapPeak, totalMm: 0,
-      }))
-    : [], [data.data?.zones, mapPeak]);
+  const scenarioPeak =
+    preset === 'custom' ? peak : stormPresets[preset as keyof typeof stormPresets].peakMmHr;
+  const visiblePlayback = mode === 'simulator' ? rainPlayback : undefined;
+  const mapPeak =
+    mode === 'forecast' ? (forecastRain ?? 0) : (rainPlayback?.peakMmHr ?? scenarioPeak);
+  const mapImpacts = mode === 'forecast' ? impact.impacts : undefined;
+  const rain = useMemo<ZoneRain[]>(
+    () =>
+      mapPeak > 0
+        ? (data.data?.zones ?? []).map((zone) => ({
+            synthetic: true,
+            zone: zone.id,
+            peakMmPerHr: mapPeak,
+            totalMm: 0,
+          }))
+        : [],
+    [data.data?.zones, mapPeak],
+  );
   const ranks = useMemo(() => Object.fromEntries(rows.map((r) => [r.asset, r.rank])), [rows]);
-  const choose = useCallback((id: string) => {
-    select(id);
-    useSelection.getState().selectHouse(null);
-  }, [select]);
+  const choose = useCallback(
+    (id: string) => {
+      select(id);
+      useSelection.getState().selectHouse(null);
+    },
+    [select],
+  );
   async function run() {
     useSimulation.setState({ playing: false });
     setPending(true);
@@ -146,15 +211,17 @@ export default function StormBoard() {
       setPending(false);
     }
   }
-  const working = pending || (!job.isError && !triage.isError && (
-    (!!jobId && job.isPending) ||
-    ['queued', 'running'].includes(job.data?.status ?? '') ||
-    (job.data?.status === 'completed' && triage.isPending)
-  ));
+  const working =
+    pending ||
+    (!job.isError &&
+      !triage.isError &&
+      ((!!jobId && job.isPending) ||
+        ['queued', 'running'].includes(job.data?.status ?? '') ||
+        (job.data?.status === 'completed' && triage.isPending)));
   const progress = pending ? null : job.data?.progress;
   const progressMax = progress?.total ?? 1;
-  const progressValue = !pending && job.data?.status === 'completed'
-    ? progressMax : progress?.completed;
+  const progressValue =
+    !pending && job.data?.status === 'completed' ? progressMax : progress?.completed;
   return (
     <>
       <div className="page-heading">
@@ -166,306 +233,12 @@ export default function StormBoard() {
           Observation history
         </Link>
       </div>
-      <SectionIndex items={[["Overview","#storm-heading"],["Replay","#board-replay"],["Parts",'/feature/'+selected+'#feature-parts'],["Sensors","/sensors"]]}><ModelDetails ownerId={selected}/></SectionIndex>
-      <section className="panel storm-inputs" aria-labelledby="storm-heading">
-        <div>
-          <h2 id="storm-heading">Set the storm to compare</h2>
-          <p>
-            Entered scenarios help prioritise upkeep before a storm. These rainfall values are not a
-            forecast.
-          </p>
-          <p className="small">Run storm calculates new results, then plays the rainfall. Watch storm replays the saved run without recalculating.</p>
-        </div>
-        {warnings.data?.available && !!warnings.data.warnings?.length && (
-          <details>
-            <summary>Official weather warnings available</summary>
-            <p>Warnings can guide your scenario choice; they do not supply numeric rainfall.</p>
-            {warnings.data.warnings.map((warning, i) => (
-              <p key={i}>{warningTitle(warning)}</p>
-            ))}
-            {warningScenario(warnings.data.warnings) ? (
-              <button onClick={() => setPreset(warningScenario(warnings.data!.warnings!)!)}>
-                Use {warningScenario(warnings.data.warnings)} scenario
-              </button>
-            ) : (
-              <p className="small">
-                No recognised warning level was supplied. Choose your rainfall scenario below.
-              </p>
-            )}
-          </details>
-        )}
-        <div className="storm-form">
-          <label className="field">
-            Rainfall scenario
-            <SearchableSelect
-              label="Rainfall scenario"
-              value={preset}
-              onChange={(e) => setPreset(e.target.value)}
-            >
-              {Object.entries(stormPresets).map(([id, p]) => (
-                <option key={id} value={id}>
-                  {id[0].toUpperCase() + id.slice(1)} · {p.peakMmHr} mm/h × {p.durationMinutes} min
-                </option>
-              ))}
-              <option value="custom">Custom rainfall</option>
-            </SearchableSelect>
-          </label>
-          {preset === 'custom' && (
-            <>
-              <label className="field">
-                Peak rainfall (mm/h)
-                <input
-                  type="number"
-                  min="0"
-                  max="300"
-                  value={peak}
-                  onChange={(e) => setPeak(Number(e.target.value))}
-                />
-              </label>
-              <label className="field">
-                Rain duration (minutes)
-                <input
-                  type="number"
-                  min="1"
-                  max="180"
-                  step="1"
-                  value={duration}
-                  onChange={(e) => setDuration(Number(e.target.value))}
-                />
-              </label>
-            </>
-          )}
-          <button className="primary" disabled={working} onClick={run}>
-            {working ? 'Calculating…' : 'Run storm'}
-          </button>
-          {rainPlayback && !working && <button onClick={watchStorm}>Watch storm</button>}
-        </div>
-        <div className="actions">
-          <label>
-            <input
-              type="checkbox"
-              checked={preview}
-              onChange={(e) => setPreview(e.target.checked)}
-            />{' '}
-            Preview unconfirmed faults
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              checked={robustness}
-              onChange={(e) => setRobustness(e.target.checked)}
-            />{' '}
-            Check ranking under ±25%
-          </label>
-        </div>
-        {(error || job.error || triage.error || job.data?.error) && (
-          <p role="alert">
-            {error || job.error?.message || triage.error?.message || job.data?.error}
-          </p>
-        )}
-        <p role="status">
-          {working
-            ? pending
-              ? 'Starting the storm calculation…'
-              : job.data?.status === 'completed'
-                ? 'Calculations complete. Preparing the ranking…'
-                : progress
-                  ? `${progress.completed} of ${progress.total} comparisons complete · ${progress.asset} · ${progress.phase === 'sensitivity' ? `Checking ${parameterNames[progress.parameter!] ?? progress.parameter} at ${Math.round(progress.multiplier! * 100)}%` : modeNames[progress.mode]}`
-                  : job.data?.status === 'queued'
-                    ? 'Queued behind the current storm calculation…'
-                    : 'Starting asset comparisons…'
-            : rows.length
-              ? `${rows.length} assets compared. ${triage.data?.robustness.evaluated ? (triage.data.robustness.stable ? 'Ranking stable under ±25%.' : 'Order changes under ±25%.') : 'Sensitivity check not run.'}`
-              : 'Choose a scenario and run the storm to see the ranking.'}
-        </p>
-        {working && (
-          <div
-            className={'storm-progress' + (progressValue === undefined ? ' is-indeterminate' : '')}
-            role="progressbar"
-            aria-label="Storm calculation progress"
-            aria-valuemin={0}
-            aria-valuemax={progressMax}
-            aria-valuenow={progressValue}
-          >
-            <span aria-hidden="true" style={{ transform: `scaleX(${(progressValue ?? 0) / progressMax})` }} />
-          </div>
-        )}
-        {job.data && (
-          <p className="small">
-            Saved run:{' '}
-            {job.data.input.custom
-              ? `${job.data.input.custom.peakMmHr} mm/h × ${job.data.input.custom.durationMinutes} min`
-              : `${job.data.input.preset} preset`}{' '}
-            ·{' '}
-            {job.data.input.options.previewUnconfirmed
-              ? 'Unconfirmed faults included for preview'
-              : 'Confirmed faults only'}{' '}
-            · {label}
-          </p>
-        )}
-      </section>
       <QueryState loading={data.isPending} error={data.error}>
         <div className="triage-layout">
-          <section className="panel triage-register">
-            <h2>Upkeep priority</h2>
-            <p className="sub">{label}. Capacity-limited assets need owner review.</p>
-            <p className="small comparison-legend"><span><i className="legend-installed"/>As installed</span><span><i className="legend-cleared"/>If cleared</span><span><i className="legend-capacity"/>Capacity limit</span></p>
-            {!!rows.length && rows.some(row => (faults.data ?? []).filter(f=>f.featureId===row.asset&&confirmed(f)).map(f=>f.id).sort().join()!==[...row.faultIds].sort().join()) && <p className="notice">Fault confirmations have changed since this saved run. Run the storm again to update the comparison.</p>}
-            {!rows.length && (
-              <p className="empty-note">
-                Run the storm to compare As installed, If cleared and Capacity limit for S1, S2, S3, I1
-                and the typical roadside inlet R1.
-              </p>
-            )}
-            <div className="triage-rows">
-              {rows.map((row) => {
-                const related =
-                  faults.data?.filter((f) => f.featureId === row.asset && f.status !== 'closed') ??
-                  [];
-                const max = Math.max(
-                  0.001,
-                  ...[row.asInstalled, row.ifCleared, row.capacityLimit].map(
-                    (m) => m.summary.overflowM3,
-                  ),
-                );
-                return (
-                  <article
-                    className={'triage-row' + (selected === row.asset ? ' selected' : '')}
-                    key={row.asset}
-                  >
-                    <div className="panel-heading">
-                      <button
-                        className="triage-asset"
-                        aria-pressed={selected === row.asset}
-                        onClick={() => choose(row.asset)}
-                      >
-                        <span className="rank-number">{row.rank}</span>
-                        <span className="triage-asset-title">
-                          <strong>{row.asset}</strong> ·{' '}
-                          {data.data?.features.find((f) => f.id === row.asset)?.name}
-                        </span>
-                      </button>
-                      <button
-                        onClick={() => {
-                          setOverride(row);
-                          setPosition(row.rank);
-                          setReason('');
-                        }}
-                      >
-                        Change priority
-                      </button>
-                    </div>
-                    <p className={row.capacityLimited ? 'capacity-note' : 'small'}>
-                      {row.capacityLimited
-                        ? 'Capacity-limited: escalate to owner'
-                        : row.asInstalled.summary.overflowM3 > 1e-8
-                          ? 'Upkeep opportunity — compare clearing'
-                          : 'No overflow in this scenario'}
-                    </p>
-                    <p className="comparison-difference">{row.capacityLimited ? 'Escalate: still overflows when cleared' : row.asInstalled.summary.overflowM3-row.ifCleared.summary.overflowM3 > 1e-8 ? `Clearing the fault removes ${(row.asInstalled.summary.overflowM3-row.ifCleared.summary.overflowM3).toFixed(3)} m³ of overflow` : 'No overflow to remove in this scenario'}</p>
-                    {row.capacityLimited && Math.abs(row.asInstalled.summary.overflowM3-row.ifCleared.summary.overflowM3)<1e-8 && <p className="small">No difference: capacity-limited</p>}
-                    <div
-                      className="mode-comparison"
-                      aria-label={row.asset + ' overflow comparison'}
-                    >
-                      {[
-                        ['As installed', row.asInstalled],
-                        ['If cleared', row.ifCleared],
-                        ['Capacity limit', row.capacityLimit],
-                      ].map(([name, raw]) => {
-                        const m = raw as TriageRow['asInstalled'];
-                        return (
-                          <div className={"mode-line mode-"+String(name).toLowerCase().replaceAll(" ","-")} key={String(name)}>
-                            <span>{String(name)}</span>
-                            <span className="mode-track">
-                              <span style={{ width: `${(m.summary.overflowM3 / max) * 100}%` }} />
-                            </span>
-                            <strong>{m.summary.overflowM3.toFixed(3)} m³</strong>
-                          </div>
-                        );
-                      })}
-                    </div>
-                    <p className="small">
-                      Peak ponding {(row.asInstalled.summary.peakPondingM * 1000).toFixed(0)} mm ·
-                      Above limit {row.asInstalled.summary.hoursAboveLimit.toFixed(2)} h · {label}
-                    </p>
-                    <p className="small">
-                      Diagnosis hint:{' '}
-                      {hints.data?.[row.asset] ?? 'Review the fault for cited evidence'}
-                    </p>
-                    <div className="fault-chips">
-                      {related.length ? (
-                        related.map((f) => (
-                          <Link className="button" key={f.id} to={'/faults?fault=' + f.id}>
-                            {f.id} · {f.workOrder?.state ?? 'detected'}
-                            {f.workOrder?.assignee ? ' · ' + f.workOrder.assignee : ''}
-                            {(f.workOrder?.state ?? 'detected') === 'detected'
-                              ? ' · Unconfirmed'
-                              : ''}
-                          </Link>
-                        ))
-                      ) : (
-                        <span>No open faults</span>
-                      )}
-                    </div>
-                    <p className="small">
-                      {data.data?.sensors
-                        .filter((s) => s.ownerId === row.asset && s.deviceId)
-                        .map((s) => sensorLabel(s) + ' · ' + s.status)
-                        .join(' / ')}
-                    </p>
-                    <div className="actions">
-                      <button
-                        onClick={() => {
-                          choose(row.asset);
-                          navigate(
-                            `/feature/${row.asset}?stormRunId=${jobId}&mode=installed&part=${related.find((f) => ['confirmed', 'assigned'].includes(f.workOrder?.state ?? ''))?.partId ?? 'inlet'}`,
-                          );
-                        }}
-                      >
-                        Replay in 3D
-                      </button>
-                      <Link
-                        className="button"
-                        to={
-                          row.capacityLimited
-                            ? '/faults?asset=' + row.asset + '&escalate=1'
-                            : '/faults?asset=' + row.asset
-                        }
-                      >
-                        {row.capacityLimited ? 'Escalate to owner' : 'Review work orders'}
-                      </Link>
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
-            {triage.data?.robustness.evaluated && (
-              <details>
-                <summary>Sensitivity orders</summary>
-                <p className="small">{label}</p>
-                <ul>
-                  {triage.data.robustness.orders.map((o) => (
-                    <li key={o.parameter + o.multiplier}>
-                      {o.parameter === 'ks'
-                        ? 'Conductivity'
-                        : o.parameter === 'peak'
-                          ? 'Rainfall peak'
-                          : 'Outlet capacity'}{' '}
-                      × {o.multiplier}: {o.assets.join(' → ')}
-                    </li>
-                  ))}
-                </ul>
-              </details>
-            )}
-          </section>
           <section id="board-replay" className="panel triage-map" ref={mapRef}>
             <div className="panel-heading">
               <div>
-                <h2>Asset locations</h2>
-                <p className="small">
-                  Illustrative asset placement on mapped housing. Typical designs, not surveyed.
-                </p>
+                <h2>Weather &amp; storm view</h2>
               </div>
               <div className="segments">
                 {['3d', 'plan'].map((v) => (
@@ -475,6 +248,157 @@ export default function StormBoard() {
                 ))}
               </div>
             </div>
+            <div className="segments weather-view-switch" aria-label="Map weather source">
+              <button
+                aria-pressed={mode === 'forecast'}
+                onClick={() => {
+                  setMode('forecast');
+                  setLayer('rain');
+                  useSimulation.setState({ playing: false });
+                }}
+              >
+                Weather forecast
+              </button>
+              <button
+                aria-pressed={mode === 'simulator'}
+                onClick={() => {
+                  setMode('simulator');
+                  setLayer('rain');
+                }}
+              >
+                Storm simulator
+              </button>
+            </div>
+            {mode === 'simulator' && (
+              <div className="storm-inputs" aria-labelledby="storm-heading">
+                <div>
+                  <h3 id="storm-heading">Set the storm to compare</h3>
+                  <p>
+                    Entered scenarios help prioritise upkeep before a storm. These rainfall values
+                    are not a forecast.
+                  </p>
+                  <p className="small">
+                    Run storm calculates new results, then plays the rainfall. Watch storm replays
+                    the saved run without recalculating.
+                  </p>
+                </div>
+                <div className="storm-form">
+                  <label className="field">
+                    Rainfall scenario
+                    <SearchableSelect
+                      label="Rainfall scenario"
+                      value={preset}
+                      onChange={(e) => setPreset(e.target.value)}
+                    >
+                      {Object.entries(stormPresets).map(([id, p]) => (
+                        <option key={id} value={id}>
+                          {id[0].toUpperCase() + id.slice(1)} · {p.peakMmHr} mm/h ×{' '}
+                          {p.durationMinutes} min
+                        </option>
+                      ))}
+                      <option value="custom">Custom rainfall</option>
+                    </SearchableSelect>
+                  </label>
+                  {preset === 'custom' && (
+                    <>
+                      <label className="field">
+                        Peak rainfall (mm/h)
+                        <input
+                          type="number"
+                          min="0"
+                          max="300"
+                          value={peak}
+                          onChange={(e) => setPeak(Number(e.target.value))}
+                        />
+                      </label>
+                      <label className="field">
+                        Rain duration (minutes)
+                        <input
+                          type="number"
+                          min="1"
+                          max="180"
+                          step="1"
+                          value={duration}
+                          onChange={(e) => setDuration(Number(e.target.value))}
+                        />
+                      </label>
+                    </>
+                  )}
+                  <button className="primary" disabled={working} onClick={run}>
+                    {working ? 'Calculating…' : 'Run storm'}
+                  </button>
+                  {rainPlayback && !working && <button onClick={watchStorm}>Watch storm</button>}
+                </div>
+                <div className="actions">
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={preview}
+                      onChange={(e) => setPreview(e.target.checked)}
+                    />{' '}
+                    Preview unconfirmed faults
+                  </label>
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={robustness}
+                      onChange={(e) => setRobustness(e.target.checked)}
+                    />{' '}
+                    Check ranking under ±25%
+                  </label>
+                </div>
+                {(error || job.error || triage.error || job.data?.error) && (
+                  <p role="alert">
+                    {error || job.error?.message || triage.error?.message || job.data?.error}
+                  </p>
+                )}
+                <p role="status">
+                  {working
+                    ? pending
+                      ? 'Starting the storm calculation…'
+                      : job.data?.status === 'completed'
+                        ? 'Calculations complete. Preparing the ranking…'
+                        : progress
+                          ? `${progress.completed} of ${progress.total} comparisons complete · ${progress.asset} · ${progress.phase === 'sensitivity' ? `Checking ${parameterNames[progress.parameter!] ?? progress.parameter} at ${Math.round(progress.multiplier! * 100)}%` : modeNames[progress.mode]}`
+                          : job.data?.status === 'queued'
+                            ? 'Queued behind the current storm calculation…'
+                            : 'Starting asset comparisons…'
+                    : rows.length
+                      ? `${rows.length} assets compared. ${triage.data?.robustness.evaluated ? (triage.data.robustness.stable ? 'Ranking stable under ±25%.' : 'Order changes under ±25%.') : 'Sensitivity check not run.'}`
+                      : 'Choose a scenario and run the storm to see the ranking.'}
+                </p>
+                {working && (
+                  <div
+                    className={
+                      'storm-progress' + (progressValue === undefined ? ' is-indeterminate' : '')
+                    }
+                    role="progressbar"
+                    aria-label="Storm calculation progress"
+                    aria-valuemin={0}
+                    aria-valuemax={progressMax}
+                    aria-valuenow={progressValue}
+                  >
+                    <span
+                      aria-hidden="true"
+                      style={{ transform: `scaleX(${(progressValue ?? 0) / progressMax})` }}
+                    />
+                  </div>
+                )}
+                {job.data && (
+                  <p className="small">
+                    Saved run:{' '}
+                    {job.data.input.custom
+                      ? `${job.data.input.custom.peakMmHr} mm/h × ${job.data.input.custom.durationMinutes} min`
+                      : `${job.data.input.preset} preset`}{' '}
+                    ·{' '}
+                    {job.data.input.options.previewUnconfirmed
+                      ? 'Unconfirmed faults included for preview'
+                      : 'Confirmed faults only'}{' '}
+                    · {label}
+                  </p>
+                )}
+              </div>
+            )}
             <div className="scene-toolbar">
               <button
                 aria-pressed={layer === 'rain'}
@@ -486,7 +410,10 @@ export default function StormBoard() {
                 Rainfall layer opacity
                 <input
                   aria-label="Rainfall layer opacity"
-                  type="range" min="0" max="75" step="5"
+                  type="range"
+                  min="0"
+                  max="75"
+                  step="5"
                   value={cloudOpacity}
                   disabled={layer !== 'rain'}
                   onChange={(e) => setCloudOpacity(Number(e.target.value))}
@@ -494,9 +421,72 @@ export default function StormBoard() {
                 <output>{cloudOpacity}%</output>
               </label>
             </div>
-            {!rainPlayback && (
+            {mode === 'simulator' && !rainPlayback && (
               <p className="small rainfall-instant">
-                Rainfall preview · {scenarioPeak} mm/h across all zones. Run a storm to play its timeline. Not live radar.
+                Rainfall preview · {scenarioPeak} mm/h across all zones. Run a storm to play its
+                timeline. Not live radar.
+              </p>
+            )}
+            {mode === 'forecast' && (
+              <div className="forecast-map-controls" aria-label="Map forecast time controls">
+                <label className="forecast-map-day">
+                  Forecast day
+                  <select
+                    aria-label="Map forecast day"
+                    value={forecastDate ?? ''}
+                    disabled={!forecastData}
+                    onChange={(event) => {
+                      setForecastDay(event.target.value);
+                      setLayer('rain');
+                    }}
+                  >
+                    {!forecastData && <option value="">Loading forecast…</option>}
+                    {forecastData?.days.map((day, index) => (
+                      <option key={day.date} value={day.date}>
+                        {weatherCondition(day.code).icon} {index === 0 ? 'Today · ' : ''}
+                        {new Date(day.date + 'T12:00:00+08:00').toLocaleDateString('en-MY', {
+                          timeZone: 'Asia/Kuala_Lumpur',
+                          weekday: 'short',
+                          day: 'numeric',
+                          month: 'short',
+                        })}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <div className="forecast-map-time-picker">
+                  <span className="small">Choose a time · MYT</span>
+                  <div className="forecast-map-times" aria-label="Map forecast time period">
+                    {periods.map((item, index) => (
+                      <button
+                        key={item.key}
+                        aria-pressed={item.key === period?.key}
+                        onClick={() => {
+                          setPeriodIndex(index);
+                          setLayer('rain');
+                        }}
+                      >
+                        <span>{forecastPeriodLabel(item)}</span>
+                        <span className="forecast-time-icon" aria-hidden="true">
+                          {periodCondition(item).icon}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+            {mode === 'forecast' && (
+              <p
+                className="small forecast-map-status"
+                role="status"
+                data-forecast-period={period?.key}
+                data-forecast-rain={forecastRain}
+              >
+                {period
+                  ? `${forecastDate} · ${forecastPeriodLabel(period)} MYT · ${forecastRain === null ? 'Rainfall unavailable' : `${forecastRain.toFixed(2)} mm/h forecast average`}`
+                  : 'Select a forecast period below.'}
+                {impact.impacts ? ' · Labels: estimated peak water' : ''}
               </p>
             )}
             {data.data &&
@@ -508,8 +498,9 @@ export default function StormBoard() {
                   layer={layer}
                   showSensors={false}
                   cloudOpacity={cloudOpacity}
-                  rainPlayback={rainPlayback}
-                  ranks={ranks}
+                  rainPlayback={visiblePlayback}
+                  ranks={mode === 'simulator' ? ranks : undefined}
+                  forecastImpacts={mapImpacts}
                   selectedAsset={selected}
                   onSelectAsset={choose}
                 />
@@ -520,31 +511,251 @@ export default function StormBoard() {
                   layer={layer}
                   showSensors={false}
                   cloudOpacity={cloudOpacity}
-                  rainPlayback={rainPlayback}
+                  rainPlayback={visiblePlayback}
                   reset={0}
-                  ranks={ranks}
+                  ranks={mode === 'simulator' ? ranks : undefined}
+                  forecastImpacts={mapImpacts}
                   selectedAsset={selected}
                   onSelectAsset={choose}
                 />
               ))}
-            {rainPlayback && <StormMapPlayback playback={rainPlayback} />}
+            {visiblePlayback && <StormMapPlayback playback={visiblePlayback} />}
             {layer === 'rain' && (
               <div className="heat-legend" aria-label="Rainfall intensity legend">
                 {radarStops.map((stop) => (
                   <span key={stop.value}>
-                    <i style={{ background: stop.color }} />{stop.label}
+                    <i style={{ background: stop.color }} />
+                    {stop.label}
                   </span>
                 ))}
               </div>
             )}
-            <p className="small">Numbered outlines match the priority list · {label}</p>
+            {mode === 'simulator' && (
+              <p className="small">Numbered outlines match the priority list · {label}</p>
+            )}
             <Link
               className="button"
-              to={'/feature/' + selected + (jobId ? '?stormRunId=' + jobId : '')}
+              to={
+                '/feature/' +
+                selected +
+                (mode === 'simulator' && jobId ? '?stormRunId=' + jobId : '')
+              }
             >
               Inspect {selected}
             </Link>
+            {mode === 'forecast' && (
+              <WeatherForecast
+                data={forecastData}
+                periods={periods}
+                selected={period}
+                impacts={impact.impacts}
+                impactError={impact.error}
+                recordsError={faults.isError || trials.isError}
+                loading={forecast.isPending}
+                error={forecast.isError}
+                retry={() => {
+                  void forecast.refetch();
+                }}
+              />
+            )}
           </section>
+          {mode === 'simulator' && (
+            <section className="panel triage-register">
+              <h2>Upkeep priority</h2>
+              <p className="sub">{label}. Capacity-limited assets need owner review.</p>
+              <p className="small comparison-legend">
+                <span>
+                  <i className="legend-installed" />
+                  As installed
+                </span>
+                <span>
+                  <i className="legend-cleared" />
+                  If cleared
+                </span>
+                <span>
+                  <i className="legend-capacity" />
+                  Capacity limit
+                </span>
+              </p>
+              {!!rows.length &&
+                rows.some(
+                  (row) =>
+                    (faults.data ?? [])
+                      .filter((f) => f.featureId === row.asset && confirmed(f))
+                      .map((f) => f.id)
+                      .sort()
+                      .join() !== [...row.faultIds].sort().join(),
+                ) && (
+                  <p className="notice">
+                    Fault confirmations have changed since this saved run. Run the storm again to
+                    update the comparison.
+                  </p>
+                )}
+              {!rows.length && (
+                <p className="empty-note">
+                  Run the storm to compare As installed, If cleared and Capacity limit for S1, S2,
+                  S3, I1 and the typical roadside inlet R1.
+                </p>
+              )}
+              <div className="triage-rows">
+                {rows.map((row) => {
+                  const related =
+                    faults.data?.filter(
+                      (f) => f.featureId === row.asset && f.status !== 'closed',
+                    ) ?? [];
+                  const max = Math.max(
+                    0.001,
+                    ...[row.asInstalled, row.ifCleared, row.capacityLimit].map(
+                      (m) => m.summary.overflowM3,
+                    ),
+                  );
+                  return (
+                    <article
+                      className={'triage-row' + (selected === row.asset ? ' selected' : '')}
+                      key={row.asset}
+                    >
+                      <div className="panel-heading">
+                        <button
+                          className="triage-asset"
+                          aria-pressed={selected === row.asset}
+                          onClick={() => choose(row.asset)}
+                        >
+                          <span className="rank-number">{row.rank}</span>
+                          <span className="triage-asset-title">
+                            <strong>{row.asset}</strong> ·{' '}
+                            {data.data?.features.find((f) => f.id === row.asset)?.name}
+                          </span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            setOverride(row);
+                            setPosition(row.rank);
+                            setReason('');
+                          }}
+                        >
+                          Change priority
+                        </button>
+                      </div>
+                      <p className={row.capacityLimited ? 'capacity-note' : 'small'}>
+                        {row.capacityLimited
+                          ? 'Capacity-limited: escalate to owner'
+                          : row.asInstalled.summary.overflowM3 > 1e-8
+                            ? 'Upkeep opportunity — compare clearing'
+                            : 'No overflow in this scenario'}
+                      </p>
+                      <p className="comparison-difference">
+                        {row.capacityLimited
+                          ? 'Escalate: still overflows when cleared'
+                          : row.asInstalled.summary.overflowM3 - row.ifCleared.summary.overflowM3 >
+                              1e-8
+                            ? `Clearing the fault removes ${(row.asInstalled.summary.overflowM3 - row.ifCleared.summary.overflowM3).toFixed(3)} m³ of overflow`
+                            : 'No overflow to remove in this scenario'}
+                      </p>
+                      {row.capacityLimited &&
+                        Math.abs(
+                          row.asInstalled.summary.overflowM3 - row.ifCleared.summary.overflowM3,
+                        ) < 1e-8 && <p className="small">No difference: capacity-limited</p>}
+                      <div
+                        className="mode-comparison"
+                        aria-label={row.asset + ' overflow comparison'}
+                      >
+                        {[
+                          ['As installed', row.asInstalled],
+                          ['If cleared', row.ifCleared],
+                          ['Capacity limit', row.capacityLimit],
+                        ].map(([name, raw]) => {
+                          const m = raw as TriageRow['asInstalled'];
+                          return (
+                            <div
+                              className={
+                                'mode-line mode-' + String(name).toLowerCase().replaceAll(' ', '-')
+                              }
+                              key={String(name)}
+                            >
+                              <span>{String(name)}</span>
+                              <span className="mode-track">
+                                <span style={{ width: `${(m.summary.overflowM3 / max) * 100}%` }} />
+                              </span>
+                              <strong>{m.summary.overflowM3.toFixed(3)} m³</strong>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <p className="small">
+                        Peak ponding {(row.asInstalled.summary.peakPondingM * 1000).toFixed(0)} mm ·
+                        Above limit {row.asInstalled.summary.hoursAboveLimit.toFixed(2)} h · {label}
+                      </p>
+                      <p className="small">
+                        Diagnosis hint:{' '}
+                        {hints.data?.[row.asset] ?? 'Review the fault for cited evidence'}
+                      </p>
+                      <div className="fault-chips">
+                        {related.length ? (
+                          related.map((f) => (
+                            <Link className="button" key={f.id} to={'/faults?fault=' + f.id}>
+                              {f.id} · {f.workOrder?.state ?? 'detected'}
+                              {f.workOrder?.assignee ? ' · ' + f.workOrder.assignee : ''}
+                              {(f.workOrder?.state ?? 'detected') === 'detected'
+                                ? ' · Unconfirmed'
+                                : ''}
+                            </Link>
+                          ))
+                        ) : (
+                          <span>No open faults</span>
+                        )}
+                      </div>
+                      <p className="small">
+                        {data.data?.sensors
+                          .filter((s) => s.ownerId === row.asset && s.deviceId)
+                          .map((s) => sensorLabel(s) + ' · ' + s.status)
+                          .join(' / ')}
+                      </p>
+                      <div className="actions">
+                        <button
+                          onClick={() => {
+                            choose(row.asset);
+                            navigate(
+                              `/feature/${row.asset}?stormRunId=${jobId}&mode=installed&part=${related.find((f) => ['confirmed', 'assigned'].includes(f.workOrder?.state ?? ''))?.partId ?? 'inlet'}`,
+                            );
+                          }}
+                        >
+                          Replay in 3D
+                        </button>
+                        <Link
+                          className="button"
+                          to={
+                            row.capacityLimited
+                              ? '/faults?asset=' + row.asset + '&escalate=1'
+                              : '/faults?asset=' + row.asset
+                          }
+                        >
+                          {row.capacityLimited ? 'Escalate to owner' : 'Review work orders'}
+                        </Link>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+              {triage.data?.robustness.evaluated && (
+                <details>
+                  <summary>Sensitivity orders</summary>
+                  <p className="small">{label}</p>
+                  <ul>
+                    {triage.data.robustness.orders.map((o) => (
+                      <li key={o.parameter + o.multiplier}>
+                        {o.parameter === 'ks'
+                          ? 'Conductivity'
+                          : o.parameter === 'peak'
+                            ? 'Rainfall peak'
+                            : 'Outlet capacity'}{' '}
+                        × {o.multiplier}: {o.assets.join(' → ')}
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              )}
+            </section>
+          )}
         </div>
       </QueryState>
       {override && (

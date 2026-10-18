@@ -19,7 +19,7 @@ export default function AssetList({
       ? 'Houses'
       : id.startsWith('B-')
         ? 'Batches'
-        : /^[SIT]\d$/.test(id)
+        : /^[SITR]\d+$/.test(id)
           ? 'Drainage'
           : 'Site';
   const item = (i: { id: string; detail: string }) => (
