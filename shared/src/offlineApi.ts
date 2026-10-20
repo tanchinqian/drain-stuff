@@ -150,6 +150,10 @@ export function createOfflineApi(
       overrides.push({ ...input, id: key, actor, t: now() });
       return { ok: true, id: key };
     }
+    if (p[0] === 'ai' && p[1] === 'fault-chat') {
+      if (method === 'GET') return { available: false, model: 'Ollama', message: 'Connect to the local backend to use the fault chatbot.' };
+      throw new Error('Connect to the local backend to use the fault chatbot.');
+    }
     if (method === "GET" && p[0] === "weather") return { available: false };
     if (p[0] === "faults" && p[2] === "audit" && method === "GET") {
       const fault = store.snapshot().faults.find((f) => f.id === p[1]);

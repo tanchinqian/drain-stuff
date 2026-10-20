@@ -32,8 +32,8 @@ const steps = [
     caption: 'Inspect the sediment sock and review the draft, safety-first repair steps.',
   },
   {
-    path: '/about',
-    caption: 'Close with the evidence gap, feature-scale limits and scheduled re-tests.',
+    path: '/faults',
+    caption: 'Review the recorded faults and ask the assistant about their sensor evidence.',
   },
 ];
 export default function DemoWalkthrough() {

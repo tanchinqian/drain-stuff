@@ -11,6 +11,9 @@ export const serverEnv = z
       .default("none"),
     LLM_API_KEY: z.string().optional(),
     LLM_MODEL: z.string().optional(),
+    OLLAMA_BASE_URL: z.string().url().default('http://127.0.0.1:11434'),
+    OLLAMA_MODEL: z.string().trim().min(1).default('llama3.2:latest'),
+    OLLAMA_API_KEY: z.string().optional(),
     LLM_BASE_URL: z.preprocess(
       (v) => (v === "" ? undefined : v),
       z.string().url().optional(),

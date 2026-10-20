@@ -1,4 +1,6 @@
 import { Hono } from "hono";
+import { createFaultChat, FaultChatError, type OllamaConfig } from './faultChat';
+import { faultChatInput } from '../../shared/src/faultChat';
 import { forecastUrl, parseForecast, type ForecastResponse } from "../../shared/src/forecast";
 import { cors } from "hono/cors";
 import { bodyLimit } from "hono/body-limit";
@@ -43,6 +45,8 @@ import { deviceApi } from "./iot";
 import { createDiagnosisService, type ProviderConfig } from "./diagnosis";
 import { buildParts } from "../../shared/src/api/parts";
 export interface ApiOptions {
+  ollama?: OllamaConfig;
+  ollamaFetch?: typeof fetch;
   llm?: ProviderConfig;
   diagnosisFetch?: typeof fetch;
   deviceSecret?: string;
@@ -112,6 +116,7 @@ export function createApi(repo: Repository, options: ApiOptions) {
     options.llm ?? { provider: "none" },
     options.diagnosisFetch,
   );
+  const faultChat = createFaultChat(options.ollama ?? { baseUrl: 'http://127.0.0.1:11434', model: 'llama3.2:latest' }, options.ollamaFetch);
   const iot = deviceApi(repo, {
     device: options.deviceSecret,
     simulated: options.simSecret,
@@ -138,6 +143,16 @@ export function createApi(repo: Repository, options: ApiOptions) {
         );
     }
     await next();
+  });
+  app.get('/api/v1/ai/fault-chat/status', async c => c.json(await faultChat.status()));
+  app.post('/api/v1/ai/fault-chat', async c => {
+    const input = faultChatInput.parse(await c.req.json());
+    const saved = input.diagnosisId ? repo.sql.prepare("SELECT body FROM suggestions WHERE id=?").get(input.diagnosisId) as {body: string} | undefined : undefined;
+    return c.json(await faultChat.answer(repo.load(), input, {
+      cases: repo.jsonRows<CaseRecord>("cases"),
+      guidance: repo.jsonRows<GuidanceRecord>("guidance"),
+      diagnosis: saved ? JSON.parse(saved.body) : undefined,
+    }));
   });
   const runOrThrow = (id: string, statusOnly = false) => {
     const run = queue.get(id, statusOnly);
@@ -800,6 +815,8 @@ export function createApi(repo: Repository, options: ApiOptions) {
         },
         422,
       );
+    if (error instanceof FaultChatError)
+      return c.json({ error: { code: 'OLLAMA_UNAVAILABLE', message: error.message } }, error.status);
     if (error instanceof ApiError)
       return c.json(
         { error: { code: "REQUEST_ERROR", message: error.message } },

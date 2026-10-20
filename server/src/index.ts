@@ -18,6 +18,7 @@ if (env.LLM_PROVIDER === 'none' || !env.LLM_API_KEY || !env.LLM_MODEL)
   }));
 const repo = new Repository(env.DB_PATH);
 const api = createApi(repo, {
+  ollama: { baseUrl: env.OLLAMA_BASE_URL, model: env.OLLAMA_MODEL, key: env.OLLAMA_API_KEY },
   llm:{provider:env.LLM_PROVIDER,key:env.LLM_API_KEY,model:env.LLM_MODEL,baseUrl:env.LLM_BASE_URL},
   deviceSecret:env.LORAWAN_INGEST_SECRET,simSecret:env.LORAWAN_SIM_SECRET,
   seed: env.SEED_DEMO === "1",
