@@ -41,12 +41,6 @@ export default function SearchableSelect({
   const [open, setOpen] = useState(false),
     [active, setActive] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
-  if (options.length < 8)
-    return (
-      <select {...props} aria-label={props['aria-label'] ?? label} onChange={onChange}>
-        {children}
-      </select>
-    );
   const matches = options.filter((o) => o.label.toLowerCase().includes(query.toLowerCase()));
   const selected = options.find((o) => o.value === String(props.value));
   const choose = (value: string) => {
@@ -75,6 +69,9 @@ export default function SearchableSelect({
         value={open ? query : (selected?.label ?? '')}
         disabled={props.disabled}
         onFocus={() => {
+          document
+            .querySelectorAll('details[name="record-table-menu"][open]')
+            .forEach((menu) => menu.removeAttribute('open'));
           setOpen(true);
           setQuery('');
           setActive(0);
@@ -86,6 +83,7 @@ export default function SearchableSelect({
         }}
         onKeyDown={(e) => {
           if (e.key === 'Escape') {
+            if (open) { e.stopPropagation(); e.preventDefault(); }
             setOpen(false);
             setQuery('');
           }

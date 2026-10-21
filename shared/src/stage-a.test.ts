@@ -1,0 +1,106 @@
+import { expect, test } from "vitest";
+import { faultConfig, boardConfig, confirmed } from "./physics/faults";
+import { generateMock } from "./api/mock/seed";
+import { retrieve } from "./retrieval";
+import { runStorm } from "./physics/triage";
+import { drainDesign } from './physics/design';
+import { buildParts } from './api/parts';
+import { simulatePhysics } from './physics/engine';
+test('replay geometry parts and saved configs agree; sensor faults do not alter water', () => {
+  for(const id of ['S1','S2','S3','I1','R1']) expect(drainDesign(boardConfig(id)).parts).toEqual(buildParts(id,[],[]).map(p=>p.partId));
+  const original = boardConfig('S1'); original.values.recovery.value=0;
+  const f = {...generateMock().faults[0],workOrder:{state:'confirmed' as const}};
+  const a = simulatePhysics(faultConfig(original,[f],'installed'));
+  const b = simulatePhysics(faultConfig(original,[f],'cleared'));
+  expect(a.frames.map(f=>f.ponding)).not.toEqual(b.frames.map(f=>f.ponding));
+  for(const fault of [{...f,type:'sensor_suspect' as const},{...f,workOrder:{state:'detected' as const}}]) expect(faultConfig(original,[fault],'installed')).toEqual(faultConfig(original,[fault],'cleared'));
+});
+const state = generateMock(),
+  base = boardConfig("S1");
+test('demo board has calculated fixable, capacity-limited and clear scenarios', () => {
+  const input = {preset:'heavy' as const, assets:['S1','S2','S3','I1','R1'] as const, options:{robustness:false,previewUnconfirmed:false,recoveryMinutes:360}};
+  const rows = runStorm({...input,assets:[...input.assets]}, state.faults, state.trials).rows;
+  const s1 = rows.find(r=>r.asset==='S1')!;
+  expect(s1.asInstalled.summary.overflowM3).toBeGreaterThan(0.4);
+  expect(s1.ifCleared.summary.overflowM3).toBe(0);
+  expect(rows.find(r=>r.asset==='S2')!.capacityLimited).toBe(true);
+  expect(rows.find(r=>r.asset==='R1')!.asInstalled.summary.overflowM3).toBe(0);
+  for(const r of rows) expect(r.asInstalled.summary.maxRelativeError).toBeLessThan(1e-5);
+}, 20000);
+test("confirmation, upkeep and sensor faults map only to configured effects", () => {
+  const f = {
+    ...state.faults[0],
+    featureId: "S1",
+    partId: "inlet" as const,
+    type: "blockage" as const,
+    workOrder: { state: "detected" as const },
+  };
+  expect(confirmed(f)).toBe(false);
+  expect(faultConfig(base, [f], "installed")).toEqual(base);
+  const checked = { ...f, workOrder: { state: "confirmed" as const } };
+  expect(faultConfig(base, [checked], "installed").values.inletOpen.value).toBe(
+    0.1,
+  );
+  expect(faultConfig(base, [checked], "cleared")).toEqual(base);
+  expect(
+    faultConfig(base, [{ ...checked, type: "sensor_suspect" }], "installed"),
+  ).toEqual(base);
+  expect(
+    faultConfig(base, [{ ...checked, type: "sensor_offline" }], "installed"),
+  ).toEqual(base);
+  expect(faultConfig(base, [checked], "capacity")).toEqual(base);
+});
+test("retrieval is deterministic, structured and source preserving", () => {
+  const item = {
+    id: "c1",
+    assetType: "inlet",
+    part: "inlet",
+    ruleId: "R",
+    symptoms: "debris at inlet",
+    sensorFlags: [],
+    cause: "debris",
+    stepsTaken: [],
+    outcome: "checked",
+    sourceLabel: "Guidance-based example",
+    sourceUrl: "https://example.org/source",
+    createdBy: "test",
+  };
+  const matches = retrieve(
+    {
+      text: "inlet debris",
+      assetType: "inlet",
+      part: "inlet",
+      ruleId: "R",
+      sensorFlags: [],
+    },
+    [item],
+  );
+  expect(matches[0].item.sourceUrl).toBe(item.sourceUrl);
+  expect(matches[0].score).toBeGreaterThan(10);
+});
+test("typical asset uses existing inlet engine and robustness performs six perturbations", () => {
+  expect(boardConfig("R1").kind).toBe("inlet");
+  const run = runStorm(
+    {
+      custom: { peakMmHr: 20, durationMinutes: 1 },
+      assets: ["R1"],
+      options: {
+        robustness: true,
+        previewUnconfirmed: false,
+        recoveryMinutes: 0,
+      },
+    },
+    [],
+  );
+  expect(run.robustness.orders).toHaveLength(6);
+  expect(run.rows[0].asInstalled.summary.maxRelativeError).toBeLessThan(1e-6);
+});
+
+test('server and browser share the same recorded-test conductivity input', () => {
+ const trial=structuredClone(state.trials.find((t)=>t.featureId==='S1')!);
+ trial.tests=[{t:'2026-10-16T00:00:00.000Z',phase:'retest',metric:'infiltration_mm_hr',value:7,unit:'mm/h',pointId:'S1-P1',n:2}];
+ const run=runStorm({custom:{peakMmHr:20,durationMinutes:1},assets:['S1'],options:{robustness:false,previewUnconfirmed:false,recoveryMinutes:0}},[],[trial]);
+ for(const mode of [run.rows[0].asInstalled,run.rows[0].ifCleared,run.rows[0].capacityLimit]){
+  expect(mode.config.values.ks.value).toBe(7/3.6e6);expect(mode.config.values.ks.source).toBe('trial-record');expect(mode.config.sampleCount).toBe(2);
+ }
+});

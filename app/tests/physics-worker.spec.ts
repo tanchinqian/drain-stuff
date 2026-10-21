@@ -37,5 +37,5 @@ test('physics worker runs independently and returns a balanced deterministic res
   );
   expect(result.ok).toBe(true);
   expect(result.error).toBeLessThan(1e-6);
-  expect(result.frames).toBeGreaterThan(100);
+  expect(result.frames).toBe((config.values.duration.value + config.values.recovery.value) / 60 + 1);
 });

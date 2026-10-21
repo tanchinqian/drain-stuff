@@ -21,11 +21,6 @@ export default function PhysicsControls({ ownerId }: { ownerId: string }) {
     return () => q.removeEventListener('change', change);
   }, []);
   const state = useSimulation.getState();
-  useEffect(() => {
-    if (!run) return;
-    const peak = peakFrame(run);
-    useSimulation.getState().seek(peak.second);
-  }, [run]);
   return (
     <div
       className="physics-playback"
@@ -37,7 +32,7 @@ export default function PhysicsControls({ ownerId }: { ownerId: string }) {
           {error} <button onClick={state.retry}>Retry model</button>
         </p>
       ) : busy ? (
-        <p role="status">Calculating all six feature models…</p>
+        <p role="status">Calculating feature models…</p>
       ) : null}
       <div className="actions">
         {!!config?.values.tailwater.value && (

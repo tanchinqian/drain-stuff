@@ -136,6 +136,10 @@ components:
 ---
 # Design System: Drain Trial Console
 
+## Round 9 scene material exception
+
+On 18 October 2026 the owner approved realistic colours for the drainage scenes: mineral soil, dark mulch, varied gravel, muted planting, asphalt/concrete, and depth-tinted water. This exception applies inside the 3D canvas and its section drawing. Interface chrome, Archivo typography and the approved radar palette retain this design system. Scene highlights follow part geometry with thin neutral edges; no glow or opaque fault frames. Every scene retains the typical-design, not-surveyed disclosure. Asset provenance is listed in `docs/ASSETS.md`.
+
 ## Overview
 
 **Creative North Star: "Map desk"**
@@ -264,3 +268,8 @@ All six feature links and labelled pins provide destinations. Only pilot houses 
 - **Don't** make colour the sole indicator of status or selection.
 - **Don't** restore movable map houses, particle droplets or the persistent data badge.
 - **Don't** present schematic geometry, generated records or model scenarios as surveyed/calibrated evidence.
+
+
+## Round 7 model visibility
+
+Feature models use Cutaway by default, an inlet-side camera and a canvas at least 60vh tall. Fault colour is reserved for thin selected/Troubleshoot geometry edges and fault annotations; it never colours rain. Neutral streaks extend around the contextual road/roof edges. Soil's local S=.5 contour and allocation-depth band supplement the warm-dry/cool-dark saturation response. The shared screen-space annotation layout permits three labels, with leaders and selection priority; dimensions start off. Stage labels include L/min. Debug exposes FPS and current adaptive quality. Existing UI and radar tokens remain unchanged.

@@ -2,7 +2,9 @@ import * as THREE from 'three';
 import type { PartId } from '../api/types';
 import type { PhysicsConfig } from '../simulation/physics/config';
 import { cadKit, palette, type ModelGroups } from './geometry';
-import { drainDesign } from '../simulation/physics/design';
+import { drainDesign, terrainHeight } from '../simulation/physics/design';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { sceneColours, surfaceMaps, variation } from './sceneMaterials';
 
 export function channelPrism(length: number, width: number, depth: number, side = 0) {
   const shape = new THREE.Shape();
@@ -53,11 +55,72 @@ function hatch(kind: 'soil' | 'sand' | 'gravel' | 'mulch' | 'concrete', color: n
   texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
   texture.repeat.set(3, 1);
   texture.colorSpace = THREE.SRGBColorSpace;
+  texture.userData.surface = kind;
   return texture;
 }
 function finish(groups: ModelGroups) {
   Object.values(groups).forEach((g) => {
-    if (g) g.userData.localBounds = new THREE.Box3().setFromObject(g);
+    if (!g) return;
+    // Merge disjoint solids by material within each selectable part, retaining closed faces for stencil caps.
+    const buckets = new Map<
+      string,
+      THREE.Mesh<THREE.BufferGeometry, THREE.MeshStandardMaterial>[]
+    >();
+    for (const object of [...g.children]) {
+      if (
+        !(object instanceof THREE.Mesh) ||
+        object instanceof THREE.InstancedMesh ||
+        !(object.material instanceof THREE.MeshStandardMaterial) ||
+        object.userData.sectionFace
+      )
+        continue;
+      const m = object.material,
+        key = [m.color.getHex(), m.map?.userData.surface ?? m.map?.uuid ?? '', m.opacity].join(':');
+      const rows = buckets.get(key) ?? [];
+      rows.push(object);
+      buckets.set(key, rows);
+    }
+    for (const rows of buckets.values()) {
+      if (rows.length < 2) continue;
+      const parts = rows.map((mesh) => {
+        mesh.updateMatrix();
+        const geometry = mesh.geometry.clone().applyMatrix4(mesh.matrix);
+        return geometry.index ? geometry.toNonIndexed() : geometry;
+      });
+      const merged = mergeGeometries(parts);
+      parts.forEach((p) => p.dispose());
+      if (!merged) continue;
+      const mesh = new THREE.Mesh(merged, rows[0].material);
+      mesh.castShadow = mesh.receiveShadow = true;
+      for (const old of rows) {
+        g.remove(old);
+        old.geometry.dispose();
+        old.children.forEach((line) => {
+          if (line instanceof THREE.LineSegments) {
+            line.geometry.dispose();
+            (line.material as THREE.Material).dispose();
+          }
+        });
+        if (old !== rows[0]) {
+          old.material.map?.dispose();
+          old.material.normalMap?.dispose();
+          old.material.dispose();
+        }
+      }
+      mesh.add(
+        new THREE.LineSegments(
+          new THREE.EdgesGeometry(merged, 35),
+          new THREE.LineBasicMaterial({ color: palette.ink3, transparent: true, opacity: 0.45 }),
+        ),
+      );
+      g.add(mesh);
+    }
+    g.traverse((o) => {
+      if (o instanceof THREE.Mesh) {
+        o.castShadow = o.receiveShadow = true;
+      }
+    });
+    g.userData.localBounds = new THREE.Box3().setFromObject(g);
   });
   return groups;
 }
@@ -113,7 +176,8 @@ export function createSwaleGeometry(c: PhysicsConfig): ModelGroups {
       geometry.translate(-l / 2, 0, 0);
       mesh = k.mesh(id, geometry, color, [0, y, 0]);
     } else mesh = k.box(id, [l, depth, w], [0, y, 0], color);
-    mesh.material.map = hatch(kind, color);
+    Object.assign(mesh.material, surfaceMaps(kind, sceneColours[kind]));
+    mesh.material.color.set(0xffffff);
   };
   layer('media', m, -m / 2 - 0.05, 0xc9b28e, 'soil');
   layer('transition', t, -m - t / 2 - 0.05, 0xe8dec6, 'sand');
@@ -155,7 +219,13 @@ export function createSwaleGeometry(c: PhysicsConfig): ModelGroups {
     'pretreat',
     [0.65, 0.04 + v.sediment.value, 1.1],
     [-l / 2 + 0.35, (0.04 + v.sediment.value) / 2, 0],
-    palette.heat2,
+    sceneColours.soil,
+  );
+  Object.assign(
+    k.groups.pretreat!.children[0] instanceof THREE.Mesh
+      ? k.groups.pretreat!.children[0].material
+      : {},
+    surfaceMaps('soil'),
   );
   for (const z of [-0.6, 0.6])
     k.box('pretreat', [0.8, 0.12, 0.06], [-l / 2 + 0.35, 0.06, z], palette.ink3);
@@ -171,7 +241,8 @@ export function createSwaleGeometry(c: PhysicsConfig): ModelGroups {
     0,
   ]);
   sock.rotation.x = Math.PI / 2;
-  sock.material.map = hatch('mulch', palette.heat1);
+  Object.assign(sock.material, surfaceMaps('fabric'));
+  if (v.sockOpen.value < 0.5) sock.material.color.set(palette.ink2);
   for (const x of [-l / 6, l / 6]) k.box('checkdam', [0.08, 0.12, w], [x, 0.06, 0], palette.well);
   const pipeY = bottom + g / 2,
     r = v.pipeDiameter.value / 2;
@@ -202,19 +273,91 @@ export function createSwaleGeometry(c: PhysicsConfig): ModelGroups {
   k.box('outfall', [0.1, 0.8, 1], [l / 2 + 1.45, pipeY + 0.2, 0], palette.well).material.map =
     hatch('concrete', palette.well);
   k.box('liner', [l, 0.012, w], [0, bottom - 0.015, 0], palette.ink3, 0.35);
-  const blades = new THREE.InstancedMesh(
-      new THREE.ConeGeometry(0.015, 0.18, 3),
-      k.mat(0x89774d),
-      60,
-    ),
+  const blade = new THREE.PlaneGeometry(0.045, 0.38, 1, 3);
+  blade.translate(0, 0.19, 0);
+  const positions = blade.getAttribute('position');
+  for (let i = 0; i < positions.count; i++) {
+    const h = positions.getY(i) / 0.38;
+    positions.setX(i, positions.getX(i) * (1 - h * 0.95) + h * h * 0.045);
+  }
+  blade.computeVertexNormals();
+  const material = k.mat(0x667d42),
+    wind = { value: 0 };
+  material.userData.wind = wind;
+  material.onBeforeCompile = (shader) => {
+    shader.uniforms.windTime = wind;
+    shader.vertexShader =
+      'uniform float windTime;\n' +
+      shader.vertexShader.replace(
+        '#include <begin_vertex>',
+        '#include <begin_vertex>\ntransformed.x += sin(windTime * 1.1 + instanceMatrix[3].x * 2.0 + instanceMatrix[3].z) * position.y * position.y * 0.3;',
+      );
+  };
+  const blades = new THREE.InstancedMesh(blade, material, 580),
     obj = new THREE.Object3D();
-  for (let i = 0; i < 60; i++) {
-    obj.position.set((((i * 37) % 61) / 61 - 0.5) * l, 0.14, (((i * 19) % 59) / 59 - 0.5) * w);
-    obj.rotation.z = ((i % 3) - 1) * 0.15;
+  for (let i = 0; i < blades.count; i++) {
+    const across =
+      i < 420
+        ? (variation(i + 99) - 0.5) * w
+        : (i % 2 ? 1 : -1) * (w / 2 + variation(i + 123) * d.sideSlope * crest);
+    obj.position.set((variation(i + 1) - 0.5) * l, 0.002 + terrainHeight(d, across), across);
+    obj.rotation.set(
+      variation(i + 71) * 0.3,
+      variation(i + 3) * Math.PI * 2,
+      (variation(i + 14) - 0.5) * 0.5,
+    );
+    obj.scale.setScalar(0.65 + variation(i + 19) * 0.8);
     obj.updateMatrix();
     blades.setMatrixAt(i, obj.matrix);
+    blades.setColorAt(
+      i,
+      new THREE.Color().setHSL(
+        0.22 + variation(i + 86) * 0.06,
+        0.24 + variation(i + 4) * 0.1,
+        0.27 + variation(i + 11) * 0.12,
+      ),
+    );
   }
+  blades.name = 'tropical-groundcover';
   k.groups.planting!.add(blades);
+  const leaves = new THREE.InstancedMesh(new THREE.SphereGeometry(0.12, 6, 4), k.mat(0x607a40), 48);
+  for (let i = 0; i < leaves.count; i++) {
+    obj.position.set(
+      (variation(i + 501) - 0.5) * l,
+      0.08 + variation(i + 600) * 0.09,
+      (variation(i + 700) - 0.5) * w,
+    );
+    obj.scale.set(0.4, 0.15, 1.4);
+    obj.rotation.set(0.3, variation(i + 800) * 6, 0.5);
+    obj.updateMatrix();
+    leaves.setMatrixAt(i, obj.matrix);
+  }
+  k.groups.planting!.add(leaves);
+  for (const [id, count, kind] of [
+    ['mulch', 120, 'mulch'],
+    ['drainage', 90, 'gravel'],
+  ] as const) {
+    const material = k.mat(kind === 'mulch' ? 0x65503a : 0x8d9387),
+      bits = new THREE.InstancedMesh(
+        kind === 'mulch'
+          ? new THREE.BoxGeometry(0.07, 0.018, 0.025)
+          : new THREE.IcosahedronGeometry(0.045, 1),
+        material,
+        count,
+      );
+    for (let i = 0; i < count; i++) {
+      obj.position.set(
+        (variation(i + 91) - 0.5) * l,
+        id === 'mulch' ? -0.005 : bottom + g - 0.025,
+        (variation(i + 333) - 0.5) * w,
+      );
+      obj.rotation.set(variation(i + 34), variation(i + 22) * 6, variation(i + 55));
+      obj.scale.setScalar(0.65 + variation(i + 123) * 0.8);
+      obj.updateMatrix();
+      bits.setMatrixAt(i, obj.matrix);
+    }
+    k.groups[id]!.add(bits);
+  }
   return finish(k.groups);
 }
 export function createInletGeometry(c: PhysicsConfig): ModelGroups {
@@ -231,12 +374,17 @@ export function createInletGeometry(c: PhysicsConfig): ModelGroups {
     );
   k.box('inlet', [0.1, depth, w], [-l / 2 - 0.05, depth / 2, 0], palette.well);
   k.grate('inlet', 0, depth + 0.02, 0, l, w);
-  k.box(
-    'pretreat',
-    [l, Math.max(0.015, v.sediment.value), w],
-    [0, Math.max(0.015, v.sediment.value) / 2, 0],
-    palette.heat2,
-  );
+  if (v.sediment.value > 0) {
+    k.box('pretreat', [l, v.sediment.value, w], [0, v.sediment.value / 2, 0], sceneColours.soil);
+    const sediment = k.groups.pretreat!.children[0] as THREE.Mesh<
+      THREE.BufferGeometry,
+      THREE.MeshStandardMaterial
+    >;
+    sediment.name = 'chamber-sediment';
+    sediment.userData.sedimentDepth = v.sediment.value;
+    Object.assign(sediment.material, surfaceMaps('soil'));
+    sediment.material.color.set(0xffffff);
+  }
   for (let i = 0; i < 8; i++)
     k.box(
       'sock',

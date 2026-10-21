@@ -1,5 +1,5 @@
 import { useMemo, useEffect } from 'react';
-import { Html, Line } from '@react-three/drei';
+import { Line } from '@react-three/drei';
 import {
   ExtrudeGeometry,
   Shape,
@@ -8,6 +8,9 @@ import {
   MeshStandardMaterial,
   type BufferGeometry,
   type Plane,
+  TubeGeometry,
+  CatmullRomCurve3,
+  Vector3,
 } from 'three';
 import type { PartId } from '../api/types';
 import type { PhysicsConfig } from '../simulation/physics/config';
@@ -16,6 +19,9 @@ import { drainDesign } from '../simulation/physics/design';
 import { channelPrism } from './physicsGeometry';
 import { StormRain, WaterMaterial, Seepage } from './WaterEffects';
 import SectionCaps from './SectionCaps';
+import { flowSpeed } from './visibility';
+import FlowTrace from './FlowTrace';
+import { flowVisual } from './sceneMetrics';
 function FluidCap({
   geometry,
   plane,
@@ -53,11 +59,13 @@ export function PhysicsWater({
   physics,
   plane,
   low = false,
+  record = false,
 }: {
   id: PartId;
   physics: ModelPhysics;
   plane?: Plane;
   low?: boolean;
+  record?: boolean;
 }) {
   const d = drainDesign(physics.config),
     v = physics.config.values,
@@ -90,12 +98,29 @@ export function PhysicsWater({
     g.translate(-pipeLength / 2, 0, 0);
     return g;
   }, [id, fill, r, pipeLength]);
+  const jetGeometry = useMemo(() => {
+    if (id !== 'outfall' || !f || f.flux.outfall <= 0) return;
+    const y = d.pipeY - r + fill * d.pipeDiameter * 0.5;
+    const curve = new CatmullRomCurve3([
+      new Vector3(d.length / 2 + 1.5, y, 0),
+      new Vector3(d.length / 2 + 1.67, y - 0.035, 0),
+      new Vector3(d.length / 2 + 1.75, d.pipeY - r - 0.11, 0),
+    ]);
+    return new TubeGeometry(
+      curve,
+      12,
+      Math.min(r, Math.sqrt(f.flux.outfall / Math.max(0.01, f.pipeVelocity) / Math.PI)),
+      low ? 6 : 12,
+      false,
+    );
+  }, [id, d.length, d.pipeY, r, fill, d.pipeDiameter, f?.flux.outfall, f?.pipeVelocity, low]);
   useEffect(
     () => () => {
       geometry?.dispose();
       pipeGeometry?.dispose();
+      jetGeometry?.dispose();
     },
-    [geometry, pipeGeometry],
+    [geometry, pipeGeometry, jetGeometry],
   );
   if (!f) return null;
   const water = (depth: number, velocity = 0) => (
@@ -119,7 +144,7 @@ export function PhysicsWater({
   if (id === 'ponding')
     return (
       <group>
-        <StormRain physics={physics} low={low} plane={plane} />
+        <StormRain physics={physics} low={low} record={record} plane={plane} />
         {h > 0.000001 && (
           <mesh name="ponded-water" geometry={geometry}>
             {water(h)}
@@ -128,16 +153,51 @@ export function PhysicsWater({
         {h > 0 && plane && geometry && <FluidCap geometry={geometry} plane={plane} order={10000} />}
       </group>
     );
-  if (id === 'media' && physics.amendment)
+  if (id === 'media')
     return (
-      <Html position={[0, -0.05, d.bedWidth / 2 + 0.2]} center>
-        <span className="dimension-label">
-          Compost amended · {(physics.amendment.depth * 1000).toFixed(0)} mm ·{' '}
-          {physics.amendment.dose}
-        </span>
-      </Html>
+      <FlowTrace
+        name="soil-infiltration"
+        q={f.flux.infiltration}
+        velocity={f.flux.infiltration / Math.max(0.001, d.length * d.bedWidth)}
+        low={low}
+        plane={plane}
+        points={[
+          [0, 0, 0],
+          [0, -d.mulchDepth - d.mediaDepth, 0],
+        ]}
+      />
     );
-  if (id === 'drainage') return <Seepage physics={physics} low={low} />;
+  if (id === 'transition')
+    return (
+      <FlowTrace
+        name="transition-flow"
+        q={f.flux.percolation}
+        velocity={f.flux.percolation / Math.max(0.001, d.length * d.bedWidth)}
+        low={low}
+        plane={plane}
+        points={[
+          [0, -d.mulchDepth - d.mediaDepth, 0],
+          [0, d.bottomY + d.gravelDepth, 0],
+        ]}
+      />
+    );
+  if (id === 'drainage')
+    return (
+      <>
+        <Seepage physics={physics} low={low} plane={plane} />
+        <FlowTrace
+          name="gravel-flow"
+          q={f.flux.drain}
+          velocity={f.pipeVelocity}
+          low={low}
+          plane={plane}
+          points={[
+            [0, d.bottomY + d.gravelDepth, 0],
+            [0, d.pipeY, 0],
+          ]}
+        />
+      </>
+    );
   if (id === 'underdrain' || id === 'outfall') {
     const x = id === 'outfall' ? d.length / 2 + 0.75 : 0;
     const tail = Math.max(0, v.tailwater.value - v.outfallInvert.value);
@@ -162,15 +222,7 @@ export function PhysicsWater({
           />
         )}
         {id === 'outfall' && f.flux.outfall > 0 && (
-          <mesh position={[d.length / 2 + 1.65, d.pipeY - 0.08, 0]} rotation={[0, 0, -0.45]}>
-            <cylinderGeometry
-              args={[
-                Math.min(r, Math.sqrt(f.flux.outfall / Math.max(0.01, f.pipeVelocity) / Math.PI)),
-                0.01,
-                0.28,
-                low ? 8 : 16,
-              ]}
-            />
+          <mesh name="outfall-jet" geometry={jetGeometry}>
             {water(0.05, f.pipeVelocity)}
           </mesh>
         )}
@@ -180,22 +232,30 @@ export function PhysicsWater({
               <boxGeometry args={[0.7, tail, 0.9]} />
               {water(tail)}
             </mesh>
-            <Html position={[d.length / 2 + 1.8, d.pipeY + tail + 0.12, 0]}>
-              <span className="dimension-label">
-                Tailwater {tail.toFixed(2)} m{tail >= d.pipeDiameter ? ' · submerged' : ''}
-              </span>
-            </Html>
           </group>
         )}
       </group>
     );
   }
   if (id === 'overflow' && f.flux.overflow > 0)
-    return (
-      <mesh position={[d.length / 2 - 0.5, v.crest.value, -d.bedWidth / 3]}>
+    return h > v.crest.value ? (
+      <mesh name="overflow-spill" position={[d.length / 2 - 0.5, v.crest.value, -d.bedWidth / 3]}>
         <cylinderGeometry args={[0.17, 0.14, Math.max(0.002, h - v.crest.value), 24, 1, true]} />
         {water(Math.max(0.002, h - v.crest.value), f.flux.overflow / (0.32 * 0.01))}
       </mesh>
+    ) : (
+      <group name="overflow-spill">
+        <FlowTrace
+          name="upstream-overflow"
+          q={f.flux.overflow}
+          velocity={flowSpeed(f.flux.overflow)}
+          low={low}
+          points={[
+            [-d.length / 2 - d.catchment.roadWidth - 0.65, d.catchment.kerbHeight, 0],
+            [-d.length / 2 - d.catchment.roadWidth - 0.9, d.catchment.kerbHeight - 0.05, 0],
+          ]}
+        />
+      </group>
     );
   if (id === 'inlet' || id === 'pretreat' || id === 'sock') {
     const level = f.network.find((n) => n.id === 'kerb flow')?.depth ?? 0;
@@ -206,7 +266,7 @@ export function PhysicsWater({
           ? -d.length / 2 + 0.35
           : -d.length / 2 + 0.8;
     const q = f.flux.inlet,
-      width = Math.min(0.9, Math.max(0.02, Math.sqrt(q * 60000) * 0.08));
+      width = flowVisual(q, flowSpeed(q)).width;
     return (
       <group>
         {level > 0 && id === 'inlet' && (
@@ -216,10 +276,29 @@ export function PhysicsWater({
           </mesh>
         )}
         {q > 0 && (
-          <mesh position={[x, Math.max(0.002, h), 0]} rotation={[-Math.PI / 2, 0, 0]}>
-            <planeGeometry args={[id === 'inlet' ? 1.1 : 0.55, width]} />
-            {water(0.005, q / (width * 0.005))}
+          <mesh
+            name="inlet-stream"
+            userData={{ velocity: flowSpeed(q) }}
+            position={[x, Math.max(0.002, h), 0]}
+            rotation={[-Math.PI / 2, 0, 0]}
+          >
+            <planeGeometry args={[id === 'inlet' ? 1.1 : 0.8, width]} />
+            {water(0.005, flowSpeed(q))}
           </mesh>
+        )}
+        {id === 'sock' && (
+          <FlowTrace
+            name="bed-surface-flow"
+            q={q}
+            velocity={flowSpeed(q)}
+            low={low}
+            plane={plane}
+            points={[
+              [x, Math.max(0.004, h), 0],
+              [-d.length / 4, Math.max(0.004, h), 0],
+              [0, Math.max(0.004, h), 0],
+            ]}
+          />
         )}
       </group>
     );
@@ -256,9 +335,6 @@ export function DimensionLines({ config }: { config: PhysicsConfig }) {
           color="#5e564b"
         />
       ))}
-      <Html position={[0, bottom - 0.24, z]} center>
-        <span className="dimension-label">{l.toFixed(2)} m</span>
-      </Html>
       <Line
         points={[
           [l / 2 + 0.25, top, -w / 2],
@@ -266,9 +342,6 @@ export function DimensionLines({ config }: { config: PhysicsConfig }) {
         ]}
         color="#5e564b"
       />
-      <Html position={[l / 2 + 0.3, (top + bottom) / 2, -w / 2]}>
-        <span className="dimension-label">{(top - bottom).toFixed(2)} m</span>
-      </Html>
       <Line
         points={[
           [-l / 2, 0, -w / 2],
@@ -276,9 +349,6 @@ export function DimensionLines({ config }: { config: PhysicsConfig }) {
         ]}
         color="#5e564b"
       />
-      <Html position={[-l / 2 - 0.6, 0, -w / 2]} center>
-        <span className="dimension-label">RL 0.00 m</span>
-      </Html>
     </group>
   );
 }

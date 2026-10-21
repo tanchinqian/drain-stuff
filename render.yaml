@@ -1,0 +1,27 @@
+# Optional hosting template. Local dev:all is the Stage A delivery target.
+# Persistent disks require a compatible paid plan; no service is created automatically.
+services:
+  - type: web
+    name: drain-console
+    runtime: docker
+    plan: starter
+    healthCheckPath: /health
+    disk:
+      name: drain-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: DB_PATH
+        value: /var/data/drain.sqlite
+      - key: HOST
+        value: 0.0.0.0
+      - key: SEED_DEMO
+        value: '1'
+      - key: CORS_ORIGIN
+        value: ''
+      - key: LLM_PROVIDER
+        value: none
+      - key: LLM_API_KEY
+        sync: false
+      - key: LLM_MODEL
+        sync: false

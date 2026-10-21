@@ -11,28 +11,13 @@ test('wheel zoom stays relative to the fitted scene and resets at both viewport 
     { width: 360, height: 900 },
   ]) {
     await page.setViewportSize(viewport);
-    for (const path of ['/', '/feature/S1', '/batches/B-01']) {
+    for (const path of ['/observations', '/feature/S1', '/batches/B-01']) {
       await page.goto(path);
       const scene = page.locator('.scene');
       await expect(scene.locator('canvas')).toBeVisible();
-      if (path !== '/') await page.getByRole('button', { name: 'Debug', exact: true }).click();
-      const first = scene
-        .locator('.scene-label')
-        .filter({ hasText: path === '/' ? /^S1$/ : /^Filter media$|^Compost bay \/ pile$/ });
-      const second = scene
-        .locator('.scene-label')
-        .filter({ hasText: path === '/' ? /^S3$/ : /^Outlet to drain network$|^Rain gauge$/ });
-      await expect(first).toBeVisible();
-      await expect(second).toBeVisible();
-      await page.evaluate(() => document.fonts.ready);
-      const spread = async () => {
-        const [a, b] = await Promise.all([first.boundingBox(), second.boundingBox()]);
-        if (!a || !b) throw new Error('Scene labels are unavailable');
-        return Math.hypot(
-          a.x + a.width / 2 - b.x - b.width / 2,
-          a.y + a.height / 2 - b.y - b.height / 2,
-        );
-      };
+      if (path !== '/observations') await page.getByRole('button', { name: 'Debug', exact: true }).click();
+      const spread = async () => Number(await scene.locator('canvas').getAttribute('data-camera-zoom'));
+      await expect.poll(spread).toBeGreaterThan(0);
       const initial = await spread();
       const wheel = async (delta: number, count = 1) => {
         await scene.scrollIntoViewIfNeeded();

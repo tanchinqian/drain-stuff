@@ -3,7 +3,10 @@ import FlowStrip from './FlowStrip';
 import PhysicsControls from './PhysicsControls';
 import PhysicsSection from './PhysicsSection';
 import SearchableSelect from './SearchableSelect';
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useState, type ReactNode } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import type { StormResult } from '../../../shared/src/contract';
+import { useSceneCuts } from '../three/sceneCuts';
 import { useSearchParams } from 'react-router-dom';
 import type { Config, Fault, Part, PartId, Sensor } from '../api/types';
 import { legacyParts } from '../api/modelCatalog';
@@ -12,7 +15,11 @@ import { useSelection } from '../state';
 import DrainScene, { type Assembly, type Offsets, type ViewMode } from '../three/DrainScene';
 import PartPanel from './PartPanel';
 import SensorPositions from './SensorPositions';
-import { AssemblyControls, PartControls } from './ModelControls';
+import { AssemblyControls, AssemblyModes, PartControls } from './ModelControls';
+import SectionCutControls from './SectionCutControls';
+import { cutRange, type CutAxis, type CameraPreset } from '../three/sceneMetrics';
+import { drainDesign } from '../simulation/physics/design';
+import { confirmed } from '../../../shared/src/physics/faults';
 export default function ModelWorkspace({
   ownerId,
   parts: sourceParts,
@@ -42,10 +49,33 @@ export default function ModelWorkspace({
     [sourceParts, sensors],
   );
   const [flat, setFlat] = useState(false),
-    [dimensionsVisible, setDimensionsVisible] = useState(true);
+    [dimensionsVisible, setDimensionsVisible] = useState(false);
+  const [inspectionActive, setInspectionActive] = useState(kind === 'compost');
+  const [cameraPreset, setCameraPreset] = useState<CameraPreset>('default');
+  const initialCut = useMemo(() => {
+    try {
+      const v = JSON.parse(sessionStorage.getItem('drain-cut-' + ownerId) ?? 'null');
+      return v && ['X', 'Y', 'Z'].includes(v.axis) && Number.isFinite(v.position)
+        ? v
+        : { axis: 'X', position: 0 };
+    } catch {
+      return { axis: 'X', position: 0 };
+    }
+  }, [ownerId]);
+  const [cutActive, setCutActive] = useState(false),
+    [sampleDepth, setSampleDepth] = useState<number>(),
+    [sampleAcross, setSampleAcross] = useState<number>();
+  const [recordQuality, setRecordQuality] = useState(false);
+  const [quality, setQuality] = useState('High');
   const [lowQuality, setLowQuality] = useState(false);
 
   const [params] = useSearchParams();
+  const queryClient = useQueryClient();
+  const replay = queryClient.getQueryData<{ result?: StormResult }>([
+    'storm-job',
+    params.get('stormRunId'),
+  ]);
+  const savedFaults = replay?.result?.rows.find((row) => row.asset === ownerId)?.faultIds;
   const [showSensors, setShowSensors] = useState(false);
   const [partSearch, setPartSearch] = useState('');
   const select = useSelection((s) => s.selectPart),
@@ -53,16 +83,44 @@ export default function ModelWorkspace({
   const [mode, setMode] = useState<ViewMode>('Operator'),
     [assembly, setAssembly] = useState<Assembly>(physics ? 'section' : 'exploded'),
     [explode, setExplode] = useState(65),
-    [cutAxis, setCutAxis] = useState<'X' | 'Y' | 'Z'>(physics ? 'Z' : 'X'),
-    [cutPosition, setCutPosition] = useState(0),
+    [cutAxis, setCutAxis] = useState<CutAxis>(initialCut.axis),
+    [cutPosition, setCutPosition] = useState(initialCut.position as number),
     [offsets, setOffsets] = useState<Offsets>({}),
     [move, setMove] = useState(false),
     [isolate, setIsolate] = useState(false),
     [hidden, setHidden] = useState<PartId[]>([]),
     [labels, setLabels] = useState(true),
     [wireframe, setWireframe] = useState(false),
-    [edges, setEdges] = useState(true),
+    [edges, setEdges] = useState(!physics),
     [reset, setReset] = useState(0);
+  useLayoutEffect(() => {
+    if (!physics) return;
+    useSceneCuts.getState().remember(ownerId, cutAxis, cutPosition);
+    try {
+      sessionStorage.setItem(
+        'drain-cut-' + ownerId,
+        JSON.stringify({ axis: cutAxis, position: cutPosition }),
+      );
+    } catch {
+      /* Session memory remains usable when storage is unavailable. */
+    }
+  }, [ownerId, cutAxis, cutPosition, !!physics]);
+  const changeCut = (value: number) => {
+    setCutPosition(value);
+    setAssembly('section');
+  };
+  const changeAxis = (axis: CutAxis) => {
+    setCutAxis(axis);
+    if (physics) {
+      const [min, max] = cutRange(
+        drainDesign(physics.config),
+        axis,
+        physics.config.kind === 'inlet',
+      );
+      setCutPosition((p) => Math.max(min, Math.min(max, p)));
+    }
+    setAssembly('section');
+  };
   useEffect(() => {
     const requested = params.get('part') ?? '';
     select(
@@ -70,6 +128,7 @@ export default function ModelWorkspace({
         parts.find((p) => p.installed && p.status !== 'ok')?.partId ??
         parts.find((p) => p.installed)!.partId,
     );
+    setInspectionActive(kind === 'compost' || !!params.get('part'));
     setOffsets({});
     setHidden([]);
     setIsolate(false);
@@ -108,13 +167,19 @@ export default function ModelWorkspace({
   const part = parts.find((p) => p.partId === selected);
   if (!part) return null;
   return (
-    <div className={'model-workspace ' + (kind === 'compost' ? 'compost-model' : '')}>
+    <div
+      id="feature-parts"
+      className={'model-workspace ' + (kind === 'compost' ? 'compost-model' : '')}
+    >
       <div className="field mobile-part-picker">
         <span>Model part</span>
         <SearchableSelect
           label="Model part"
           value={selected}
-          onChange={(e) => select(e.target.value as PartId)}
+          onChange={(e) => {
+            select(e.target.value as PartId);
+            setInspectionActive(true);
+          }}
         >
           {parts.map((p) => (
             <option key={p.partId} value={p.partId}>
@@ -135,7 +200,7 @@ export default function ModelWorkspace({
           />
           {!parts.some((p) => p.name.toLowerCase().includes(partSearch.trim().toLowerCase())) && (
             <p className="small" role="status">
-              No matching parts.
+              No matching parts; clear the search to show the assembly.
             </p>
           )}
           {parts
@@ -152,7 +217,10 @@ export default function ModelWorkspace({
                     : undefined
                 }
                 aria-pressed={selected === p.partId}
-                onClick={() => select(p.partId)}
+                onClick={() => {
+                  select(p.partId);
+                  setInspectionActive(true);
+                }}
               >
                 <span className={'status-mark ' + p.status} />
                 {p.name}
@@ -160,8 +228,11 @@ export default function ModelWorkspace({
               </button>
             ))}
         </aside>
-        <section className="panel model-card">
+        <section className="panel model-card" id="feature-replay">
           <div className="model-mode">
+            {physics && mode === 'Debug' && (
+              <output className="quality-status">{lowQuality ? 'Low' : quality} quality</output>
+            )}
             <div className="segments">
               {(['Operator', 'Debug', 'Troubleshoot'] as const).map((value) => (
                 <button
@@ -179,17 +250,86 @@ export default function ModelWorkspace({
             </div>
           </div>
 
+          <AssemblyModes {...controlProps} />
+          {physics && <p className="small">Typical design, not surveyed</p>}
+          {physics && (
+            <div className="camera-presets">
+              <SearchableSelect
+                label="Camera preset"
+                value={cameraPreset === 'default' ? 'drain' : cameraPreset}
+                onChange={(e) => {
+                  const value = e.target.value as CameraPreset;
+                  setCameraPreset(value);
+                  setCutAxis(value === 'inlet' ? 'Y' : 'X');
+                  setCutPosition(
+                    value === 'inlet' ? -physics.config.values.length.value / 2 + 0.25 : 0,
+                  );
+                }}
+              >
+                {[
+                  ['overview', 'Overview'],
+                  ['drain', 'Drain'],
+                  ['inlet', 'Inlet'],
+                ].map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </SearchableSelect>
+              <button
+                onClick={() => {
+                  setCameraPreset('default');
+                  setReset((v) => v + 1);
+                }}
+              >
+                Return to default
+              </button>
+            </div>
+          )}
           {physics && flat ? (
-            <PhysicsSection {...physics} />
+            <PhysicsSection
+              {...physics}
+              cutAxis={cutAxis}
+              cutPosition={cutPosition}
+              onSampleDepth={setSampleDepth}
+              onSampleAcross={setSampleAcross}
+            />
           ) : (
             <DrainScene
               physics={physics}
+              cameraPreset={cameraPreset}
+              recordQuality={recordQuality}
+              cutActive={cutActive}
+              onCutChange={changeCut}
+              onSectionSample={(depth, across) => {
+                setSampleDepth(depth);
+                setSampleAcross(across);
+              }}
+              physicalFaults={
+                params.get('mode') === 'cleared'
+                  ? []
+                  : faults
+                      .filter(
+                        (f) =>
+                          f.featureId === ownerId &&
+                          !f.id.startsWith('SIM-') &&
+                          !['sensor_suspect', 'sensor_offline'].includes(f.type) &&
+                          (savedFaults ? savedFaults.includes(f.id) : confirmed(f)),
+                      )
+                      .map((f) => f.partId)
+              }
+              inspectionActive={inspectionActive}
+              onInspect={(id) => {
+                setInspectionActive(!!id);
+                if (id) select(id);
+              }}
+              onPerformance={(_, value) => setQuality(value)}
               lowQuality={lowQuality}
               dimensionsVisible={dimensionsVisible}
               featureId={ownerId}
               kind={kind}
               dimensions={config.schematic}
-              sensors={sensors}
+              sensors={sensors.filter((s) => kind === 'compost' || !!s.deviceId)}
               showSensors={showSensors}
               parts={parts}
               mode={mode}
@@ -210,22 +350,36 @@ export default function ModelWorkspace({
               reset={reset}
             />
           )}
+          {physics && (
+            <SectionCutControls
+              physics={physics}
+              axis={cutAxis}
+              position={cutPosition}
+              onAxis={changeAxis}
+              onChange={changeCut}
+              onActive={setCutActive}
+              sampleDepth={sampleDepth}
+              sampleAcross={sampleAcross}
+            />
+          )}
           <p className="small">
             {physics
-              ? 'Water level follows the storm model. RL is the local level datum.'
+              ? "Flow is drawn from the model's calculated discharge; it is not a fluid simulation. RL is the local level datum."
               : 'Select a part to inspect its readings and checks.'}
           </p>
           {physics && (
             <>
               <div className="physics-view-controls">
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={lowQuality}
-                    onChange={(e) => setLowQuality(e.target.checked)}
-                  />{' '}
-                  Low quality
-                </label>
+                {mode === 'Debug' && (
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={lowQuality}
+                      onChange={(e) => setLowQuality(e.target.checked)}
+                    />{' '}
+                    Low quality
+                  </label>
+                )}
                 <label>
                   <input
                     type="checkbox"
@@ -244,24 +398,38 @@ export default function ModelWorkspace({
                 </label>
               </div>
               <PhysicsControls ownerId={ownerId} />
-              <FlowStrip ownerId={ownerId} />
+              <FlowStrip ownerId={ownerId} compact={!inspectionActive} />
             </>
           )}
           {showSensors && (
             <SensorPositions
               showPositions={mode === 'Debug'}
-              sensors={sensorMarkers(sensors).filter(
-                (s) => mode === 'Debug' || s.partId === selected,
-              )}
+              sensors={sensorMarkers(
+                sensors.filter((s) => kind === 'compost' || !!s.deviceId),
+              ).filter((s) => mode === 'Debug' || s.partId === selected)}
             />
           )}
           {summary}
           <div className="part-settings">
-            <AssemblyControls {...controlProps} />
-            <PartControls {...controlProps} />
+            <details className="view-controls" open={mode === 'Debug'}>
+              <summary>View controls</summary>
+              {physics && (
+                <SearchableSelect
+                  label="Render quality"
+                  value={recordQuality ? 'record' : 'adaptive'}
+                  onChange={(e) => setRecordQuality(e.target.value === 'record')}
+                >
+                  <option value="adaptive">Adaptive</option>
+                  <option value="record">Record</option>
+                </SearchableSelect>
+              )}
+              <AssemblyControls {...controlProps} sectionControls={!physics} />
+              <PartControls {...controlProps} />
+            </details>
           </div>
         </section>
         <PartPanel
+          ownerId={ownerId}
           part={part}
           config={config}
           fault={faults.find(
@@ -269,6 +437,26 @@ export default function ModelWorkspace({
           )}
           mode={mode}
           sensors={sensors.filter((s) => part.sensorIds.includes(s.sensorId))}
+          diagnosisFault={faults.find(
+            (f) =>
+              f.featureId === ownerId &&
+              f.partId === selected &&
+              f.status !== 'closed' &&
+              !f.id.startsWith('SIM-'),
+          )}
+          model={
+            physics?.frame
+              ? {
+                  second: physics.frame.second,
+                  rainfallMmHr: physics.frame.rain * 3.6e6,
+                  pondingMm: physics.frame.ponding * 1000,
+                  infiltrationLMin: physics.frame.flux.infiltration * 60000,
+                  outletLMin: physics.frame.flux.outfall * 60000,
+                  overflowLMin: physics.frame.flux.overflow * 60000,
+                  moisture: physics.frame.moisture,
+                }
+              : undefined
+          }
         />
       </div>
     </div>

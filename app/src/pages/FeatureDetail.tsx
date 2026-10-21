@@ -1,4 +1,6 @@
-import { useParams, Link } from 'react-router-dom';
+import SectionIndex from '../components/SectionIndex';
+import { useEffect } from 'react';
+import { useParams, useSearchParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../api/client';
 import ModelDetails from '../components/ModelDetails';
@@ -12,8 +14,14 @@ import type { Sensor } from '../api/types';
 const emptySensors: Sensor[] = [];
 import { QueryState } from '../components/QueryState';
 import { armName, dateOnly, testMean, trialDue } from '../utils';
+import { useSimulation } from '../simulation/physics/store';
 export default function FeatureDetail() {
   const { id = 'S1' } = useParams();
+  const [params, setParams] = useSearchParams();
+  const jobId = params.get('stormRunId'), mode = params.get('mode') === 'cleared' ? 'cleared' : 'installed';
+  const replay = useQuery({queryKey:['storm-job',jobId],enabled:!!jobId,queryFn:()=>api.stormResult(jobId!)});
+  const row = replay.data?.result?.rows.find(r=>r.asset===id);
+  useEffect(()=>{ if(row && jobId) useSimulation.getState().loadReplay(mode==='cleared'?row.ifCleared.config:row.asInstalled.config,jobId,mode); },[row,jobId,mode]);
   const result = useQuery({
     queryKey: ['feature-detail', id],
     queryFn: async () => {
@@ -51,12 +59,12 @@ export default function FeatureDetail() {
                 Zone {data.feature.zone} · Installed {dateOnly(data.feature.installedAt)}
               </p>
             </div>
-            <ModelDetails ownerId={id} />
             <Link className="button" to="/">
               Back to Overview
             </Link>
           </div>
-          <div className="summary-strip">
+          <SectionIndex items={[["Overview","#feature-summary"],["Replay","#feature-replay"],["Parts","#feature-parts"],["Sensors","#feature-sensors"]]}><ModelDetails ownerId={id}/></SectionIndex>
+          <div className="summary-strip" id="feature-summary">
             <div>
               <small>Trial arm</small>
               {data.feature.arm ? armName[data.feature.arm] : 'No soil-treatment arm'}
@@ -91,6 +99,8 @@ export default function FeatureDetail() {
               <p className="small">Conductivity follows the test record or entered value.</p>
             </section>
           )}
+          <p className="small">{physics.config?.dimensionRecord ? `Dimensions entered by operator: ${dateOnly(physics.config.dimensionRecord.at)}, ${physics.config.dimensionRecord.user}` : 'Typical design, not surveyed'}{id === 'R1' ? ' · Roadside kerb inlet and concrete drain; equivalent Manning capacity' : ''}</p>
+          {jobId && <section className="panel replay-controls"><h2>Saved storm replay</h2>{row ? <><p>Replaying the original inputs for {id}. Changes since this run are excluded.</p><div className="segments">{[['installed','As installed'],['cleared','If cleared']].map(([value,title])=><button key={value} aria-pressed={mode===value} onClick={()=>{const next=new URLSearchParams(params);next.set('mode',value);setParams(next);}}>{title}</button>)}</div><p className="small">Overflow: {row.asInstalled.summary.overflowM3.toFixed(3)} → {row.ifCleared.summary.overflowM3.toFixed(3)} m³ · Relative ranking, not a prediction</p></>:<p role="status">{replay.error?.message ?? 'Loading saved scenario…'}</p>}</section>}
           <div id="drain-assembly" />
           <ModelWorkspace
             ownerId={id}

@@ -1,8 +1,10 @@
+import { sensorLabel } from '../utils';
 import { Link } from 'react-router-dom';
 import type { Sensor } from '../api/types';
 import { displayName, formatValue } from '../utils';
 import Chip from './Chip';
 export default function PartSensors({ sensors }: { sensors: Sensor[] }) {
+  if(!sensors.length) return <p className="small">No sensors on this part; record a visual inspection.</p>;
   return (
     <div className="sensor-readings">
       <table aria-label="Selected part sensors">
@@ -22,7 +24,7 @@ export default function PartSensors({ sensors }: { sensors: Sensor[] }) {
                   to={'/sensors?sensor=' + encodeURIComponent(s.sensorId)}
                   aria-label={s.sensorId}
                 >
-                  {s.sensorId.replace(s.ownerId + '-', '')}
+                  {s.deviceId ? sensorLabel(s) : s.sensorId.replace(s.ownerId + '-', '')}
                 </Link>
               </td>
               <td

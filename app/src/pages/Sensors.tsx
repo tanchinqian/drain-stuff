@@ -1,3 +1,5 @@
+import { sensorLabel } from '../utils';
+import DeviceRegistry from '../components/DeviceRegistry';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip } from 'recharts';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -112,6 +114,8 @@ export default function Sensors() {
       <div className="page-heading">
         <h1>Sensors</h1>
       </div>
+      <DeviceRegistry/>
+
       <p>
         Where each sensor and manual input is installed, its latest reading, and whether it can be
         trusted.
@@ -141,7 +145,7 @@ export default function Sensors() {
               { key: 'trust', label: 'Trust', value: (s) => s.drift },
             ]}
             columns={[
-              { key: 'id', label: 'Sensor', value: (s) => s.sensorId },
+              { key: 'id', label: 'Sensor', value: (s) => s.sensorId, render:s=>sensorLabel(s) },
               { key: 'type', label: 'Type', value: (s) => s.type },
               {
                 key: 'asset',
@@ -178,7 +182,7 @@ export default function Sensors() {
           />
         </section>
       </div>
-      {selected && <SensorDetail id={selected} onClose={() => setParams({})} />}
+      {selected && <SensorDetail id={selected} onClose={() => setParams({}, {replace:true})} />}
     </QueryState>
   );
 }

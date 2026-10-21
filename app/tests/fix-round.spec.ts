@@ -1,8 +1,9 @@
+import { choose } from './controls';
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 test('attention order and operator controls', async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 900 });
-  await page.goto('/');
+  await page.goto('/observations');
   await expect(page.getByRole('heading', { name: 'Overview', exact: true })).toBeVisible();
   const faults = await page.locator('.attention-faults').boundingBox();
   const map = await page.locator('.overview-map').boundingBox();
@@ -31,20 +32,18 @@ test('attention order and operator controls', async ({ page }) => {
 test('fault highlight has matching list treatment and provenance', async ({ page }) => {
   await page.goto('/feature/S1');
   await page.locator('.storm-disclosure > summary').click();
-  await page
-    .getByRole('combobox', { name: 'Simulation scenario', exact: true })
-    .selectOption('Clogged sock');
+  await choose(page.getByRole('combobox', { name: 'Simulation scenario', exact: true }), 'Clogged sock');
   await expect(page.getByRole('slider', { name: 'Storm timeline', exact: true })).toBeEnabled({
     timeout: 45000,
   });
   await page.getByRole('slider', { name: 'Storm timeline', exact: true }).fill('25');
   await page.locator('.part-list').getByRole('button', { name: 'Compost filter sock' }).click();
-  await expect(page.locator('[data-part-highlight="fault"]').first()).toBeVisible();
-  await expect(page.locator('.part-list .part-status-fault')).toContainText('Compost filter sock');
+  await expect.poll(async () => Number(await page.locator('.cad-scene').getAttribute('data-fault-outlines'))).toBeGreaterThan(0);
+  await expect(page.locator('.part-list .part-status-fault[aria-pressed=true]')).toContainText('Compost filter sock');
   await expect(page.getByRole('heading', { name: 'Why is this highlighted?' })).toBeVisible();
   await expect(page.locator('.detail-readings')).toContainText('S1-INLET');
   await page.goto('/feature/S3?part=media');
-  await expect(page.locator('[data-part-highlight="offline"]').first()).toBeVisible();
+  await expect.poll(async () => Number(await page.locator('.cad-scene').getAttribute('data-fault-outlines'))).toBeGreaterThan(0);
 });
 
 test('compost tabs preserve unsaved form entries and support keyboard switching', async ({
@@ -62,7 +61,7 @@ test('compost tabs preserve unsaved form entries and support keyboard switching'
 });
 
 test('approved rainfall palette and compost form accessibility are retained', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/observations');
   await expect(page.locator('.heat-legend i')).toHaveCount(8);
   const swatches = await page
     .locator('.heat-legend i')
@@ -90,7 +89,7 @@ test('approved rainfall palette and compost form accessibility are retained', as
         .analyze();
       expect(a11y.violations.map((v) => v.id)).toEqual([]);
       await page.screenshot({
-        path: `../docs/screens/round4/after/compost-${tab.toLowerCase()}-${width === 1440 ? 'desktop' : 'mobile'}.png`,
+        path: `test-results/captures/round4/after/compost-${tab.toLowerCase()}-${width === 1440 ? 'desktop' : 'mobile'}.png`,
         fullPage: true,
       });
     }

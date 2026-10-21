@@ -5,7 +5,7 @@ for (const featureId of ['S1', 'S3', 'I1', 'T1'])
   test('Round 6 ' + featureId + ' agreement and captures', async ({ page }) => {
     test.setTimeout(900000);
     page.setDefaultTimeout(30000);
-    await mkdir('../docs/screens/round6', { recursive: true });
+    await mkdir('test-results/captures/round6', { recursive: true });
     const errors: string[] = [],
       metrics: unknown[] = [];
     page.on('pageerror', (error) => errors.push(error.message));
@@ -58,7 +58,7 @@ for (const featureId of ['S1', 'S3', 'I1', 'T1'])
         ['after-two-hours', run.duration + 7200],
       ] as const) {
         await timeline.fill(String(Math.round(second / 60)));
-        for (const view of ['Assembled', 'Cross-section']) {
+        for (const view of ['Assembled', 'Cutaway']) {
           await page.getByRole('button', { name: view, exact: true }).click();
           await page.locator('.cad-scene').scrollIntoViewIfNeeded();
           await page.waitForTimeout(300);
@@ -80,7 +80,7 @@ for (const featureId of ['S1', 'S3', 'I1', 'T1'])
           );
           await page.screenshot({
             clip: (await scene.boundingBox())!,
-            path: `../docs/screens/round6/${id}-${label}-${view === 'Assembled' ? '3d' : 'section'}.png`,
+            path: `test-results/captures/round6/${id}-${label}-${view === 'Assembled' ? '3d' : 'section'}.png`,
           });
         }
       }
@@ -88,20 +88,20 @@ for (const featureId of ['S1', 'S3', 'I1', 'T1'])
       await page.getByRole('checkbox', { name: '2D section', exact: true }).check();
       await page
         .locator('.model-card > .physics-section')
-        .screenshot({ path: `../docs/screens/round6/${id}-peak-2d.png` });
+        .screenshot({ path: `test-results/captures/round6/${id}-peak-2d.png` });
       await page.getByRole('checkbox', { name: '2D section', exact: true }).uncheck();
       if (id === 'I1') {
         await page.getByRole('button', { name: 'Debug', exact: true }).click();
-        for (const [axis, cut] of [['X', '1'], ['Y', '0.1']] as const) {
+        for (const [axis, cut] of [['X', '0.2'], ['Y', '0.1']] as const) {
           await page.locator('[aria-label="Section axis"]').getByRole('button', { name: axis, exact: true }).click();
           await page.getByRole('slider', { name: 'Section cut position', exact: true }).fill(cut);
           await page.locator('.cad-scene').scrollIntoViewIfNeeded();
           await page.waitForTimeout(300);
-          await page.screenshot({ clip: (await page.locator('.cad-scene').boundingBox())!, path: `../docs/screens/round6/I1-peak-section-${axis}.png` });
+          await page.screenshot({ clip: (await page.locator('.cad-scene').boundingBox())!, path: `test-results/captures/round6/I1-peak-section-${axis}.png` });
         }
       }
       await writeFile(
-        '../docs/screens/round6/' + featureId + '-metrics.json',
+        'test-results/captures/round6/' + featureId + '-metrics.json',
         JSON.stringify({ metrics, errors }, null, 2),
       );
     }
@@ -131,6 +131,7 @@ for (const featureId of ['S1', 'S3', 'I1', 'T1'])
         ),
         quality: await page.locator('.cad-scene').getAttribute('data-quality'),
       });
+      await page.getByRole('button', {name:'Debug',exact:true}).click();
       await page.getByRole('checkbox', { name: 'Low quality', exact: true }).check();
       await expect(page.locator('.cad-scene')).toHaveAttribute('data-quality', 'low');
       await page.emulateMedia({ reducedMotion: 'reduce' });
@@ -143,7 +144,7 @@ for (const featureId of ['S1', 'S3', 'I1', 'T1'])
       );
     }
     await writeFile(
-      '../docs/screens/round6/' + featureId + '-metrics.json',
+      'test-results/captures/round6/' + featureId + '-metrics.json',
       JSON.stringify({ metrics, errors }, null, 2),
     );
     expect(errors).toEqual([]);

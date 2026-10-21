@@ -1,0 +1,38 @@
+{
+  "name": "drain-console",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20.12"
+  },
+  "workspaces": [
+    "shared",
+    "server"
+  ],
+  "scripts": {
+    "dev:all": "node scripts/dev-all.mjs",
+    "build:all": "node scripts/build-all.mjs",
+    "start:server": "node server/dist/index.js",
+    "seed": "tsx server/src/seed.ts",
+    "test:server": "node scripts/build-server.mjs && vitest run server shared",
+    "test:all": "npm run test:server && npm --prefix app test",
+    "check:server": "tsc -p server/tsconfig.json",
+    "demo:reset": "tsx scripts/demo-reset.ts",
+    "check:ai": "tsx scripts/check-ai.ts",
+    "sim:device": "tsx scripts/sim-device.ts"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.19.0",
+    "hono": "^4.10.0",
+    "better-sqlite3": "^12.4.0",
+    "zod": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.3",
+    "esbuild": "^0.25.0",
+    "tsx": "^4.20.0",
+    "vitest": "^4.1.0"
+  }
+}

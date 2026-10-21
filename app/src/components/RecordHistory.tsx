@@ -21,7 +21,7 @@ export default function RecordHistory({
         {title} ({entries.length})
       </summary>
       {!entries.length ? (
-        <p>No entries yet.</p>
+        <p>Save a record update to start the history.</p>
       ) : (
         <>
           <ol>

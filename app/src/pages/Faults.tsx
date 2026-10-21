@@ -1,3 +1,4 @@
+import SearchableSelect from '../components/SearchableSelect';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -6,8 +7,11 @@ import { type Fault, type FaultRule } from '../api/types';
 import { displayName, timeLabel, faultOrder } from '../utils';
 import { useWrite } from '../hooks';
 import DataTable from '../components/DataTable';
-import Drawer from '../components/Drawer';
+import Drawer, { DrawerFooter } from '../components/Drawer';
 import AssetList from '../components/AssetList';
+import WorkOrderPanel from '../components/WorkOrderPanel';
+import EscalationPanel from '../components/EscalationPanel';
+import DiagnosisPanel from '../components/DiagnosisPanel';
 import RecordHistory from '../components/RecordHistory';
 import Timestamp from '../components/Timestamp';
 import Chip from '../components/Chip';
@@ -31,16 +35,14 @@ export default function Faults() {
   const faults = useQuery({ queryKey: ['faults'], queryFn: () => api.faults() }),
     rules = useQuery({ queryKey: ['fault-rules'], queryFn: api.faultRules }),
     features = useQuery({ queryKey: ['features'], queryFn: api.features });
-  const save = useWrite(
-    (input: { id: string; status: Fault['status'] }) =>
-      api.faultStatus(input.id, { status: input.status, note, user }),
-    (input) => `${input.id} moved to ${displayName(input.status)}${note ? ' · Note: ' + note : ''}`,
-  );
   const create = useWrite(
     () => api.reportFault({ ...entry, note, user }),
     'Saved report to the fault register',
   );
-  const active = selected ? (faults.data?.find((f) => f.id === selected.id) ?? selected) : null;
+  const inputs = useQuery({queryKey:['fault-evidence-inputs'],queryFn:()=>api.sensors()});
+  const active = selected
+    ? (faults.data?.find((f) => f.id === selected.id) ?? selected)
+    : (faults.data?.find((f) => f.id === params.get('fault')) ?? null);
   const rows = (faults.data ?? [])
     .filter(
       (f) =>
@@ -66,6 +68,7 @@ export default function Faults() {
         </button>
       </div>
       <p>Faults appear when a rule fires on a reading or an operator reports a problem.</p>
+      {asset && <EscalationPanel asset={asset} />}
       <div className="segments register-tabs" role="tablist" aria-label="Fault registers">
         {(['faults', 'rules'] as const).map((t) => (
           <button
@@ -140,21 +143,9 @@ export default function Faults() {
                   label: 'Status',
                   value: (f) => f.status,
                   render: (f) => (
-                    <select
-                      className="status-select"
-                      aria-label={'Status for ' + f.id}
-                      value={f.status}
-                      disabled={save.isPending}
-                      onChange={(e) =>
-                        save.mutate({ id: f.id, status: e.target.value as Fault['status'] })
-                      }
-                    >
-                      {['open', 'inspected', 'closed'].map((v) => (
-                        <option key={v} value={v}>
-                          {displayName(v)}
-                        </option>
-                      ))}
-                    </select>
+                    <button onClick={() => setSelected(f)}>
+                      {displayName(f.workOrder?.state ?? 'detected')}
+                    </button>
                   ),
                 },
                 {
@@ -214,14 +205,17 @@ export default function Faults() {
       {active && (
         <Drawer
           title={active.id + ' · ' + displayName(active.type)}
-          onClose={() => setSelected(null)}
+          key={active.id}
+          status={<Chip value={active.workOrder?.state ?? 'detected'} tone={active.workOrder?.state==='closed'?'ok':'watch'}/>}
+          subtitle={<><p className="small">{active.featureId} · {partName(active.partId)} · Zone {active.zone}</p><p className="small">{active.raisedBy==='manual'?'Operator inspection':'Recorded rule finding'} · {timeLabel(active.openedAt)}</p></>}
+          onClose={() => {
+            setSelected(null);
+            const next = new URLSearchParams(params);
+            next.delete('fault');
+            setParams(next, {replace:true});
+          }}
         >
-          <Chip value={active.status} />
-          <p>
-            {active.featureId} · {partName(active.partId)} · Zone {active.zone}
-          </p>
-          <p>{active.diagnosingInput}</p>
-          <p>{timeLabel(active.openedAt)}</p>
+          <section className="fault-summary"><h3>Summary</h3><p>{active.diagnosingInput}</p></section>
           <Link
             className="button"
             to={partLink(
@@ -232,38 +226,18 @@ export default function Faults() {
           >
             Inspect this part
           </Link>
-          <h3>Update status</h3>
-          <label className="field">
-            Who
-            <input value={user} onChange={(e) => setUser(e.target.value)} />
-          </label>
-          <label className="field">
-            Optional note
-            <textarea value={note} onChange={(e) => setNote(e.target.value)} />
-          </label>
-          <div className="actions">
-            {(['open', 'inspected', 'closed'] as const).map((status) => (
-              <button
-                disabled={active.status === status || save.isPending || !user.trim()}
-                key={status}
-                onClick={() => save.mutate({ id: active.id, status })}
-              >
-                {status === 'open'
-                  ? 'Reopen'
-                  : status === 'closed'
-                    ? 'Close fault'
-                    : 'Mark inspected'}
-              </button>
-            ))}
-          </div>
+          <WorkOrderPanel key={active.id} fault={active} />
+          <DiagnosisPanel key={'diagnosis-' + active.id} faultId={active.id} />
+          <details className="fault-section"><summary>Evidence and inputs <span>{active.sensorIds.length} recorded inputs</span></summary>
+            {!active.sensorIds.length ? <p>No linked input recorded; add an independent inspection note.</p> :
+            <div className="table-scroll"><table className="evidence-table"><thead><tr><th>Input</th><th>Value</th><th>Trust</th><th>Time</th></tr></thead><tbody>
+            {active.sensorIds.map(id => {const sensor=inputs.data?.find(s=>s.sensorId===id); return <tr key={id}>
+              <td><Link to={'/sensors?sensor='+encodeURIComponent(id)}>{id}</Link></td><td>{sensor?.lastText ?? sensor?.lastValue ?? 'Not recorded'} {sensor?.unit}</td>
+              <td>{displayName(active.sensorStatusesAtAlert[id] ?? 'Not recorded')}</td><td>{sensor?.lastAt ? timeLabel(sensor.lastAt) : 'Not recorded'}</td>
+            </tr>;})}</tbody></table></div>}
+            <p className="small">Trust is captured when the fault was raised. Values and time are the latest stored readings.</p>
+          </details>
           <RecordHistory entries={active.history ?? []} title="Audit trail" />
-          <h3>Diagnosing inputs</h3>
-          {active.sensorIds.map((id) => (
-            <p key={id}>
-              <Link to={'/sensors?sensor=' + encodeURIComponent(id)}>{id}</Link> ·{' '}
-              {displayName(active.sensorStatusesAtAlert[id] ?? 'Not recorded')}
-            </p>
-          ))}
         </Drawer>
       )}
       {rule && (
@@ -299,7 +273,7 @@ export default function Faults() {
       )}
       {report && (
         <Drawer title="Report a fault" onClose={() => setReport(false)}>
-          <form
+          <form id="fault-report"
             onSubmit={(e) => {
               e.preventDefault();
               create.mutate(undefined, {
@@ -312,18 +286,20 @@ export default function Faults() {
           >
             <label className="field">
               Asset
-              <select
+              <SearchableSelect
+                label="Fault asset"
                 value={entry.featureId}
                 onChange={(e) => setEntry({ ...entry, featureId: e.target.value })}
               >
                 {features.data?.map((f) => (
                   <option key={f.id}>{f.id}</option>
                 ))}
-              </select>
+              </SearchableSelect>
             </label>
             <label className="field">
               Part
-              <select
+              <SearchableSelect
+                label="Fault part"
                 value={entry.partId}
                 onChange={(e) => setEntry({ ...entry, partId: e.target.value })}
               >
@@ -332,11 +308,12 @@ export default function Faults() {
                     {p.name}
                   </option>
                 ))}
-              </select>
+              </SearchableSelect>
             </label>
             <label className="field">
               Problem
-              <select
+              <SearchableSelect
+                label="Fault problem"
                 value={entry.type}
                 onChange={(e) => setEntry({ ...entry, type: e.target.value as Fault['type'] })}
               >
@@ -354,11 +331,12 @@ export default function Faults() {
                     {displayName(v)}
                   </option>
                 ))}
-              </select>
+              </SearchableSelect>
             </label>
             <label className="field">
               Severity
-              <select
+              <SearchableSelect
+                label="Fault severity"
                 value={entry.severity}
                 onChange={(e) =>
                   setEntry({ ...entry, severity: Number(e.target.value) as 1 | 2 | 3 })
@@ -367,7 +345,7 @@ export default function Faults() {
                 <option value="1">Low</option>
                 <option value="2">Medium</option>
                 <option value="3">High</option>
-              </select>
+              </SearchableSelect>
             </label>
             <label className="field">
               Description
@@ -378,7 +356,7 @@ export default function Faults() {
               <input required value={user} onChange={(e) => setUser(e.target.value)} />
             </label>
             <p className="small">Saves to the fault register.</p>
-            <button disabled={create.isPending}>Save fault report</button>
+            <DrawerFooter><button className="primary" form="fault-report" disabled={create.isPending}>Save fault report</button></DrawerFooter>
             {create.error && <p role="alert">{create.error.message}</p>}
           </form>
         </Drawer>

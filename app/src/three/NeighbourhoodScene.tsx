@@ -11,6 +11,7 @@ import SensorMarkers from './SensorMarkers';
 import RainCloud from './RainCloud';
 import { sensorMarkers } from '../api/sensorViews';
 import { featureCallouts, pilotByBuilding, roadLabels, site } from '../site/layout';
+import type { RainPlayback } from '../site/weather';
 
 type Props = {
   sensors: Sensor[];
@@ -21,7 +22,9 @@ type Props = {
   rain: ZoneRain[];
   layer: 'water' | 'rain';
   cloudOpacity: number;
+  rainPlayback?: RainPlayback;
   reset: number;
+  ranks?: Record<string, number>; selectedAsset?: string; onSelectAsset?: (id: string) => void;
 };
 
 function SceneContent({
@@ -30,8 +33,10 @@ function SceneContent({
   rain,
   layer,
   cloudOpacity,
+  rainPlayback,
   sensors,
   showSensors,
+  ranks = {}, selectedAsset, onSelectAsset,
 }: Props) {
   const selected = useSelection((s) => s.houseId),
     select = useSelection((s) => s.selectHouse),
@@ -225,11 +230,12 @@ function SceneContent({
             <mesh
               onClick={(e) => {
                 e.stopPropagation();
-                navigate('/feature/' + f.id);
+                if (onSelectAsset) onSelectAsset(f.id); else navigate('/feature/' + f.id);
               }}
             >
               <boxGeometry args={f.kind === 'swale' ? [3, 0.12, 0.35] : [0.5, 0.18, 0.5]} />
               <meshStandardMaterial color={f.arm ? palette[f.arm] : palette.ink2} />
+              <Edges color={selectedAsset === f.id ? palette.ink : palette.ink2} lineWidth={ranks[f.id] ? Math.max(1, 5-ranks[f.id]*0.7) : 1} />
             </mesh>
             <mesh position={[0, 0.7, 0]}>
               <cylinderGeometry args={[0.035, 0.035, 1.25, 6]} />
@@ -248,15 +254,16 @@ function SceneContent({
               <button
                 className={'scene-label feature-pin' + (f.kind === 'swale' ? '' : ' secondary-pin')}
                 aria-label={'Open ' + f.id + ' ' + f.name}
-                onClick={() => navigate('/feature/' + f.id)}
+                aria-pressed={selectedAsset === f.id}
+                onClick={() => onSelectAsset ? onSelectAsset(f.id) : navigate('/feature/' + f.id)}
               >
-                {f.id}
+                {ranks[f.id] ? ranks[f.id]+' · ' : ''}{f.id}
               </button>
             </Html>
           </group>
         );
       })}
-      {layer === 'rain' && cloudOpacity > 0 && <RainCloud samples={rain} opacity={cloudOpacity} />}
+      {layer === 'rain' && cloudOpacity > 0 && <RainCloud samples={rain} opacity={cloudOpacity} playback={rainPlayback} />}
       {showSensors && <SensorMarkers site sensors={sensorMarkers(sensors)} />}
     </>
   );

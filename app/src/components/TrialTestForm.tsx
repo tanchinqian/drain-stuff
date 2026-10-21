@@ -1,3 +1,4 @@
+import { DrawerFooter } from './Drawer';
 import DataTable from './DataTable';
 import Term from './Term';
 import { displayName, formatValue } from '../utils';
@@ -41,7 +42,7 @@ export default function TrialTestForm({ trial }: { trial: TrialDetail }) {
         {trial.n}
       </p>
       <p className="small">Saves to trial record {trial.featureId}.</p>
-      <form onSubmit={submit}>
+      <form id="TrialTestForm" onSubmit={submit}>
         <div className="form-grid" style={{ marginTop: 16 }}>
           <div className="field">
             <span>Soil texture</span>
@@ -117,14 +118,14 @@ export default function TrialTestForm({ trial }: { trial: TrialDetail }) {
             />
           </label>
         </div>
-        <button
-          type="submit"
+        <DrawerFooter>        <button
+          type="submit" form="TrialTestForm"
           className="primary"
           disabled={write.isPending || (!trial.baselineDone && texture === 'Not recorded')}
           style={{ marginTop: 15 }}
         >
           Record {trial.baselineDone ? 're-test' : 'baseline point'}
-        </button>
+        </button></DrawerFooter>
         {write.error && (
           <p role="alert" className="error">
             {write.error.message}

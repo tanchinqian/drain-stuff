@@ -1,3 +1,4 @@
+import { DrawerFooter } from './Drawer';
 import SearchableSelect from './SearchableSelect';
 import { useState, type FormEvent } from 'react';
 import type { BatchDetail, Config, TrialDetail } from '../api/types';
@@ -54,7 +55,7 @@ export default function AllocationForm({
     <section className="panel">
       <h2>Allocate mature compost</h2>
       <p className="sub">Labelled pilot doses; no fixed target</p>
-      <form onSubmit={submit}>
+      <form id="AllocationForm" onSubmit={submit}>
         <div className="form-grid" style={{ marginTop: 16 }}>
           <div className="field">
             <span>Batch</span>
@@ -110,15 +111,15 @@ export default function AllocationForm({
             {reason}
           </p>
         )}
-        <button
+        <DrawerFooter>        <button
           className="primary"
-          type="submit"
+          type="submit" form="AllocationForm"
           aria-describedby={reason ? 'allocation-reason' : undefined}
           disabled={Boolean(reason) || write.isPending}
           style={{ marginTop: 14 }}
         >
           Allocate to {trial.featureId}
-        </button>
+        </button></DrawerFooter>
         {write.error && (
           <p className="error" role="alert">
             {write.error.message}

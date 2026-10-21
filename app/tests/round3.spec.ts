@@ -1,30 +1,17 @@
+import { choose } from './controls';
 import { test, expect } from '@playwright/test';
-test('fault status saves, persists and has an audit trail', async ({ page }) => {
-  await page.goto('/');
-  await expect(page.locator('.attention-summary')).toContainText('faults open');
-  const originalCount = Number(
-    (await page.locator('.attention-summary').innerText()).match(/^(\d+)/)![1],
-  );
-  await page.goto('/faults');
-  await expect(page.getByRole('heading', { name: 'Faults', exact: true })).toBeVisible();
-  const control = page.locator('select[aria-label^="Status for"]').first();
-  await expect(control).toBeVisible();
-  const label = await control.getAttribute('aria-label'),
-    id = label!.replace('Status for ', '');
-  const next = (await control.inputValue()) === 'closed' ? 'open' : 'closed';
-  await control.selectOption(next);
-  await expect(page.getByRole('status').filter({ hasText: id + ' moved to' })).toBeVisible();
+test('fault confirmation persists with a record-specific audit trail', async ({page}) => {
+  await page.goto('/faults?fault=F-002');
+  const drawer=page.getByRole('dialog');
+  await drawer.getByLabel('Required note', {exact:true}).fill('Inlet independently checked');
+  await drawer.getByRole('button', {name:'Confirm fault',exact:true}).click();
+  await expect(drawer.locator('[aria-current=step]')).toHaveText('Confirmed');
   await page.reload();
-  await page.getByRole('searchbox', { name: 'Search faults', exact: true }).fill(id);
-  await expect(page.getByRole('combobox', { name: label!, exact: true })).toHaveValue(next);
-  await page.getByRole('button', { name: id, exact: true }).click();
-  await expect(page.getByRole('dialog')).toContainText('Audit trail');
-  await expect(page.getByRole('dialog')).toContainText('Local operator');
-  await page.goto('/');
-  await expect(page.locator('.attention-summary')).toContainText(
-    `${originalCount + (next === 'closed' ? -1 : 1)} faults open`,
-  );
+  await expect(drawer.locator('[aria-current=step]')).toHaveText('Confirmed');
+  await drawer.locator('.record-history summary').click();
+  await expect(drawer).toContainText('Inlet independently checked');
 });
+
 test('sensor table uses row details, filters and wide layout', async ({ page }) => {
   await page.goto('/sensors');
   await expect(page.getByRole('heading', { name: 'Sensors', exact: true })).toBeVisible();
@@ -41,19 +28,19 @@ test('sensor table uses row details, filters and wide layout', async ({ page }) 
     expect(main!.width).toBeGreaterThan(width === 1440 ? 1300 : 1700);
   }
 });
-test('fixed pilot map, non-modal selection, range and zone scoping', async ({ page }) => {
-  await page.goto('/');
+test('fixed pilot map, selection, range and zone scoping', async ({ page }) => {
+  await page.goto('/observations');
   await expect(page.getByRole('heading', { name: 'Overview', exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Move houses', exact: true })).toHaveCount(0);
   await page.getByRole('button', { name: 'Plan', exact: true }).click();
   await expect(page.locator('.plan-svg [role=button][aria-label^="Mapped house"]')).toHaveCount(0);
   await page.locator('.plan-svg [data-house-id="A01"]').click();
   await expect(page.getByRole('dialog')).toContainText('A01');
-  await expect(page.getByRole('dialog')).toHaveAttribute('aria-modal', 'false');
+  await expect(page.getByRole('dialog')).toHaveAttribute('aria-modal', 'true');
   await page.keyboard.press('Escape');
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await page.locator('.plan-svg [data-house-id="A01"]').click();
-  await page.locator('.plan-svg').click({ position: { x: 10, y: 10 } });
+  await page.mouse.click(10, 200);
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await page.getByRole('button', { name: '7 days', exact: true }).click();
   await expect(page.getByRole('heading', { name: /^Rainfall · 7 days/ })).toBeVisible();
@@ -68,9 +55,7 @@ test('trial test drawer saves repeats and updates its record', async ({ page }) 
     .getByRole('button', { name: 'Record baseline', exact: true })
     .click();
   const drawer = page.getByRole('dialog');
-  await drawer
-    .getByRole('combobox', { name: 'Soil texture', exact: true })
-    .selectOption('Clay loam');
+  await choose(drawer.getByRole('combobox', { name: 'Soil texture', exact: true }), 'Clay loam');
   await drawer.getByLabel('Measured value', { exact: true }).fill('15');
   await drawer.getByLabel('Repeats at this point', { exact: true }).fill('3');
   await drawer.getByRole('button', { name: 'Record baseline point', exact: true }).click();
@@ -155,7 +140,7 @@ test('standing-water guidance and help popovers stay readable', async ({ page })
     /synthetic|placeholder|seeded|demo data|to confirm/i,
   );
   await page.screenshot({
-    path: '../docs/screens/round4/after/standing-water-review-1440.png',
+    path: 'test-results/captures/round4/after/standing-water-review-1440.png',
     fullPage: true,
   });
   await page.goto('/feature/S1');
@@ -165,7 +150,7 @@ test('standing-water guidance and help popovers stay readable', async ({ page })
   await page.keyboard.press('Escape');
   await expect(page.locator('.glossary-popover:visible')).toHaveCount(0);
   await page.screenshot({
-    path: '../docs/screens/round4/after/glossary-review-1440.png',
+    path: 'test-results/captures/round4/after/glossary-review-1440.png',
     fullPage: true,
   });
 });

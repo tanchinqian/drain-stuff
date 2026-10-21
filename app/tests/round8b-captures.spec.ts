@@ -1,0 +1,26 @@
+import {test,expect} from '@playwright/test';
+import {mkdir} from 'node:fs/promises';
+for(const width of [390,1440,1920]) test('Round 8B review captures at '+width,async({page})=>{
+  test.setTimeout(120000);await mkdir('../docs/screens/round8b',{recursive:true});
+  await page.setViewportSize({width,height:width===390?844:1000});
+  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
+  await page.goto('/faults?fault=F-001');
+  const drawer=page.getByRole('dialog');
+  await expect(drawer.locator('.diagnosis-panel').getByRole('button',{name:'Accept',exact:true})).toBeEnabled();
+  await page.screenshot({path:`../docs/screens/round8b/fault-drawer-${width}.png`});
+  await drawer.locator('.diagnosis-panel').evaluate(el=>el.scrollIntoView({block:'start'}));
+  await page.screenshot({path:`../docs/screens/round8b/diagnosis-${width}.png`});
+  await page.keyboard.press('Escape');await expect(drawer).toHaveCount(0);
+  await page.goto('/');await page.getByLabel('Check ranking under ±25%').uncheck();
+  await page.getByRole('button',{name:'Run storm',exact:true}).click();
+  const row=page.locator('.triage-row').filter({has:page.locator('.triage-asset strong',{hasText:/^S1$/})});
+  await expect(row).toContainText('Clearing the fault removes',{timeout:90000});
+  await expect(page.locator('.triage-row').filter({has:page.locator('.triage-asset strong',{hasText:/^S2$/})})).toContainText('No difference: capacity-limited');
+  await page.getByRole('button',{name:'Plan',exact:true}).click();
+  await row.scrollIntoViewIfNeeded();await page.screenshot({path:`../docs/screens/round8b/board-fixable-${width}.png`});
+  await page.goto('/feature/R1');await expect(page.getByRole('slider',{name:'Storm timeline',exact:true})).toBeEnabled({timeout:60000});
+  await page.locator('.cad-scene').scrollIntoViewIfNeeded();
+  await expect.poll(async()=>Number(await page.locator('.cad-scene').getAttribute('data-projected-width'))).toBeGreaterThanOrEqual(.7);
+  await page.screenshot({path:`../docs/screens/round8b/R1-${width}.png`});
+  expect(errors).toEqual([]);
+});

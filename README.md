@@ -1,3 +1,25 @@
+# Drain Trial Console — local demonstration
+
+From this folder, run `npm ci`, `npm --prefix app ci`, then **`npm run dev:all`**. It starts the local API and React app and seeds an empty SQLite database. The demonstration opens directly without a login or token. Anyone who can reach the server can read and change demo records; audit entries use “Demo visitor”. The terminal prints the app URL. Existing database records are preserved. Node 20.12+ is required.
+
+Round 9 adds realistic drainage-scene materials, storm effects, camera/Record presets and a shared cross-section slider. See [requirement status and limits](docs/ROUND9_REALISM.md), [captures and storm GIFs](docs/screens/round9/README.md) and [procedural asset provenance](docs/ASSETS.md).
+
+```sh
+npm ci
+npm --prefix app ci
+npm run dev:all
+```
+
+Stop the launcher before `npm run demo:reset` to restore the illustrative seed (a timestamped database backup is retained). Restart and reload the app, then run a fresh storm. See [five-minute video runbook](docs/VIDEO_RUNBOOK.md), [Round 8B checks](docs/ROUND8B_CLEANUP.md) and [user-run live AI check](docs/AI_LIVE_CHECK.md). Model settings may be kept in ignored `server/.env`; existing root `.env.local` remains supported.
+
+`npm run build:all` builds both; `npm run start:server` serves the built app/API together. Standalone `npm --prefix app run dev` still supports the original offline mock when no API base is configured.
+
+Overview's Asset locations map includes the radar-coloured Rainfall toggle and opacity control in 3D and Plan. After a new storm calculation finishes, the saved rainfall curve plays at 60× by default (one simulated minute per second), and the map scrolls into view. Watch storm restarts it; playback controls sit beneath the map and share the clock with asset replay. Overview pauses at the end of rain; Play recovery continues drainage. The cloud follows simulated intensity uniformly across zones and clears after rain; it is not live radar. Observation history retains the dated rainfall layer. See [storm playback](docs/STORM_PLAYBACK.md).
+
+See [local setup](docs/DEPLOY.md), [stage progress and checks](docs/ROUND8_PROGRESS.md), [contract 4.3.0](docs/BACKEND_HANDOFF.md), [AI evaluation](docs/AI_EVALUATION.md), and [honest limits](docs/LIMITS.md). Run storms from Overview; inspect a row to replay its saved 3D scenario. Faults provides verification and cited diagnosis. Register nodes on Sensors or run `npm run sim:device` for an explicitly simulated feed. The selected-part panel includes AI diagnosis for recorded findings. Local configuration can use OpenCode DeepSeek V4.1 Flash; model errors fall back to case matching and log the reason in the backend terminal. See [part diagnosis](docs/PART_AI_DIAGNOSIS.md).
+
+---
+
 # Drain Trial Console
 
 A local React console for drainage and compost pilot operations. The cream/brown Archivo Map desk includes fixed pilot-house selection, six hydraulic feature models, trial and batch records, sensors, faults and audited local saves. Generated local records use the same client as an optional backend.
@@ -16,7 +38,7 @@ npm.cmd run dev
 
 ## Current operator flow
 
-Overview combines a fixed map with fault cards, zone filtering, dated rainfall and drain-down charts. Only the 24 pilot houses and six feature destinations are interactive; context houses provide geometry. A pilot-house drawer closes with Close, Esc, map background selection or another map item. Last storm, 7 days and 8 weeks drive history requests and chart titles. Radar colours remain approved; rainfall is interpolated from dated zone records, not live radar.
+Overview provides the calculated storm triage board, saved rainfall replay and ranked map. Observation history at `/observations` retains zone filters, dated rainfall and drain-down charts. Only the 24 pilot houses and six feature destinations are interactive; context houses provide geometry. Pilot-house records open in the shared detail drawer. Last storm, 7 days and 8 weeks drive history requests and chart titles. Radar colours remain approved; rainfall is interpolated from dated zone records, not live radar.
 
 Registers share a compact search/filter toolbar, sortable columns, saved column visibility, 10/20/25-row pagination (10 by default), density and CSV export. Native filter/Columns menus open one at a time; IDs use plain monospace text and there are no row-selection checkboxes. Tables have panel-contained horizontal scrolling without internal vertical clipping. Long lists use a single combobox; fewer than eight options use a plain select or segmented controls. Technical terms use glossary popovers. Writes show the saved destination/time; collapsed record histories show the latest five distinct entries with Show all. Faults / Rules tabs organise the register; status changes in the status cell refresh Overview counts.
 
@@ -32,11 +54,11 @@ Round 6 uses a shared depression design and cached 48 × 32 mixed-form Richards 
 
 ## Data and API
 
-Contract **3.0.0** is defined in `app/src/api/types.ts`, with transport in `app/src/api/client.ts`. Set `VITE_API_BASE` before starting/building Vite to prefer a backend; `VITE_DATA_SOURCE=mock` forces local mode. Startup probes `/config`; network, timeout or server failure falls back to mock for that page session. Authentication errors remain visible. After API discovery succeeds, failures remain errors and failed writes do not silently save locally.
+Contract **4.1.0** is defined in `app/src/api/types.ts`, with transport in `app/src/api/client.ts`. Set `VITE_API_BASE` before starting/building Vite to prefer a backend; `VITE_DATA_SOURCE=mock` forces local mode. Startup probes `/config`; network, timeout or server failure falls back to mock for that page session. Authentication errors remain visible. Later read connection failures fall back with a visible notice; failed writes are never replayed into local storage.
 
 `VITE_SHOW_DATA_NOTICE` controls one small notice on About; unset shows it only in mock mode. Operational screens have no persistent data badge. No backend, authenticated identity provider or real probe integration is bundled. Read [BACKEND_HANDOFF.md](docs/BACKEND_HANDOFF.md), [contract changelog](docs/CONTRACT_CHANGELOG.md) and [JSON examples](docs/contract-examples.v3.json) for endpoints, flags, errors, gates, audits and production responsibilities.
 
-Mock values use deterministic seed 2026; newly generated observation dates and `dataThrough` anchor to app load time. Persisted user writes and actual histories retain saved timestamps. New writes/audits use wall-clock time; new tests schedule the next re-test seven days later. Overdue status uses today's Singapore calendar day. Storage key `drain-trial-console-v1` retains schema version 2 while the wire contract is 3.0.0; migration preserves records and refreshes fixed house placement. Unavailable storage allows in-memory use without reload persistence. Source switching does not upload local data.
+Mock values use deterministic seed 2026; newly generated observation dates and `dataThrough` anchor to app load time. Persisted user writes and actual histories retain saved timestamps. New writes/audits use wall-clock time; new tests schedule the next re-test seven days later. Overdue status uses today's Singapore calendar day. Storage key `drain-trial-console-v1` retains schema version 2 while the wire contract is 4.1.0; migration preserves records and refreshes fixed house placement. Unavailable storage allows in-memory use without reload persistence. Source switching does not upload local data.
 
 ## Checks and review
 

@@ -26,10 +26,9 @@ export default function AppLayout() {
       <nav className="navigation" aria-label="Console pages">
         {[
           ['/', 'Overview'],
-          ['/trials', 'Trials'],
-          ['/batches', 'Batches'],
-          ['/sensors', 'Sensors'],
           ['/faults', 'Faults'],
+          ['/sensors', 'Sensors'],
+          ['/materials', 'Materials and trial'],
           ['/about', 'About'],
         ].map(([to, label]) => (
           <NavLink end={to === '/'} key={to} to={to + suffix}>

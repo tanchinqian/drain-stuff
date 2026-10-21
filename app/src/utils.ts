@@ -1,5 +1,5 @@
 import { today } from './clock';
-import type { Arm, TestResult } from './api/types';
+import type { Arm } from './api/types';
 export const armName: Record<Arm, string> = {
   control: 'Untreated (control)',
   decompaction: 'Soil loosened only',
@@ -38,16 +38,7 @@ export function trialStatus(
       ? 'Overdue'
       : 'On track';
 }
-export function testMean(tests: TestResult[], phase: 'baseline' | 'retest') {
-  const rows = tests.filter((t) => t.phase === phase && t.metric === 'infiltration_mm_hr');
-  const latest = rows.at(-1)?.t;
-  const measured = phase === 'retest' ? rows.filter((t) => t.t === latest) : rows;
-  if (!measured.length) return null;
-  return {
-    value: measured.reduce((sum, t) => sum + t.value, 0) / measured.length,
-    n: measured.reduce((sum, t) => sum + t.n, 0),
-  };
-}
+export { testMean } from '../../shared/src/trialMetrics';
 export function exportCsv(name: string, headers: string[], rows: (string | number)[][]) {
   const escape = (v: string | number) => '"' + String(v).replaceAll('"', '""') + '"';
   const csv = [headers, ...rows].map((row) => row.map(escape).join(',')).join('\r\n');
@@ -109,3 +100,7 @@ export const faultOrder = (a: import('./api/types').Fault, b: import('./api/type
   b.severity - a.severity ||
   faultImpact(a.type) - faultImpact(b.type) ||
   Date.parse(a.openedAt) - Date.parse(b.openedAt);
+
+export function sensorLabel(s: {deviceId?:string;partId:string;sensorId:string}) {
+  return s.deviceId ? (s.partId==='inlet'?'Inlet':s.partId==='outfall'?'Outlet':'Drain')+' level sensor' : s.sensorId;
+}
