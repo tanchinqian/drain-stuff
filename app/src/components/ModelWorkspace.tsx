@@ -50,6 +50,7 @@ export default function ModelWorkspace({
       ),
     [sourceParts, sensors],
   );
+  const [orthographic,setOrthographic]=useState(false);
   const [roofPath,setRoofPath]=useState(false);
   const [flat, setFlat] = useState(false),
     [dimensionsVisible, setDimensionsVisible] = useState(false);
@@ -293,6 +294,7 @@ export default function ModelWorkspace({
               >
                 Return to default
               </button>
+              <label><input type="checkbox" checked={orthographic} onChange={e=>setOrthographic(e.target.checked)}/> Orthographic view</label>
               <label><input type="checkbox" checked={roofPath} onChange={e=>setRoofPath(e.target.checked)}/> Roof runoff path</label>
               {roofPath&&<span className="small">{physics.config.values.roofArea.value} m² roof · {(roofDischarge(drainDesign(physics.config),physics.frame)*60000).toFixed(1)} L/min at each step{physics.config.values.roofArea.value===0?' · No roof connected in this scenario':''}</span>}
               {!!sceneFaults.length && <button onClick={()=>showFault(selectedFault??sceneFaults[0])}>Show fault</button>}
@@ -309,6 +311,7 @@ export default function ModelWorkspace({
           ) : (
             <DrainScene
               roofPath={roofPath}
+              orthographic={orthographic}
               physics={physics}
               sceneFaults={params.get('mode')==='cleared' ? [] : sceneFaults}
               onShowFault={showFault}

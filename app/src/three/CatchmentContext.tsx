@@ -14,6 +14,7 @@ import { WaterMaterial } from './WaterEffects';
 import FlowTrace from './FlowTrace';
 import { contextAtlas, sceneColours, surfaceMaps, variation, type Surface } from './sceneMaterials';
 import { surfaceWetness } from './sceneMetrics';
+import TerraceStreet from './TerraceStreet';
 import StreetPavement from './StreetPavement';
 import RoofConveyance from './RoofConveyance';
 import {outfallPose} from './flowPhysics';
@@ -162,8 +163,6 @@ export default function CatchmentContext({
   const pose=outfallPose(d,physics.config);
   const roadQ = f?.links.find((l) => l.id === 'property drain to kerb flow')?.discharge ?? 0;
   const ground = d.bottomY - d.nativeDepth - 0.08;
-  const houseZ = footZ - c.footpathWidth / 2 - c.roofEdgeDepth / 2 - 0.25,
-    houseHeight = 4.8;
   const atlas = useMemo(contextAtlas, []);
   useEffect(() => () => atlas.dispose(), [atlas]);
   const built = (
@@ -181,14 +180,6 @@ export default function CatchmentContext({
       map={atlas}
     />
   );
-  const windows = Array.from({ length: 12 }, (_, i) => ({
-    p: [
-      ((i % 6) / 5 - 0.5) * d.length * 0.66,
-      c.kerbHeight + 1.05 + Math.floor(i / 6) * 2.2,
-      houseZ + c.roofEdgeDepth / 2 + 0.012,
-    ] as [number, number, number],
-    s: [0.34, 0.65, 0.035] as [number, number, number],
-  }));
   return (
     <group
       name="catchment-context"
@@ -240,40 +231,7 @@ export default function CatchmentContext({
         [0.06, 0.003, Math.max(40, d.topWidth + 8)],
         '#cec8b5',
       )}
-      {c.roofArea > 0 && (
-        <group
-          name="terrace-fronts"
-          userData={{ contextOnly: true, roofCatchmentArea: c.roofArea }}
-        >
-          <SurfaceBox
-            name="terrace-foundation"
-            position={[0, (ground + c.kerbHeight) / 2, houseZ]}
-            size={[d.length * 0.75, c.kerbHeight - ground, c.roofEdgeDepth]}
-            kind="concrete"
-            wet={wet}
-          />
-          {built(
-            'terrace-wall',
-            [0, c.kerbHeight + houseHeight / 2, houseZ],
-            [d.length * 0.75, houseHeight, c.roofEdgeDepth],
-          )}
-          {built(
-            'terrace-roof',
-            [0, c.kerbHeight + houseHeight + 0.1, houseZ],
-            [d.length * 0.8, 0.18, c.roofEdgeDepth + 0.2],
-            sceneColours.roof,
-          )}
-          <Instances name="terrace-windows" items={windows} colour={sceneColours.trim} />
-          <Instances
-            name="terrace-doors"
-            items={[-1, 0, 1].map((i) => ({
-              p: [i * d.length * 0.25, c.kerbHeight + 0.95, houseZ + c.roofEdgeDepth / 2 + 0.025],
-              s: [0.42, 1.9, 0.05],
-            }))}
-            colour={sceneColours.roof}
-          />
-        </group>
-      )}
+      <TerraceStreet design={d} low={low} wet={wet}/>
       <RoofConveyance physics={physics} low={low} highlight={roofPath}/>
       <FlowTrace
         name="road-runoff"

@@ -22,6 +22,15 @@ for(const backend of ['gpu','worker'])test('Round 9C surface reconciliation '+ba
     await expect.poll(async()=>Number(await scene.getAttribute('data-surface-reference-error'))).toBeLessThan(.001);
   }
 });
+test('Round 9C perspective and orthographic stay bounded with a terrace row',async({page})=>{
+  await page.goto('/feature/S1');const scene=page.locator('.cad-scene');
+  await expect(scene).toHaveAttribute('data-camera-type','PerspectiveCamera',{timeout:60000});
+  expect(Number(await scene.getAttribute('data-house-count'))).toBeGreaterThanOrEqual(3);
+  const canvas=scene.locator('canvas');await canvas.hover();for(let i=0;i<12;i++)await page.mouse.wheel(0,400);
+  await expect.poll(async()=>Number(await canvas.getAttribute('data-camera-zoom'))).toBeGreaterThan(.3);
+  await page.getByRole('checkbox',{name:'Orthographic view',exact:true}).check();await expect(scene).toHaveAttribute('data-camera-type','OrthographicCamera');
+  await page.getByRole('checkbox',{name:'Orthographic view',exact:true}).uncheck();await expect(scene).toHaveAttribute('data-camera-type','PerspectiveCamera');
+});
 for(const asset of ['S1','R1'])test('Round 9C roof and drain flow '+asset,async({page})=>{
   const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error'&&/THREE|shader|WebGL/i.test(m.text()))errors.push(m.text());});
   await page.goto('/feature/'+asset);

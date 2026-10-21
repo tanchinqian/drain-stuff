@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, type ComponentRef, type RefObject } from 'react';
 import { useThree, useFrame } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
-import { Box3, Vector3, OrthographicCamera } from 'three';
+import { Box3, Vector3, OrthographicCamera, PerspectiveCamera } from 'three';
 export default function FitCamera({
   width,
   height,
@@ -22,6 +22,7 @@ export default function FitCamera({
   transition?: boolean;
 }) {
   const { camera, size, invalidate } = useThree();
+  const [distance,setDistance]=useState(25);
   const [boundsZoom, setBoundsZoom] = useState<number>();
   const initialized = useRef(false),
     movement = useRef<{
@@ -38,7 +39,8 @@ export default function FitCamera({
     if (camera instanceof OrthographicCamera)
       gl.domElement.dataset.cameraZoom = String(camera.zoom);
     const m = movement.current;
-    if (m && camera instanceof OrthographicCamera) {
+    if (camera instanceof PerspectiveCamera) gl.domElement.dataset.cameraZoom=String(distance/Math.max(.01,camera.position.distanceTo(controlsRef.current?.target??new Vector3(...target))));
+    if (m && (camera instanceof OrthographicCamera || camera instanceof PerspectiveCamera)) {
       m.t = Math.min(1, m.t + delta / 0.45);
       const t = 1 - Math.pow(1 - m.t, 3);
       camera.position.lerpVectors(m.from, m.to, t);
@@ -51,6 +53,25 @@ export default function FitCamera({
     }
   });
   useEffect(() => {
+    if(camera instanceof PerspectiveCamera){
+      const targetTo=new Vector3(...target),from=camera.position.clone(),targetFrom=controlsRef.current?.target.clone()??targetTo.clone();
+      const dir=new Vector3(...(direction??[-9,4,12])).normalize();
+      camera.position.copy(targetTo).add(dir);camera.lookAt(targetTo);camera.updateMatrixWorld(true);
+      const tan=Math.tan(camera.fov*Math.PI/360),aspect=size.width/Math.max(1,size.height);
+      let fit=Math.max(width/(2*tan*aspect),height/(2*tan));
+      if(bounds){
+        fit=0;
+        for(const x of [bounds.min.x,bounds.max.x])for(const y of [bounds.min.y,bounds.max.y])for(const z of [bounds.min.z,bounds.max.z]){
+          const p=new Vector3(x,y,z).applyMatrix4(camera.matrixWorldInverse);p.z+=1;
+          fit=Math.max(fit,p.z+Math.abs(p.x)/(tan*aspect),p.z+Math.abs(p.y)/tan);
+        }
+      }
+      fit=Math.max(2,fit*1.2);setDistance(fit);const to=targetTo.clone().addScaledVector(dir,fit);
+      if(transition&&initialized.current&&!matchMedia('(prefers-reduced-motion: reduce)').matches){
+        camera.position.copy(from);movement.current={from,to,targetFrom,targetTo,zoomFrom:1,zoomTo:1,t:0};
+      }else{camera.position.copy(to);controlsRef.current?.target.copy(targetTo);}
+      initialized.current=true;camera.updateProjectionMatrix();controlsRef.current?.update();invalidate();
+    }
     if (camera instanceof OrthographicCamera) {
       const from = camera.position.clone(),
         zoomFrom = camera.zoom,
@@ -125,6 +146,8 @@ export default function FitCamera({
       enablePan={false}
       minPolarAngle={0.15}
       maxPolarAngle={1.42}
+      minDistance={distance*.45}
+      maxDistance={distance*2.8}
       minZoom={fittedZoom * 0.6}
       maxZoom={fittedZoom * 3.5}
       zoomSpeed={0.7}

@@ -47,3 +47,9 @@ Replaced the separate deep ground slab and oversized rectangular hole with a con
 - Surface rendering now uses the grid depth, slope and velocity; folded leaves advect with the field. Debug exposes backend, resolution, volume/depth agreement and measured costs. Road top and flow terrain share the crossfall function.
 - Thirteen focused CPU tests passed (solver, leaf motion, ground and flow); real-GPU still-lake and wet/dry conservation passed. GPU and fallback live timeline checks passed at 0/18/45/165 minutes; section regressions passed after integration.
 - This is a real-time local display solver. Reconciliation is explicit engine forcing and can be large during seeks. It does not replace the hydraulic engine or claim site prediction. Final frame-review acceptance, comparative browser FPS and evidence recordings remain to be done.
+
+## Remaining Stage 0B — street and camera
+- Added five terrace units (three at Low), shared instanced facade/roof/window/gate/porch kits, back lane, frontage junction, parked vehicles, bins, trees/shrubs and distant silhouettes. Existing lamps, utility pole and covers remain, with additional frontage lamps.
+- Perspective 35° is the default; an orthographic toggle preserves the drawing option. Both camera types have bounded wheel zoom and fit transitions. Overcast gradient/fog and lighter asphalt/concrete/grass support the street context.
+- TypeScript passed, 11 ground/path/rain-bound tests passed, four S1/R1 flow/section browser checks passed, and the perspective/orthographic wheel-limit test passed. Final image review remains part of the evidence pass.
+- Context is typical and illustrative, not a surveyed neighbourhood model. No catchment area or engine values were changed to match the facade kit.

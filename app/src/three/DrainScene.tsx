@@ -43,6 +43,7 @@ export type Assembly = 'exploded' | 'assembled' | 'section';
 export type ViewMode = 'Operator' | 'Debug' | 'Troubleshoot';
 export type Offsets = Partial<Record<PartId, [number, number, number]>>;
 export interface Props {
+  orthographic?:boolean;
   roofPath?:boolean;
   sceneFaults?: Fault[];
   onShowFault?: (fault: Fault) => void;
@@ -272,11 +273,11 @@ function Model(props: Props) {
         new Vector3(
           -design.length / 2 - design.catchment.roadWidth - 1,
           design.bottomY,
-          -design.topWidth / 2 - 2,
+          -design.topWidth / 2 - 7,
         ),
         new Vector3(
-          design.length / 2 + 2,
-          design.catchment.roofArea > 0 ? 5.3 : 2,
+          design.length / 2 + 5,
+          5.6,
           design.topWidth / 2 + 2,
         ),
       );
@@ -385,7 +386,7 @@ function Model(props: Props) {
       <FitCamera
         transition
         bounds={fitBounds}
-        direction={fitBounds ? [-9, 9, 12] : undefined}
+        direction={fitBounds ? [-9, props.orthographic ? 9 : 4, 12] : undefined}
         width={
           props.physics
             ? Math.max(
@@ -628,18 +629,20 @@ export default function DrainScene(props: Props) {
       data-cut-axis={props.cutAxis}
       data-cut-position={props.cutPosition}
       data-camera-preset={props.cameraPreset ?? 'default'}
+      data-projection={!props.physics||props.orthographic?'orthographic':'perspective'}
       data-pipe-fill={props.physics?.frame?.pipeFill ?? 0}
       data-pipe-velocity={props.physics?.frame?.pipeVelocity ?? 0}
       data-underdrain-flow={props.physics?.frame?.flux.drain ?? 0}
       data-overflow-visible={(props.physics?.frame?.flux.overflow ?? 0) > 0}
     >
       <Canvas
-        key={props.reset}
+        key={props.reset+'-'+!!props.orthographic}
         onPointerMissed={() => props.onInspect?.()}
-        orthographic
+        orthographic={!props.physics||props.orthographic}
         camera={{
           position: props.physics ? [-18, 11, 16] : [19, 15, 23],
-          zoom: 32,
+          zoom: !props.physics||props.orthographic ? 32 : 1,
+          fov:35,
           near: 0.1,
           far: 180,
         }}
@@ -715,6 +718,8 @@ function RenderBudget({
     metadataTime.current += delta;
     if (element && (!active || metadataTime.current >= 0.2)) {
       metadataTime.current = 0;
+      element.dataset.cameraType=camera.type;
+      element.dataset.houseCount=String(scene.getObjectByName('terrace-street')?.userData.houseCount??0);
       element.dataset.waterSurfaceHeight = surface
         ? new Box3().setFromObject(surface).max.y.toString()
         : '0';

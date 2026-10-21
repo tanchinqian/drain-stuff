@@ -4,11 +4,11 @@ import type { DrainDesign } from '../simulation/physics/design';
 export type Point3 = [number,number,number];
 export function roofRunoffPath(d: DrainDesign) {
   const c=d.catchment, foot=-d.topWidth/2-c.footpathWidth/2;
-  const front=foot-c.footpathWidth/2-.25+.14, x=-d.length*.34, gutter=-d.length/2-.78;
+  const front=foot-c.footpathWidth/2-.35+.14, x=-d.length*.34, gutter=-d.length/2-.78;
   const points:Point3[]=[
     [d.length*.35,c.kerbHeight+5,front-.3], [d.length*.35,c.kerbHeight+4.8,front],
-    [x,c.kerbHeight+4.8,front], [x,.2,front], [x,.02,front+.14],
-    [gutter,.02,front+.14], [gutter,.02,foot+c.footpathWidth/2+.1],
+    [x,c.kerbHeight+4.8,front], [x,.2,front], [x,.02,front+.05],
+    [gutter,.02,front+.05], [gutter,.02,foot+c.footpathWidth/2+.1],
     [gutter,.02,0], [-d.length/2-.4,.02,0], [-d.length/2+.1,.01,0],
   ];
   return ['Roof','Eaves gutter','Downpipe','Shoe','Lot drain','Covered crossing','Street gutter','Kerb opening','Forebay'].map((name,i)=>({name,start:points[i],end:points[i+1]}));
