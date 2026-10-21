@@ -20,3 +20,7 @@ Excavation/ground continuity is being handled with Stage 0B because both use the
 ## Stage 0C — visible opening rain
 Fresh feature calculations open at 40% of rain duration, playing unless reduced motion is requested. Feature playback loops the full event including recovery; explicit seeking pauses. Saved replay clocks remain preserved. Rain status and four event markers are visible. TypeScript and the focused browser check passed.
 
+
+## Stage 0B — ground continuity, first two items
+Replaced the separate deep ground slab and oversized rectangular hole with a continuous surface and fitted excavation including inlet and outfall corridors, closed walls and a floor. Soil only appears within the pit; paving retains a supporting base. Two numerical geometry checks cover 10 radial directions and 89 distances each; both S1/R1 section browser checks pass again. The later surroundings/perspective work remains pending.
+

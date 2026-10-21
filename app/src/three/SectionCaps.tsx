@@ -92,7 +92,7 @@ export default function SectionCaps({
         material.map.colorSpace = THREE.SRGBColorSpace;
         material.map.wrapS = material.map.wrapT = THREE.RepeatWrapping;
         material.normalMap = null;
-        material.map.repeat.set(100, 100);
+        material.map.repeat.set(12, 12);
         material.map.needsUpdate = true;
       }
       material.side = THREE.DoubleSide;

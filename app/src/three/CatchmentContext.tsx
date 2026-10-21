@@ -4,9 +4,7 @@ import {
   Color,
   InstancedMesh,
   Object3D,
-  Shape,
-  Path,
-  ShapeGeometry,
+  DoubleSide,
   type Texture,
 } from 'three';
 import { drainDesign } from '../simulation/physics/design';
@@ -16,6 +14,7 @@ import { WaterMaterial } from './WaterEffects';
 import FlowTrace from './FlowTrace';
 import { contextAtlas, sceneColours, surfaceMaps, variation, type Surface } from './sceneMaterials';
 import { surfaceWetness } from './sceneMetrics';
+import { streetGeometry } from './streetGeometry';
 
 function SurfaceBox({
   name,
@@ -113,45 +112,32 @@ function AtlasBox({
   );
 }
 function Terrain({
-  length,
-  width,
-  y,
+  physics,
 }: {
-  length: number;
-  width: number;
-  y: number;
+  physics: ModelPhysics;
 }) {
-  const geometry = useMemo(() => {
-    const s = new Shape();
-    s.moveTo(-70, -70);
-    s.lineTo(70, -70);
-    s.lineTo(70, 70);
-    s.lineTo(-70, 70);
-    s.closePath();
-    const hole = new Path();
-    hole.moveTo(-length / 2 - 0.65, -width / 2 - 0.2);
-    hole.lineTo(-length / 2 - 0.65, width / 2 + 0.2);
-    hole.lineTo(length / 2 + 2, width / 2 + 0.2);
-    hole.lineTo(length / 2 + 2, -width / 2 - 0.2);
-    hole.closePath();
-    s.holes.push(hole);
-    const g = new ShapeGeometry(s);
-    g.rotateX(-Math.PI / 2);
-    return g;
-  }, [length, width]);
+  const geometry=useMemo(()=>streetGeometry(drainDesign(physics.config),physics.config.kind==='inlet'),[physics.config]);
   const maps = useMemo(() => surfaceMaps('grass'), []);
   useEffect(
     () => () => {
-      geometry.dispose();
+      geometry.top.dispose();geometry.walls.dispose();geometry.floor.dispose();
       maps.map.dispose();
       maps.normalMap.dispose();
     },
     [geometry, maps],
   );
   return (
-    <mesh name="surrounding-terrain" geometry={geometry} position={[0, y, 0]} receiveShadow>
-      <meshStandardMaterial {...maps} roughness={0.94} />
-    </mesh>
+    <group name="street-ground">
+      <mesh name="surrounding-terrain" geometry={geometry.top} receiveShadow>
+        <meshStandardMaterial {...maps} roughness={0.94} polygonOffset polygonOffsetFactor={2} polygonOffsetUnits={2} />
+      </mesh>
+      <mesh name="excavation-walls" geometry={geometry.walls} receiveShadow>
+        <meshStandardMaterial color="#b8a78e" roughness={1} side={DoubleSide} />
+      </mesh>
+      <mesh name="excavation-floor" geometry={geometry.floor} receiveShadow>
+        <meshStandardMaterial color="#b8a78e" roughness={1} side={DoubleSide} />
+      </mesh>
+    </group>
   );
 }
 export default function CatchmentContext({
@@ -204,21 +190,7 @@ export default function CatchmentContext({
       name="catchment-context"
       userData={{ pavedArea: c.pavedArea, roofArea: c.roofArea, gutterSlope: c.gutterSlope }}
     >
-      <SurfaceBox
-        name="surrounding-ground"
-        position={[0, ground - 0.12, 0]}
-        size={[140, 0.24, 140]}
-        kind="soil"
-        wet={wet}
-      />
-      <Terrain length={d.length} width={d.topWidth} y={c.kerbHeight - 0.02} />
-      <SurfaceBox
-        name="excavation-plinth"
-        position={[0, ground + 0.005, 0]}
-        size={[d.length + 1, 0.08, d.topWidth + 1]}
-        kind="soil"
-        wet={wet}
-      />
+      <Terrain physics={physics} />
       <SurfaceBox
         name="road-foundation"
         position={[roadX, (ground + c.kerbHeight - 0.12) / 2, 0]}
