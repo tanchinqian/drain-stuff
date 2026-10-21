@@ -2574,3 +2574,7 @@ main > .about {
 .flow-legend .flow-strip li { min-width:105px; flex:1; }
 .flow-strip { font-variant-numeric:tabular-nums; }
 @media(max-width:600px) { .section-cut-heading { gap:8px; } .section-cut-heading > label { width:100%; } .section-cut .segments button { padding:8px 10px; } .section-cut-heading .segments span { font-size:11px; } .scene-design-stamp { font-size:10px; bottom:6px; right:6px; } }
+/* Storm events remain usable while the shared model clock plays. */
+.storm-markers { display:flex; gap:6px; flex-wrap:wrap; margin:8px 0; }
+.storm-markers button { font-size:12px; padding:5px 8px; }
+.scene-rain-status { position:absolute; left:12px; top:12px; background:#f2eee4; color:#2f2b26; border:1px solid #cfc7b4; border-radius:3px; padding:7px 10px; font-size:13px; pointer-events:none; }

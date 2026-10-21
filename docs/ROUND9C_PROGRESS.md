@@ -16,3 +16,7 @@ Excavation/ground continuity is being handled with Stage 0B because both use the
 ## Remaining stages
 
 0C rain opening; 0B street continuity; 0D faults; 1 rain distribution; 3/3A flow path; 2 surface solver; remaining surroundings/material interactions and evidence.
+
+## Stage 0C — visible opening rain
+Fresh feature calculations open at 40% of rain duration, playing unless reduced motion is requested. Feature playback loops the full event including recovery; explicit seeking pauses. Saved replay clocks remain preserved. Rain status and four event markers are visible. TypeScript and the focused browser check passed.
+

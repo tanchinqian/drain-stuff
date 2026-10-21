@@ -647,6 +647,9 @@ export default function DrainScene(props: Props) {
         <Model {...props} lowQuality={low} />
       </Canvas>
       {props.physics && <span className="scene-design-stamp">Typical design, not surveyed</span>}
+      {props.physics?.frame && <span className="scene-rain-status">
+        {props.physics.frame.rain > 0 ? `Rain: ${props.physics.frame.rain * 3.6e6 >= 50 ? 'Heavy' : props.physics.frame.rain * 3.6e6 >= 10 ? 'Moderate' : 'Light'} ${(props.physics.frame.rain * 3.6e6).toFixed(1)} mm/h` : 'Rain stopped'}
+      </span>}
       {props.mode === 'Debug' && (
         <output className="scene-performance">
           {fps ? fps.toFixed(0) + ' FPS' : 'Measuring FPS'} ·{' '}

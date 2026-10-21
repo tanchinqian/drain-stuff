@@ -1,5 +1,18 @@
 import { test, expect } from '@playwright/test';
 import { mkdir } from 'node:fs/promises';
+test('Round 9C opens in rain and allows a paused dry state', async ({page}) => {
+  await page.goto('/feature/S1');
+  const timeline=page.getByRole('slider',{name:'Storm timeline',exact:true}), scene=page.locator('.cad-scene');
+  await expect(timeline).toBeEnabled({timeout:60000});
+  await expect(page.getByRole('button',{name:'Pause storm',exact:true})).toBeVisible();
+  await expect(scene.locator('.scene-rain-status')).toContainText('mm/h');
+  expect(Number(await scene.getAttribute('data-rain-count'))).toBeGreaterThan(0);
+  await expect(page.locator('[aria-label="Storm events"] button')).toHaveCount(4);
+  await timeline.fill('90');
+  await expect(scene.locator('.scene-rain-status')).toHaveText('Rain stopped');
+  await expect(scene).toHaveAttribute('data-rain-count','0');
+  await expect(page.getByRole('button',{name:'Play storm',exact:true})).toBeVisible();
+});
 for (const id of ['S1', 'R1']) test('Round 9C section scope and thirty axis changes ' + id, async ({page}) => {
   test.setTimeout(180000);
   await page.goto('/feature/' + id);

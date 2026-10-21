@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '../../api/client';
 import { testMean } from '../../utils';
 import { featureIds, runConfig, useSimulation } from './store';
-import { peakFrame, type PhysicsRun } from './engine';
+import { type PhysicsRun } from './engine';
 export default function SimulationDriver() {
   const { pathname: routePath } = useLocation();
   // Match the router's tolerance for repeated and trailing slashes.
@@ -88,12 +88,14 @@ export default function SimulationDriver() {
       if (needed.every((id) => results[id])) {
         clearTimeout(timeout);
         const current = useSimulation.getState();
-        const peak = peakFrame(results[ids[0]]);
+        const openInRain = pathname.startsWith('/feature/') && !current.replay?.preserveClock && current.second === 0;
+        const opening = results[ids[0]].config.values.duration.value * 0.4;
         useSimulation.setState({
           runs: results,
           busy: false,
           error: null,
-          second: !current.replay?.preserveClock && current.second === 0 ? peak.second : current.second,
+          second: openInRain ? opening : current.second,
+          playing: openInRain ? !window.matchMedia('(prefers-reduced-motion: reduce)').matches : current.playing,
           replay: current.replay ? { ...current.replay, preserveClock: true } : null,
         });
         worker.terminate();
@@ -134,8 +136,9 @@ export default function SimulationDriver() {
       const candidate = s.second + speed * elapsed;
       const rainEnd = s.configs.S1.values.duration.value;
       const pauseForRecovery = pathname === '/' && s.second < rainEnd && candidate >= rainEnd;
-      const second = pauseForRecovery ? rainEnd : Math.min(end, candidate);
-      useSimulation.setState({ second, playing: !pauseForRecovery && second < end });
+      const loop = pathname.startsWith('/feature/') && candidate >= end;
+      const second = loop ? candidate % end : pauseForRecovery ? rainEnd : Math.min(end, candidate);
+      useSimulation.setState({ second, playing: loop || (!pauseForRecovery && second < end) });
     }, 100);
     return () => {
       clearInterval(timer);
