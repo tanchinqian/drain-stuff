@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import {leafGeometry} from './FloatingLeaves';
+import { leafGeometry } from './FloatingLeaves';
 import { InstancedMesh, Object3D, BoxGeometry, MeshStandardMaterial, type Plane } from 'three';
 import type { Fault, PartId } from '../api/types';
 import type { ModelPhysics } from './PhysicsOverlay';
@@ -32,7 +32,10 @@ export default function FaultDeposits({
 }) {
   const d = drainDesign(physics.config);
   // Recorded obstruction cues are illustrative; they never change the hydraulic configuration.
-  const amount = Math.max(depositAmount(physics.config, id, confirmed), finding?.type==='blockage' ? .45 : finding?.type==='sediment' ? .3 : 0);
+  const amount = Math.max(
+    depositAmount(physics.config, id, confirmed),
+    finding?.type === 'blockage' ? 0.45 : finding?.type === 'sediment' ? 0.3 : 0,
+  );
   const deposit = useMemo(() => {
     if (amount <= 0) return;
     const count = Math.ceil(Math.max(0, amount) * 55),
@@ -43,14 +46,26 @@ export default function FaultDeposits({
       roughness: 0.9,
       clippingPlanes: plane ? [plane] : [],
     });
-    const mesh = new InstancedMesh(id==='inlet'?leafGeometry():new BoxGeometry(1, 1, 1), material, count),
+    const mesh = new InstancedMesh(
+        id === 'inlet' ? leafGeometry() : new BoxGeometry(1, 1, 1),
+        material,
+        count,
+      ),
       o = new Object3D();
     for (let i = 0; i < count; i++) {
       o.position.set(
         id === 'underdrain'
           ? (variation(i + 51) - 0.5) * d.length
-          : -d.length / 2 + (id === 'inlet' ? physics.config.kind==='inlet' ? .2 : -0.4 : 0.8) + (variation(i + 72) - 0.5) * 0.2,
-        id === 'underdrain' ? d.pipeY - d.pipeDiameter * 0.38 : physics.config.kind==='inlet' && finding?.type==='blockage' ? d.depressionDepth+.025 : id === 'sock' ? 0.03 : 0.015,
+          : -d.length / 2 +
+              (id === 'inlet' ? (physics.config.kind === 'inlet' ? 0.2 : -0.4) : 0.8) +
+              (variation(i + 72) - 0.5) * 0.2,
+        id === 'underdrain'
+          ? d.pipeY - d.pipeDiameter * 0.38
+          : physics.config.kind === 'inlet' && finding?.type === 'blockage'
+            ? d.depressionDepth + 0.025
+            : id === 'sock'
+              ? 0.03
+              : 0.015,
         (variation(i + 90) - 0.5) * 0.8,
       );
       o.rotation.set(variation(i + 5) * 0.3, variation(i + 6) * 6, variation(i + 7) * 0.3);
@@ -63,7 +78,19 @@ export default function FaultDeposits({
     mesh.userData.faultFinding = finding?.id;
     mesh.castShadow = mesh.receiveShadow = true;
     return mesh;
-  }, [id, amount, d.length, d.pipeY, d.pipeDiameter, plane, finding?.id, finding?.type, confirmed, physics.config.kind, d.depressionDepth]);
+  }, [
+    id,
+    amount,
+    d.length,
+    d.pipeY,
+    d.pipeDiameter,
+    plane,
+    finding?.id,
+    finding?.type,
+    confirmed,
+    physics.config.kind,
+    d.depressionDepth,
+  ]);
   useEffect(
     () => () => {
       if (!deposit) return;

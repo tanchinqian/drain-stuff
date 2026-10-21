@@ -9,6 +9,9 @@ test('rain, wetting and peak water are understandable without opening settings',
   await page.goto('/feature/S1');
   const timeline = page.getByRole('slider', { name: 'Storm timeline', exact: true });
   await expect(timeline).toBeEnabled({ timeout: 45000 });
+  // Round 9C opens in rain, already playing; explicit reset still allows playback from zero.
+  await expect(page.getByRole('button', { name: 'Pause storm', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Reset storm', exact: true }).click();
   await page.getByRole('button', { name: 'Play storm', exact: true }).click();
   await expect.poll(async () => Number(await timeline.inputValue())).toBeGreaterThan(0);
   await page.getByRole('button', { name: 'Pause storm', exact: true }).click();

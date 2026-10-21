@@ -24,10 +24,14 @@ const emptyRows: TriageRow[] = [];
 const MapScene = memo(NeighbourhoodScene);
 const MapPlan = memo(PlanMap);
 const modeNames: Record<string, string> = {
-  installed: 'As installed', cleared: 'If cleared', capacity: 'Capacity limit',
+  installed: 'As installed',
+  cleared: 'If cleared',
+  capacity: 'Capacity limit',
 };
 const parameterNames: Record<string, string> = {
-  ks: 'soil conductivity', drainC: 'outlet capacity', peak: 'rainfall peak',
+  ks: 'soil conductivity',
+  drainC: 'outlet capacity',
+  peak: 'rainfall peak',
 };
 export default function StormBoard() {
   const requestedJob = useRef<string | null>(null);
@@ -95,7 +99,12 @@ export default function StormBoard() {
   const rows = triage.data?.rows ?? emptyRows;
   const rainPlayback = useMemo<RainPlayback | undefined>(() => {
     const config = rows[0]?.asInstalled.config;
-    return config ? { points: hyetograph(config, 'alternating-block'), peakMmHr: config.values.peak.value * 3.6e6 } : undefined;
+    return config
+      ? {
+          points: hyetograph(config, 'alternating-block'),
+          peakMmHr: config.values.peak.value * 3.6e6,
+        }
+      : undefined;
   }, [rows]);
   useEffect(() => {
     if (!jobId || !rows.length) return;
@@ -110,21 +119,35 @@ export default function StormBoard() {
   }, [rows, jobId, revealMap]);
   const watchStorm = () => {
     setLayer('rain');
-    useSimulation.setState({ second: 0, playing: !matchMedia('(prefers-reduced-motion: reduce)').matches });
+    useSimulation.setState({
+      second: 0,
+      playing: !matchMedia('(prefers-reduced-motion: reduce)').matches,
+    });
     revealMap();
   };
-  const scenarioPeak = preset === 'custom' ? peak : stormPresets[preset as keyof typeof stormPresets].peakMmHr;
+  const scenarioPeak =
+    preset === 'custom' ? peak : stormPresets[preset as keyof typeof stormPresets].peakMmHr;
   const mapPeak = rainPlayback?.peakMmHr ?? scenarioPeak;
-  const rain = useMemo<ZoneRain[]>(() => mapPeak > 0
-    ? (data.data?.zones ?? []).map((zone) => ({
-        synthetic: true, zone: zone.id, peakMmPerHr: mapPeak, totalMm: 0,
-      }))
-    : [], [data.data?.zones, mapPeak]);
+  const rain = useMemo<ZoneRain[]>(
+    () =>
+      mapPeak > 0
+        ? (data.data?.zones ?? []).map((zone) => ({
+            synthetic: true,
+            zone: zone.id,
+            peakMmPerHr: mapPeak,
+            totalMm: 0,
+          }))
+        : [],
+    [data.data?.zones, mapPeak],
+  );
   const ranks = useMemo(() => Object.fromEntries(rows.map((r) => [r.asset, r.rank])), [rows]);
-  const choose = useCallback((id: string) => {
-    select(id);
-    useSelection.getState().selectHouse(null);
-  }, [select]);
+  const choose = useCallback(
+    (id: string) => {
+      select(id);
+      useSelection.getState().selectHouse(null);
+    },
+    [select],
+  );
   async function run() {
     useSimulation.setState({ playing: false });
     setPending(true);
@@ -146,15 +169,17 @@ export default function StormBoard() {
       setPending(false);
     }
   }
-  const working = pending || (!job.isError && !triage.isError && (
-    (!!jobId && job.isPending) ||
-    ['queued', 'running'].includes(job.data?.status ?? '') ||
-    (job.data?.status === 'completed' && triage.isPending)
-  ));
+  const working =
+    pending ||
+    (!job.isError &&
+      !triage.isError &&
+      ((!!jobId && job.isPending) ||
+        ['queued', 'running'].includes(job.data?.status ?? '') ||
+        (job.data?.status === 'completed' && triage.isPending)));
   const progress = pending ? null : job.data?.progress;
   const progressMax = progress?.total ?? 1;
-  const progressValue = !pending && job.data?.status === 'completed'
-    ? progressMax : progress?.completed;
+  const progressValue =
+    !pending && job.data?.status === 'completed' ? progressMax : progress?.completed;
   return (
     <>
       <div className="page-heading">
@@ -166,7 +191,16 @@ export default function StormBoard() {
           Observation history
         </Link>
       </div>
-      <SectionIndex items={[["Overview","#storm-heading"],["Replay","#board-replay"],["Parts",'/feature/'+selected+'#feature-parts'],["Sensors","/sensors"]]}><ModelDetails ownerId={selected}/></SectionIndex>
+      <SectionIndex
+        items={[
+          ['Overview', '#storm-heading'],
+          ['Replay', '#board-replay'],
+          ['Parts', '/feature/' + selected + '#feature-parts'],
+          ['Sensors', '/sensors'],
+        ]}
+      >
+        <ModelDetails ownerId={selected} />
+      </SectionIndex>
       <section className="panel storm-inputs" aria-labelledby="storm-heading">
         <div>
           <h2 id="storm-heading">Set the storm to compare</h2>
@@ -174,7 +208,10 @@ export default function StormBoard() {
             Entered scenarios help prioritise upkeep before a storm. These rainfall values are not a
             forecast.
           </p>
-          <p className="small">Run storm calculates new results, then plays the rainfall. Watch storm replays the saved run without recalculating.</p>
+          <p className="small">
+            Run storm calculates new results, then plays the rainfall. Watch storm replays the saved
+            run without recalculating.
+          </p>
         </div>
         {warnings.data?.available && !!warnings.data.warnings?.length && (
           <details>
@@ -287,7 +324,10 @@ export default function StormBoard() {
             aria-valuemax={progressMax}
             aria-valuenow={progressValue}
           >
-            <span aria-hidden="true" style={{ transform: `scaleX(${(progressValue ?? 0) / progressMax})` }} />
+            <span
+              aria-hidden="true"
+              style={{ transform: `scaleX(${(progressValue ?? 0) / progressMax})` }}
+            />
           </div>
         )}
         {job.data && (
@@ -309,12 +349,38 @@ export default function StormBoard() {
           <section className="panel triage-register">
             <h2>Upkeep priority</h2>
             <p className="sub">{label}. Capacity-limited assets need owner review.</p>
-            <p className="small comparison-legend"><span><i className="legend-installed"/>As installed</span><span><i className="legend-cleared"/>If cleared</span><span><i className="legend-capacity"/>Capacity limit</span></p>
-            {!!rows.length && rows.some(row => (faults.data ?? []).filter(f=>f.featureId===row.asset&&confirmed(f)).map(f=>f.id).sort().join()!==[...row.faultIds].sort().join()) && <p className="notice">Fault confirmations have changed since this saved run. Run the storm again to update the comparison.</p>}
+            <p className="small comparison-legend">
+              <span>
+                <i className="legend-installed" />
+                As installed
+              </span>
+              <span>
+                <i className="legend-cleared" />
+                If cleared
+              </span>
+              <span>
+                <i className="legend-capacity" />
+                Capacity limit
+              </span>
+            </p>
+            {!!rows.length &&
+              rows.some(
+                (row) =>
+                  (faults.data ?? [])
+                    .filter((f) => f.featureId === row.asset && confirmed(f))
+                    .map((f) => f.id)
+                    .sort()
+                    .join() !== [...row.faultIds].sort().join(),
+              ) && (
+                <p className="notice">
+                  Fault confirmations have changed since this saved run. Run the storm again to
+                  update the comparison.
+                </p>
+              )}
             {!rows.length && (
               <p className="empty-note">
-                Run the storm to compare As installed, If cleared and Capacity limit for S1, S2, S3, I1
-                and the typical roadside inlet R1.
+                Run the storm to compare As installed, If cleared and Capacity limit for S1, S2, S3,
+                I1 and the typical roadside inlet R1.
               </p>
             )}
             <div className="triage-rows">
@@ -362,8 +428,18 @@ export default function StormBoard() {
                           ? 'Upkeep opportunity — compare clearing'
                           : 'No overflow in this scenario'}
                     </p>
-                    <p className="comparison-difference">{row.capacityLimited ? 'Escalate: still overflows when cleared' : row.asInstalled.summary.overflowM3-row.ifCleared.summary.overflowM3 > 1e-8 ? `Clearing the fault removes ${(row.asInstalled.summary.overflowM3-row.ifCleared.summary.overflowM3).toFixed(3)} m³ of overflow` : 'No overflow to remove in this scenario'}</p>
-                    {row.capacityLimited && Math.abs(row.asInstalled.summary.overflowM3-row.ifCleared.summary.overflowM3)<1e-8 && <p className="small">No difference: capacity-limited</p>}
+                    <p className="comparison-difference">
+                      {row.capacityLimited
+                        ? 'Escalate: still overflows when cleared'
+                        : row.asInstalled.summary.overflowM3 - row.ifCleared.summary.overflowM3 >
+                            1e-8
+                          ? `Clearing the fault removes ${(row.asInstalled.summary.overflowM3 - row.ifCleared.summary.overflowM3).toFixed(3)} m³ of overflow`
+                          : 'No overflow to remove in this scenario'}
+                    </p>
+                    {row.capacityLimited &&
+                      Math.abs(
+                        row.asInstalled.summary.overflowM3 - row.ifCleared.summary.overflowM3,
+                      ) < 1e-8 && <p className="small">No difference: capacity-limited</p>}
                     <div
                       className="mode-comparison"
                       aria-label={row.asset + ' overflow comparison'}
@@ -375,7 +451,12 @@ export default function StormBoard() {
                       ].map(([name, raw]) => {
                         const m = raw as TriageRow['asInstalled'];
                         return (
-                          <div className={"mode-line mode-"+String(name).toLowerCase().replaceAll(" ","-")} key={String(name)}>
+                          <div
+                            className={
+                              'mode-line mode-' + String(name).toLowerCase().replaceAll(' ', '-')
+                            }
+                            key={String(name)}
+                          >
                             <span>{String(name)}</span>
                             <span className="mode-track">
                               <span style={{ width: `${(m.summary.overflowM3 / max) * 100}%` }} />
@@ -425,7 +506,14 @@ export default function StormBoard() {
                       >
                         Replay in 3D
                       </button>
-                      {!!related.length && <Link className="button" to={`/feature/${row.asset}?stormRunId=${jobId}&mode=installed&part=${related[0].partId}&showFault=1`}>Show fault</Link>}
+                      {!!related.length && (
+                        <Link
+                          className="button"
+                          to={`/feature/${row.asset}?stormRunId=${jobId}&mode=installed&part=${related[0].partId}&showFault=1`}
+                        >
+                          Show fault
+                        </Link>
+                      )}
                       <Link
                         className="button"
                         to={
@@ -487,7 +575,10 @@ export default function StormBoard() {
                 Rainfall layer opacity
                 <input
                   aria-label="Rainfall layer opacity"
-                  type="range" min="0" max="75" step="5"
+                  type="range"
+                  min="0"
+                  max="75"
+                  step="5"
                   value={cloudOpacity}
                   disabled={layer !== 'rain'}
                   onChange={(e) => setCloudOpacity(Number(e.target.value))}
@@ -497,7 +588,8 @@ export default function StormBoard() {
             </div>
             {!rainPlayback && (
               <p className="small rainfall-instant">
-                Rainfall preview · {scenarioPeak} mm/h across all zones. Run a storm to play its timeline. Not live radar.
+                Rainfall preview · {scenarioPeak} mm/h across all zones. Run a storm to play its
+                timeline. Not live radar.
               </p>
             )}
             {data.data &&
@@ -533,7 +625,8 @@ export default function StormBoard() {
               <div className="heat-legend" aria-label="Rainfall intensity legend">
                 {radarStops.map((stop) => (
                   <span key={stop.value}>
-                    <i style={{ background: stop.color }} />{stop.label}
+                    <i style={{ background: stop.color }} />
+                    {stop.label}
                   </span>
                 ))}
               </div>

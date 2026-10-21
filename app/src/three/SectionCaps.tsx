@@ -54,7 +54,7 @@ export default function SectionCaps({
         const mask = new THREE.Mesh(object.geometry, material);
         mask.userData.sectionPass = true;
         mask.frustumCulled = false;
-        if (side === THREE.BackSide) mask.onBeforeRender = renderer => renderer.clearStencil();
+        if (side === THREE.BackSide) mask.onBeforeRender = (renderer) => renderer.clearStencil();
         mask.matrixAutoUpdate = false;
         mask.matrix.copy(object.matrix);
         mask.renderOrder = order;

@@ -92,14 +92,20 @@ export default function PhysicsControls({ ownerId }: { ownerId: string }) {
           onChange={(e) => state.seek(Number(e.target.value) * 60)}
         />
       </label>
-      {run && <div className="storm-markers" aria-label="Storm events">
-        {[
-          ['Rain starts', run.frames.find(f => f.rain > 0)?.second ?? 0],
-          ['Peak intensity', run.frames.reduce((a,b) => b.rain > a.rain ? b : a).second],
-          ['Rain ends', duration],
-          ['Peak ponding', peakFrame(run).second],
-        ].map(([label, at]) => <button key={label} onClick={() => state.seek(Number(at))}>{label} · {Math.round(Number(at)/60)} min</button>)}
-      </div>}
+      {run && (
+        <div className="storm-markers" aria-label="Storm events">
+          {[
+            ['Rain starts', run.frames.find((f) => f.rain > 0)?.second ?? 0],
+            ['Peak intensity', run.frames.reduce((a, b) => (b.rain > a.rain ? b : a)).second],
+            ['Rain ends', duration],
+            ['Peak ponding', peakFrame(run).second],
+          ].map(([label, at]) => (
+            <button key={label} onClick={() => state.seek(Number(at))}>
+              {label} · {Math.round(Number(at) / 60)} min
+            </button>
+          ))}
+        </div>
+      )}
       {!reduced && (
         <label className="field physics-speed">
           Playback speed

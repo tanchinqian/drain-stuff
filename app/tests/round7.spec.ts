@@ -34,7 +34,25 @@ for (const id of ['S1', 'I1', 'S3', 'T1'])
           b.ponding > a.ponding || (b.ponding === a.ponding && b.flux.inlet > a.flux.inlet) ? b : a,
         run.frames[0],
       );
+      const { mockRequest } = await import('/src/api/mock/index.ts');
+      const faults = await mockRequest('/faults');
+      const faultParts = [
+        ...new Set(
+          faults
+            .filter(
+              (f) =>
+                f.featureId === id &&
+                !f.id.startsWith('SIM-') &&
+                f.status !== 'closed' &&
+                ['detected', 'confirmed', 'assigned', 'cleared'].includes(
+                  f.workOrder?.state ?? 'detected',
+                ),
+            )
+            .map((f) => f.partId),
+        ),
+      ];
       return {
+        faultParts,
         peak: peak.second,
         duration: run.config.values.duration.value,
         width: run.config.values.width.value,
@@ -57,7 +75,12 @@ for (const id of ['S1', 'I1', 'S3', 'T1'])
     await page.locator('.cad-scene').scrollIntoViewIfNeeded();
     await expect
       .poll(async () => page.locator('.cad-scene').getAttribute('data-fault-outlines'))
-      .toBe('0');
+      .toBe(String(state.faultParts.length));
+    await expect
+      .poll(async () =>
+        Number(await page.locator('.cad-scene').getAttribute('data-projected-width')),
+      )
+      .toBeGreaterThanOrEqual(0.6);
     const projectedWidth = Number(
       await page.locator('.cad-scene').getAttribute('data-projected-width'),
     );
@@ -125,17 +148,21 @@ for (const id of ['S1', 'I1', 'S3', 'T1'])
     if (id === 'S1') {
       await timeline.fill(String(Math.round(state.peak / 60)));
       await page.locator('.storm-disclosure > summary').click();
-      await page.getByRole('combobox', {name:'Simulation scenario',exact:true}).fill('Clogged sock');
-      await page.getByRole('option', {name:'Clogged sock',exact:true}).click();
-      await expect(timeline).toBeEnabled({timeout:60000});
+      await page
+        .getByRole('combobox', { name: 'Simulation scenario', exact: true })
+        .fill('Clogged sock');
+      await page.getByRole('option', { name: 'Clogged sock', exact: true }).click();
+      await expect(timeline).toBeEnabled({ timeout: 60000 });
       await timeline.fill('25');
       await page
         .locator('.part-list')
         .getByRole('button', { name: 'Compost filter sock', exact: true })
         .click();
       await expect
-        .poll(async () => page.locator('.cad-scene').getAttribute('data-fault-outlines'))
-        .toBe('1');
+        .poll(async () =>
+          (await page.locator('.cad-scene').getAttribute('data-outline-parts'))?.split(','),
+        )
+        .toContain('sock');
     }
     await page.getByRole('button', { name: 'Jump to peak water', exact: true }).click();
     await page.getByRole('button', { name: 'Debug', exact: true }).click();

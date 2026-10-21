@@ -15,7 +15,7 @@ All motion is a display of engine or constrained surface-grid values. No interac
 | Compost sock | Clog/wetness darkening; raised, rough obstacle in the surface grid gives upstream backwater; inlet-flux-driven seepage trace and recorded deposit meshes. | Material sock shading/head-difference test; fault cue presence/removal browser checks |
 | Check dams/rock dissipator | Installed dam crests obstruct the grid. Spill requires head above crest and downstream water; local head difference sets the illustrative weir sheet/droplet rate. Rock roughness changes local velocity; Froude-derived foam marks turbulence. | Dry/overtopped dam tests; material spill gating; field screenshots |
 | Vegetation | Existing wind sway plus grid-velocity bending; lower blades darken where grid water wets them. | Browser shader check; wet/peak captures |
-| Leaves/litter | Folded leaf meshes rest on soil/water and advect at sampled grid velocity. Restriction rules stop leaves at inlet/sock; recorded obstruction meshes cover the inlet for a blockage finding. | Leaf advection/trap test; fault cue screenshots and verified-fault removal test |
+| Leaves/litter | Separate bed and road populations of folded leaf meshes rest on soil/water and advect at sampled grid velocity. Road leaves remain outside section clipping. Restriction rules stop leaves at inlet/sock; recorded obstruction meshes cover the inlet for a blockage finding. | Leaf advection/trap test; fault cue screenshots and verified-fault removal test |
 
 ## Limits
 
@@ -23,3 +23,9 @@ All motion is a display of engine or constrained surface-grid values. No interac
 - Fine splash specks, foam, chip flotation and leaf count are representative visuals, not separately conserved water or sediment masses. The surface solver stores conserved water; rain impulses have zero net volume.
 - Internal dam sheets use local display-grid head differences. Engine inlet/outlet/overflow quantities remain authoritative and are reported separately in the stage strip.
 - Source-to-sink routing in the display grid is constrained to engine bed and kerb-node storage. It is not a calibrated street flood prediction.
+
+## Final integration corrections
+
+- The swale outlet headwall has a circular opening aligned to the pipe; a ray test checks both the open bore and the surrounding solid wall.
+- The receiving outfall film uses discharge divided by width and velocity for its illustrative depth, and the engine exit velocity drives its moving detail. This receiving apron lies downstream of the engine boundary; it is not additional ledger storage.
+- Particle timing sums the active ballistic and leaf update costs in each render frame. Rain timing includes drop and impact updates; GPU rendering is not included in either CPU counter.

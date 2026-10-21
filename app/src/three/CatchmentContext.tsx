@@ -1,13 +1,6 @@
-import {wetFinish} from './materialInteractions';
+import { wetFinish } from './materialInteractions';
 import { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
-import {
-  BoxGeometry,
-  Color,
-  InstancedMesh,
-  Object3D,
-  DoubleSide,
-  type Texture,
-} from 'three';
+import { BoxGeometry, Color, InstancedMesh, Object3D, DoubleSide, type Texture } from 'three';
 import { drainDesign } from '../simulation/physics/design';
 import type { ModelPhysics } from './PhysicsOverlay';
 import { flowSpeed } from './visibility';
@@ -18,7 +11,7 @@ import { surfaceWetness } from './sceneMetrics';
 import TerraceStreet from './TerraceStreet';
 import StreetPavement from './StreetPavement';
 import RoofConveyance from './RoofConveyance';
-import {outfallPose} from './flowPhysics';
+import { outfallPose } from './flowPhysics';
 import { streetGeometry } from './streetGeometry';
 
 function SurfaceBox({
@@ -116,16 +109,17 @@ function AtlasBox({
     </mesh>
   );
 }
-function Terrain({
-  physics,
-}: {
-  physics: ModelPhysics;
-}) {
-  const geometry=useMemo(()=>streetGeometry(drainDesign(physics.config),physics.config.kind==='inlet'),[physics.config]);
+function Terrain({ physics }: { physics: ModelPhysics }) {
+  const geometry = useMemo(
+    () => streetGeometry(drainDesign(physics.config), physics.config.kind === 'inlet'),
+    [physics.config],
+  );
   const maps = useMemo(() => surfaceMaps('grass'), []);
   useEffect(
     () => () => {
-      geometry.top.dispose();geometry.walls.dispose();geometry.floor.dispose();
+      geometry.top.dispose();
+      geometry.walls.dispose();
+      geometry.floor.dispose();
       maps.map.dispose();
       maps.normalMap.dispose();
     },
@@ -134,7 +128,13 @@ function Terrain({
   return (
     <group name="street-ground">
       <mesh name="surrounding-terrain" geometry={geometry.top} receiveShadow>
-        <meshStandardMaterial {...maps} roughness={0.94} polygonOffset polygonOffsetFactor={2} polygonOffsetUnits={2} />
+        <meshStandardMaterial
+          {...maps}
+          roughness={0.94}
+          polygonOffset
+          polygonOffsetFactor={2}
+          polygonOffsetUnits={2}
+        />
       </mesh>
       <mesh name="excavation-walls" geometry={geometry.walls} receiveShadow>
         <meshStandardMaterial color="#b8a78e" roughness={1} side={DoubleSide} />
@@ -148,11 +148,11 @@ function Terrain({
 export default function CatchmentContext({
   physics,
   low,
-  roofPath=false,
+  roofPath = false,
 }: {
   physics: ModelPhysics;
   low: boolean;
-  roofPath?:boolean;
+  roofPath?: boolean;
 }) {
   const d = drainDesign(physics.config),
     c = d.catchment,
@@ -161,7 +161,7 @@ export default function CatchmentContext({
     footZ = -d.topWidth / 2 - c.footpathWidth / 2;
   const wet = surfaceWetness(physics.config, f),
     q = f?.flux.inlet ?? 0;
-  const pose=outfallPose(d,physics.config);
+  const pose = outfallPose(d, physics.config);
   const roadQ = f?.links.find((l) => l.id === 'property drain to kerb flow')?.discharge ?? 0;
   const ground = d.bottomY - d.nativeDepth - 0.08;
   const atlas = useMemo(contextAtlas, []);
@@ -189,8 +189,12 @@ export default function CatchmentContext({
       <Terrain physics={physics} />
       <SurfaceBox
         name="road-foundation"
-        position={[roadX-.1, (ground + c.kerbHeight - 0.12) / 2, 0]}
-        size={[Math.max(.1,c.roadWidth-.2), c.kerbHeight - 0.12 - ground, Math.max(40, d.topWidth + 8)]}
+        position={[roadX - 0.1, (ground + c.kerbHeight - 0.12) / 2, 0]}
+        size={[
+          Math.max(0.1, c.roadWidth - 0.2),
+          c.kerbHeight - 0.12 - ground,
+          Math.max(40, d.topWidth + 8),
+        ]}
         kind="soil"
         wet={wet}
       />
@@ -201,7 +205,7 @@ export default function CatchmentContext({
         kind="soil"
         wet={wet}
       />
-      <StreetPavement design={d} wet={wet}/>
+      <StreetPavement design={d} wet={wet} />
       <SurfaceBox
         name="footpath"
         position={[0, c.kerbHeight - 0.04, footZ]}
@@ -219,21 +223,23 @@ export default function CatchmentContext({
           wet={wet}
         />
       ))}
-      {c.roofArea<=0&&<SurfaceBox
-        name="gutter"
-        position={[-d.length / 2 - 0.78, c.kerbHeight - 0.018, 0]}
-        size={[0.22, 0.035, d.topWidth + 5]}
-        kind="concrete"
-        wet={wet}
-      />}
+      {c.roofArea <= 0 && (
+        <SurfaceBox
+          name="gutter"
+          position={[-d.length / 2 - 0.78, c.kerbHeight - 0.018, 0]}
+          size={[0.22, 0.035, d.topWidth + 5]}
+          kind="concrete"
+          wet={wet}
+        />
+      )}
       {built(
         'road-edge-line',
         [roadX - c.roadWidth / 2 + 0.15, c.kerbHeight + 0.001, 0],
         [0.06, 0.003, Math.max(40, d.topWidth + 8)],
         '#cec8b5',
       )}
-      <TerraceStreet design={d} low={low} wet={wet}/>
-      <RoofConveyance physics={physics} low={low} highlight={roofPath}/>
+      <TerraceStreet design={d} low={low} wet={wet} />
+      <RoofConveyance physics={physics} low={low} highlight={roofPath} />
       <FlowTrace
         name="road-runoff"
         q={roadQ}
@@ -304,7 +310,7 @@ export default function CatchmentContext({
       />
       <SurfaceBox
         name="outfall-pool-bed"
-        position={[pose.x + .25, pose.y - d.pipeDiameter / 2 - 0.15, 0]}
+        position={[pose.x + 0.25, pose.y - d.pipeDiameter / 2 - 0.15, 0]}
         size={[0.9, 0.05, 0.75]}
         kind="gravel"
         wet={wet}
@@ -312,11 +318,17 @@ export default function CatchmentContext({
       {(f?.flux.outfall ?? 0) > 0 && (
         <mesh
           name="outfall-pool"
-          position={[pose.x + .25, pose.y - d.pipeDiameter / 2 - 0.12, 0]}
+          position={[pose.x + 0.25, pose.y - d.pipeDiameter / 2 - 0.12, 0]}
           rotation={[-Math.PI / 2, 0, 0]}
         >
           <planeGeometry args={[0.85, 0.7]} />
-          <WaterMaterial design={d} depth={0.025} low={low} />
+          <WaterMaterial
+            design={d}
+            depth={(f?.flux.outfall ?? 0) / (0.7 * Math.max(0.01, f?.pipeVelocity ?? 0))}
+            velocity={f?.pipeVelocity ?? 0}
+            flow
+            low={low}
+          />
         </mesh>
       )}
     </group>

@@ -160,3 +160,6 @@ The terrain includes road crossfall (2%), configured gutter slope (visually capp
 The live Debug overlay reports post-correction bed/gutter volume error and reference error, CPU solver/readback time and GPU timer time when the extension is available. Rain and particle times are CPU animation costs. No GPU time is inferred from a CPU stopwatch. The grid is depth-displaced and shaded with local gradient normals, velocity-aligned micro-detail, depth/turbidity tint, Fresnel sky reflection, shoreline fade and Froude-driven foam. Capped, zero-net rain impulses create waves in wet cells. Folded leaf meshes sample the grid velocity and rest on its surface. Visual roughness/obstacle parameters remain illustrative.
 
 Validation to date: CPU tests cover conservation within 0.1%, lake-at-rest, nonnegative depth, overtopping, bounded sinks, rain impulse volume and all playback-scale seeks. A real WebGL2 test repeats still-lake and wet/dry conservation. Live browser checks for both GPU and worker at minutes 0, 18, 45 and 165 meet <3% bed/gutter volume error and <1 mm reference error. Final visual review and Firefox/Chromium performance evidence are recorded separately.
+
+
+Final Round 9C measurements, stage status, verification and visual limitations: [ROUND9C_RESULTS.md](ROUND9C_RESULTS.md).

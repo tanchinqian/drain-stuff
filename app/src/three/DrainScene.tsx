@@ -38,14 +38,14 @@ import SceneLabels, { type SceneLabel } from './SceneLabels';
 import FaultDeposits from './FaultDeposits';
 import StormAtmosphere from './StormAtmosphere';
 import CutPlane from './CutPlane';
-import {sockDarkening,mulchLift} from './materialInteractions';
+import { sockDarkening, mulchLift } from './materialInteractions';
 import { cutNormal, cutSample, type CameraPreset } from './sceneMetrics';
 export type Assembly = 'exploded' | 'assembled' | 'section';
 export type ViewMode = 'Operator' | 'Debug' | 'Troubleshoot';
 export type Offsets = Partial<Record<PartId, [number, number, number]>>;
 export interface Props {
-  orthographic?:boolean;
-  roofPath?:boolean;
+  orthographic?: boolean;
+  roofPath?: boolean;
   sceneFaults?: Fault[];
   onShowFault?: (fault: Fault) => void;
   pulseFault?: string;
@@ -116,7 +116,7 @@ function Model(props: Props) {
   const [draggingCut, setDraggingCut] = useState(false);
   const design = props.physics ? drainDesign(props.physics.config) : undefined;
   const invalidate = useThree((s) => s.invalidate);
-  const scene=useThree(s=>s.scene);
+  const scene = useThree((s) => s.scene);
   const select = useSelection((s) => s.selectPart),
     selected = useSelection((s) => s.partId);
   const groups = useMemo(
@@ -175,10 +175,14 @@ function Model(props: Props) {
         o instanceof Mesh &&
         o.material instanceof MeshStandardMaterial &&
         o.material.userData.wind
-      ){
+      ) {
         o.material.userData.wind.value = windTime.current;
-        const flow=scene.userData.surfaceRender;
-        if(flow&&o.material.userData.flowField){o.material.userData.flowField.value=flow.texture;o.material.userData.flowBounds.value.set(flow.x0,flow.z0,flow.width,flow.height);o.material.userData.flowReady.value=1;}
+        const flow = scene.userData.surfaceRender;
+        if (flow && o.material.userData.flowField) {
+          o.material.userData.flowField.value = flow.texture;
+          o.material.userData.flowBounds.value.set(flow.x0, flow.z0, flow.width, flow.height);
+          o.material.userData.flowReady.value = 1;
+        }
       }
     });
   });
@@ -194,8 +198,11 @@ function Model(props: Props) {
     if (!texture || !field) return;
     for (const id of ['media', 'mulch', 'transition', 'drainage'] as const)
       groups[id]?.traverse((o) => {
-        if (o instanceof Mesh && o.material instanceof MeshStandardMaterial){
-          if(o.name==='mulch-particles'){o.material.userData.mulchPond??={value:0};o.material.userData.mulchPond.value=mulchLift(props.physics?.frame?.ponding??0,1);}
+        if (o instanceof Mesh && o.material instanceof MeshStandardMaterial) {
+          if (o.name === 'mulch-particles') {
+            o.material.userData.mulchPond ??= { value: 0 };
+            o.material.userData.mulchPond.value = mulchLift(props.physics?.frame?.ponding ?? 0, 1);
+          }
           wetMaterial(o.material, texture, field.width, field.depth);
         }
       });
@@ -203,17 +210,30 @@ function Model(props: Props) {
     return () => texture.dispose();
   }, [field, texture, groups, invalidate]);
   useEffect(() => {
-    const clog=props.physics?.frame?.cell.clog??0,wet=props.physics?.frame?.moisture??0;
-    groups.sock?.traverse(o=>{
-      if(!(o instanceof Mesh)||!(o.material instanceof MeshStandardMaterial))return;
-      const material=o.material;
-      if(!material.userData.sockShade){
-        const uniform={value:1},previous=material.onBeforeCompile;material.userData.sockShade=uniform;
-        material.onBeforeCompile=function(shader,renderer){previous.call(this,shader,renderer);shader.uniforms.sockShade=uniform;shader.fragmentShader='uniform float sockShade;\n'+shader.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\ndiffuseColor.rgb*=sockShade;');};material.needsUpdate=true;
+    const clog = props.physics?.frame?.cell.clog ?? 0,
+      wet = props.physics?.frame?.moisture ?? 0;
+    groups.sock?.traverse((o) => {
+      if (!(o instanceof Mesh) || !(o.material instanceof MeshStandardMaterial)) return;
+      const material = o.material;
+      if (!material.userData.sockShade) {
+        const uniform = { value: 1 },
+          previous = material.onBeforeCompile;
+        material.userData.sockShade = uniform;
+        material.onBeforeCompile = function (shader, renderer) {
+          previous.call(this, shader, renderer);
+          shader.uniforms.sockShade = uniform;
+          shader.fragmentShader =
+            'uniform float sockShade;\n' +
+            shader.fragmentShader.replace(
+              '#include <color_fragment>',
+              '#include <color_fragment>\ndiffuseColor.rgb*=sockShade;',
+            );
+        };
+        material.needsUpdate = true;
       }
-      material.userData.sockShade.value=sockDarkening(clog,wet);
+      material.userData.sockShade.value = sockDarkening(clog, wet);
     });
-  },[props.physics?.frame?.cell.clog,props.physics?.frame?.moisture,groups]);
+  }, [props.physics?.frame?.cell.clog, props.physics?.frame?.moisture, groups]);
   useEffect(() => {
     groups.planting?.traverse((o) => {
       if (o instanceof InstancedMesh && o.name === 'tropical-groundcover')
@@ -246,9 +266,10 @@ function Model(props: Props) {
           if (props.physics && material instanceof MeshStandardMaterial) {
             material.userData.unflaggedColour ??= material.color.clone();
             material.color.copy(material.userData.unflaggedColour);
-            const finding=props.sceneFaults?.find(f=>f.partId===part.partId);
-            if(finding) material.color.lerp(new Color(faultConfirmed(finding)?'#a94d39':'#c49a45'),.34);
-            material.userData.faultTint=!!finding;
+            const finding = props.sceneFaults?.find((f) => f.partId === part.partId);
+            if (finding)
+              material.color.lerp(new Color(faultConfirmed(finding) ? '#a94d39' : '#c49a45'), 0.34);
+            material.userData.faultTint = !!finding;
           }
           material.needsUpdate = true;
         });
@@ -272,7 +293,7 @@ function Model(props: Props) {
   const fitBounds = useMemo(() => {
     if (!design) return undefined;
     if (props.cameraPreset === 'fault' && groups[selected])
-      return (groups[selected]!.userData.localBounds as Box3).clone().expandByScalar(.7);
+      return (groups[selected]!.userData.localBounds as Box3).clone().expandByScalar(0.7);
     if (props.cameraPreset === 'inlet')
       return new Box3().setFromCenterAndSize(
         new Vector3(-design.length / 2, props.physics!.config.values.crest.value / 2, 0),
@@ -285,19 +306,15 @@ function Model(props: Props) {
           design.bottomY,
           -design.topWidth / 2 - 7,
         ),
-        new Vector3(
-          design.length / 2 + 5,
-          5.6,
-          design.topWidth / 2 + 2,
-        ),
+        new Vector3(design.length / 2 + 5, 5.6, design.topWidth / 2 + 2),
       );
-    if (props.featureId !== 'R1') return undefined;
+    if (props.physics?.config.kind !== 'inlet') return undefined;
     const bounds = new Box3();
     Object.values(groups).forEach((g) => {
       if (g?.userData.localBounds) bounds.union(g.userData.localBounds);
     });
     return bounds;
-  }, [groups, props.featureId, props.cameraPreset, selected]);
+  }, [groups, props.physics?.config.kind, props.cameraPreset, selected]);
   const fitTarget = fitBounds?.getCenter(new Vector3());
   const annotations: SceneLabel[] = [];
   const f = props.physics?.frame;
@@ -396,7 +413,7 @@ function Model(props: Props) {
       <FitCamera
         transition
         bounds={fitBounds}
-        direction={fitBounds ? [-9, props.orthographic ? 9 : 4, 12] : undefined}
+        direction={fitBounds ? [-9, 9, 12] : undefined}
         width={
           props.physics
             ? Math.max(
@@ -453,13 +470,32 @@ function Model(props: Props) {
           <Edges color={palette.ink3} />
         </mesh>
       )}
-      <SceneLabels labels={props.sceneFaults?.length ? [] : annotations} />
-      {!!props.sceneFaults?.length && props.onShowFault && <FaultCallouts
-        items={props.sceneFaults.flatMap(fault=>{
-          const g=groups[fault.partId];if(!g)return [];
-          const b=g.userData.localBounds as Box3, p=b.getCenter(new Vector3());p.y=b.max.y;
-          return [{fault,anchor:[p.x,p.y,p.z] as [number,number,number]}];
-        })} onSelect={props.onShowFault} pulse={props.pulseFault} />}
+      <SceneLabels
+        bottomStack={!!props.sceneFaults?.length && props.mode === 'Operator'}
+        labels={
+          props.sceneFaults?.length && props.mode === 'Operator'
+            ? annotations.filter(
+                (a) =>
+                  !props.sceneFaults?.some((f) => f.partId === a.id) ||
+                  (props.inspectionActive && a.id === selected),
+              )
+            : annotations
+        }
+      />
+      {props.mode === 'Operator' && !!props.sceneFaults?.length && props.onShowFault && (
+        <FaultCallouts
+          items={props.sceneFaults.flatMap((fault) => {
+            const g = groups[fault.partId];
+            if (!g) return [];
+            const b = g.userData.localBounds as Box3,
+              p = b.getCenter(new Vector3());
+            p.y = b.max.y;
+            return [{ fault, anchor: [p.x, p.y, p.z] as [number, number, number] }];
+          })}
+          onSelect={props.onShowFault}
+          pulse={props.pulseFault}
+        />
+      )}
       {design && props.assembly === 'section' && props.onCutChange && (
         <CutPlane
           design={design}
@@ -474,9 +510,24 @@ function Model(props: Props) {
       {props.physics && props.dimensionsVisible && props.assembly !== 'exploded' && (
         <DimensionLines config={props.physics.config} />
       )}
-      {props.physics && <FloatingLeaves physics={props.physics} plane={props.assembly==='section'?plane:undefined} low={!!props.lowQuality}/>}
-      {props.physics && <SurfaceWater physics={props.physics} plane={props.assembly==='section'?plane:undefined} low={props.lowQuality} record={props.recordQuality}/>}
-      {props.physics && <StormRain physics={props.physics} low={props.lowQuality} record={props.recordQuality} />}
+      {props.physics && (
+        <FloatingLeaves
+          physics={props.physics}
+          plane={props.assembly === 'section' ? plane : undefined}
+          low={!!props.lowQuality}
+        />
+      )}
+      {props.physics && (
+        <SurfaceWater
+          physics={props.physics}
+          plane={props.assembly === 'section' ? plane : undefined}
+          low={props.lowQuality}
+          record={props.recordQuality}
+        />
+      )}
+      {props.physics && (
+        <StormRain physics={props.physics} low={props.lowQuality} record={props.recordQuality} />
+      )}
       <group name="drain-parts">
         {props.parts.map((part, partIndex) => {
           const id = part.partId,
@@ -484,6 +535,7 @@ function Model(props: Props) {
             offset = props.offsets[id] || [0, 0, 0],
             position = base.map((v, i) => v + offset[i]) as [number, number, number];
           const geometry = groups[id];
+          const finding = props.sceneFaults?.find((f) => f.partId === id);
           if (!geometry) return null;
           geometry.name = id;
           geometry.userData.physicalPart = true;
@@ -527,7 +579,7 @@ function Model(props: Props) {
                     physics={props.physics}
                     plane={props.assembly === 'section' ? plane : undefined}
                     confirmed={!!props.physicalFaults?.includes(id)}
-                    finding={props.sceneFaults?.find(f=>f.partId===id)}
+                    finding={props.sceneFaults?.find((f) => f.partId === id)}
                   />
                   <PhysicsWater
                     id={id}
@@ -545,18 +597,21 @@ function Model(props: Props) {
                   />
                 )}
               {part.installed &&
-                part.sensorIds.length > 0 &&
-                part.status !== 'ok' &&
-                (props.sceneFaults?.some(f=>f.partId===id) || props.mode === 'Troubleshoot' || (props.inspectionActive && selected === id)) && (
+                (finding ||
+                  (part.sensorIds.length > 0 &&
+                    part.status !== 'ok' &&
+                    (props.mode === 'Troubleshoot' ||
+                      (props.inspectionActive && selected === id)))) && (
                   <PartHighlight
                     natural={!!props.physics}
                     group={geometry}
-                    status={part.status}
+                    status={finding ? (faultConfirmed(finding) ? 'fault' : 'watch') : part.status}
                     plane={props.assembly === 'section' ? plane : undefined}
                   />
                 )}
               {props.inspectionActive &&
                 selected === id &&
+                !finding &&
                 part.status === 'ok' &&
                 (props.physics ? (
                   <PartHighlight
@@ -639,20 +694,20 @@ export default function DrainScene(props: Props) {
       data-cut-axis={props.cutAxis}
       data-cut-position={props.cutPosition}
       data-camera-preset={props.cameraPreset ?? 'default'}
-      data-projection={!props.physics||props.orthographic?'orthographic':'perspective'}
+      data-projection={!props.physics || props.orthographic ? 'orthographic' : 'perspective'}
       data-pipe-fill={props.physics?.frame?.pipeFill ?? 0}
       data-pipe-velocity={props.physics?.frame?.pipeVelocity ?? 0}
       data-underdrain-flow={props.physics?.frame?.flux.drain ?? 0}
       data-overflow-visible={(props.physics?.frame?.flux.overflow ?? 0) > 0}
     >
       <Canvas
-        key={props.reset+'-'+!!props.orthographic}
+        key={props.reset + '-' + !!props.orthographic}
         onPointerMissed={() => props.onInspect?.()}
-        orthographic={!props.physics||props.orthographic}
+        orthographic={!props.physics || props.orthographic}
         camera={{
           position: props.physics ? [-18, 11, 16] : [19, 15, 23],
-          zoom: !props.physics||props.orthographic ? 32 : 1,
-          fov:35,
+          zoom: !props.physics || props.orthographic ? 32 : 1,
+          fov: 35,
           near: 0.1,
           far: 180,
         }}
@@ -689,10 +744,16 @@ export default function DrainScene(props: Props) {
         <Model {...props} lowQuality={low} />
       </Canvas>
       {props.physics && <span className="scene-design-stamp">Typical design, not surveyed</span>}
-      {props.physics?.frame && <span className="scene-rain-status">
-        {props.physics.frame.rain > 0 ? `Rain: ${props.physics.frame.rain * 3.6e6 >= 50 ? 'Heavy' : props.physics.frame.rain * 3.6e6 >= 10 ? 'Moderate' : 'Light'} ${(props.physics.frame.rain * 3.6e6).toFixed(1)} mm/h` : 'Rain stopped'}
-      </span>}
-      {props.mode === 'Debug' && <output data-water-debug className="surface-debug" aria-label="Surface-water diagnostics"/>}
+      {props.physics?.frame && (
+        <span className="scene-rain-status">
+          {props.physics.frame.rain > 0
+            ? `Rain: ${props.physics.frame.rain * 3.6e6 >= 50 ? 'Heavy' : props.physics.frame.rain * 3.6e6 >= 10 ? 'Moderate' : 'Light'} ${(props.physics.frame.rain * 3.6e6).toFixed(1)} mm/h`
+            : 'Rain stopped'}
+        </span>
+      )}
+      {props.mode === 'Debug' && (
+        <output data-water-debug className="surface-debug" aria-label="Surface-water diagnostics" />
+      )}
       {props.mode === 'Debug' && (
         <output className="scene-performance">
           {fps ? fps.toFixed(0) + ' FPS' : 'Measuring FPS'} ·{' '}
@@ -728,8 +789,10 @@ function RenderBudget({
     metadataTime.current += delta;
     if (element && (!active || metadataTime.current >= 0.2)) {
       metadataTime.current = 0;
-      element.dataset.cameraType=camera.type;
-      element.dataset.houseCount=String(scene.getObjectByName('terrace-street')?.userData.houseCount??0);
+      element.dataset.cameraType = camera.type;
+      element.dataset.houseCount = String(
+        scene.getObjectByName('terrace-street')?.userData.houseCount ?? 0,
+      );
       element.dataset.waterSurfaceHeight = surface
         ? new Box3().setFromObject(surface).max.y.toString()
         : '0';
@@ -743,11 +806,20 @@ function RenderBudget({
         if (o.name === 'fault-outline') outlines++;
       });
       element.dataset.faultOutlines = String(outlines);
-      const fluid=scene.userData.surfaceStats;
-      if(fluid){element.dataset.surfaceBackend=fluid.backend;element.dataset.surfaceBedError=String(fluid.bedError??0);element.dataset.surfaceGutterError=String(fluid.gutterError??0);element.dataset.surfaceReferenceError=String(fluid.referenceError??0);element.dataset.surfaceSolverMs=String(fluid.solverMs??0);element.dataset.surfaceGpuMs=String(fluid.gpuMs??'unavailable');}
-      const diagnostic=element.querySelector<HTMLOutputElement>('[data-water-debug]');
-      if(diagnostic&&fluid)diagnostic.textContent=`${fluid.backend} ${fluid.nx}×${fluid.nz} · bed ${(100*(fluid.bedError??0)).toFixed(2)}%, gutter ${(100*(fluid.gutterError??0)).toFixed(2)}% volume error · reference ${(1000*(fluid.referenceError??0)).toFixed(2)} mm · solver ${(fluid.solverMs??0).toFixed(2)} ms CPU${fluid.gpuMs==null?' · GPU timer unavailable':` / ${fluid.gpuMs.toFixed(2)} ms GPU`} · rain ${(scene.userData.rainMs??0).toFixed(2)} ms · particles ${(scene.userData.particleMs??0).toFixed(2)} ms`;
-      element.dataset.rainMs=String(scene.userData.rainMs??0);element.dataset.particleMs=String(scene.userData.particleMs??0);
+      const fluid = scene.userData.surfaceStats;
+      if (fluid) {
+        element.dataset.surfaceBackend = fluid.backend;
+        element.dataset.surfaceBedError = String(fluid.bedError ?? 0);
+        element.dataset.surfaceGutterError = String(fluid.gutterError ?? 0);
+        element.dataset.surfaceReferenceError = String(fluid.referenceError ?? 0);
+        element.dataset.surfaceSolverMs = String(fluid.solverMs ?? 0);
+        element.dataset.surfaceGpuMs = String(fluid.gpuMs ?? 'unavailable');
+      }
+      const diagnostic = element.querySelector<HTMLOutputElement>('[data-water-debug]');
+      if (diagnostic && fluid)
+        diagnostic.textContent = `${fluid.backend} ${fluid.nx}×${fluid.nz} · bed ${(100 * (fluid.bedError ?? 0)).toFixed(2)}%, gutter ${(100 * (fluid.gutterError ?? 0)).toFixed(2)}% volume error · reference ${(1000 * (fluid.referenceError ?? 0)).toFixed(2)} mm · solver ${(fluid.solverMs ?? 0).toFixed(2)} ms CPU${fluid.gpuMs == null ? ' · GPU timer unavailable' : ` / ${fluid.gpuMs.toFixed(2)} ms GPU`} · rain ${(scene.userData.rainMs ?? 0).toFixed(2)} ms · particles ${(scene.userData.particleMs ?? 0).toFixed(2)} ms`;
+      element.dataset.rainMs = String(scene.userData.rainMs ?? 0);
+      element.dataset.particleMs = String(scene.userData.particleMs ?? 0);
       const outlined: string[] = [];
       let clipped = true;
       scene.traverse((o) => {
@@ -764,16 +836,24 @@ function RenderBudget({
       element.dataset.outlineClipped = String(outlines > 0 && clipped);
       element.dataset.drawCalls = String(gl.info.render.calls);
       const planes = new Set<Plane>();
-      let contextClipped = 0, assemblyClipped = 0, assemblyMeshes = 0;
+      let contextClipped = 0,
+        assemblyClipped = 0,
+        assemblyMeshes = 0;
       scene.getObjectByName('catchment-context')?.traverse((o) => {
-        if (o instanceof Mesh && (Array.isArray(o.material) ? o.material : [o.material]).some(m => m.clippingPlanes?.length)) contextClipped++;
+        if (
+          o instanceof Mesh &&
+          (Array.isArray(o.material) ? o.material : [o.material]).some(
+            (m) => m.clippingPlanes?.length,
+          )
+        )
+          contextClipped++;
       });
       scene.getObjectByName('drain-parts')?.traverse((o) => {
         if (!(o instanceof Mesh) || o.userData.sectionPass) return;
         const materials = Array.isArray(o.material) ? o.material : [o.material];
-        if (materials.some(m => m.clippingPlanes?.length)) {
+        if (materials.some((m) => m.clippingPlanes?.length)) {
           assemblyClipped++;
-          materials.forEach(m => m.clippingPlanes?.forEach((p: Plane) => planes.add(p)));
+          materials.forEach((m) => m.clippingPlanes?.forEach((p: Plane) => planes.add(p)));
         }
         assemblyMeshes++;
       });
@@ -814,13 +894,19 @@ function RenderBudget({
         if (o.userData.confirmedFault) deposits.push(o.name.replace('confirmed-deposit-', ''));
       });
       element.dataset.depositParts = deposits.join(',');
-      let tintCount=0, obstructionCount=0;
-      scene.traverse(o=>{
-        if(o instanceof Mesh && !o.userData.sectionPass && (Array.isArray(o.material)?o.material:[o.material]).some(m=>m.userData.faultTint)) tintCount++;
-        if(o.userData.faultFinding) obstructionCount++;
+      let tintCount = 0,
+        obstructionCount = 0;
+      scene.traverse((o) => {
+        if (
+          o instanceof Mesh &&
+          !o.userData.sectionPass &&
+          (Array.isArray(o.material) ? o.material : [o.material]).some((m) => m.userData.faultTint)
+        )
+          tintCount++;
+        if (o.userData.faultFinding) obstructionCount++;
       });
-      element.dataset.faultTintCount=String(tintCount);
-      element.dataset.faultObstructionCount=String(obstructionCount);
+      element.dataset.faultTintCount = String(tintCount);
+      element.dataset.faultObstructionCount = String(obstructionCount);
       element.dataset.rainBounds = JSON.stringify(
         scene.getObjectByName('storm-rain')?.userData.bounds ?? null,
       );

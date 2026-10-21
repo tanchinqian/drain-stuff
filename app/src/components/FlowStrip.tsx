@@ -33,13 +33,16 @@ export default function FlowStrip({
         { name: 'Outfall', q: f.flux.outfall, total: totals.outfall },
         { name: 'Overflow', q: f.flux.overflow, total: totals.overflow },
       ];
+  const Heading = compact ? 'h2' : 'h3';
   return (
     <section className={compact ? 'flow-legend' : 'flow-path'} aria-label="Water path">
-      <h3>
+      <Heading>
         Water path · current minute <Term text="L/min" helpOnly />
-      </h3>
-      {!inlet&&f.flux.drain<=0&&<p className="small">No underdrain flow yet: soil still absorbing</p>}
-      {f.pipeFill>=.999&&<p className="small">Pipe full: pressurised flow, no free surface</p>}
+      </Heading>
+      {!inlet && f.flux.drain <= 0 && (
+        <p className="small">No underdrain flow yet: soil still absorbing</p>
+      )}
+      {f.pipeFill >= 0.999 && <p className="small">Pipe full: pressurised flow, no free surface</p>}
       <ol className="flow-strip" tabIndex={0} aria-label="Current stage flows and volumes">
         {stages.map((s) => (
           <li key={s.name} data-flow-stage={s.name} data-rate={s.q * 60000} data-litres={s.total}>

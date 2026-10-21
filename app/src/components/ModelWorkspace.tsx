@@ -20,7 +20,7 @@ import SectionCutControls from './SectionCutControls';
 import { cutRange, type CutAxis, type CameraPreset } from '../three/sceneMetrics';
 import { drainDesign } from '../simulation/physics/design';
 import { confirmed } from '../../../shared/src/physics/faults';
-import {roofDischarge} from '../three/flowPhysics';
+import { roofDischarge } from '../three/flowPhysics';
 import { activeSceneFaults, faultTitle, faultWaterEffect } from '../three/faultCues';
 export default function ModelWorkspace({
   ownerId,
@@ -50,14 +50,14 @@ export default function ModelWorkspace({
       ),
     [sourceParts, sensors],
   );
-  const [orthographic,setOrthographic]=useState(false);
-  const [roofPath,setRoofPath]=useState(false);
+  const [orthographic, setOrthographic] = useState(false);
+  const [roofPath, setRoofPath] = useState(false);
   const [flat, setFlat] = useState(false),
     [dimensionsVisible, setDimensionsVisible] = useState(false);
   const [inspectionActive, setInspectionActive] = useState(kind === 'compost');
   const [cameraPreset, setCameraPreset] = useState<CameraPreset>('default');
-  const [pulseFault,setPulseFault]=useState<string>();
-  const sceneFaults=useMemo(()=>activeSceneFaults(faults,ownerId),[faults,ownerId]);
+  const [pulseFault, setPulseFault] = useState<string>();
+  const sceneFaults = useMemo(() => activeSceneFaults(faults, ownerId), [faults, ownerId]);
   const initialCut = useMemo(() => {
     try {
       const v = JSON.parse(sessionStorage.getItem('drain-cut-' + ownerId) ?? 'null');
@@ -113,7 +113,9 @@ export default function ModelWorkspace({
   }, [ownerId, cutAxis, cutPosition, !!physics]);
   const changeCut = (value: number) => {
     setCutPosition(value);
-    const range = physics ? cutRange(drainDesign(physics.config), cutAxis, physics.config.kind === 'inlet') : [-Infinity, Infinity];
+    const range = physics
+      ? cutRange(drainDesign(physics.config), cutAxis, physics.config.kind === 'inlet')
+      : [-Infinity, Infinity];
     setAssembly(value <= range[0] || value >= range[1] ? 'assembled' : 'section');
   };
   const changeAxis = (axis: CutAxis) => {
@@ -136,7 +138,7 @@ export default function ModelWorkspace({
         parts.find((p) => p.installed)!.partId,
     );
     setInspectionActive(kind === 'compost' || !!params.get('part'));
-    if(params.get('showFault')==='1') setCameraPreset('fault');
+    if (params.get('showFault') === '1') setCameraPreset('fault');
     setOffsets({});
     setHidden([]);
     setIsolate(false);
@@ -173,8 +175,14 @@ export default function ModelWorkspace({
     setShowSensors,
   };
   const part = parts.find((p) => p.partId === selected);
-  const selectedFault=sceneFaults.find(f=>f.partId===selected);
-  const showFault=(fault:Fault)=>{select(fault.partId);setInspectionActive(true);setCameraPreset('fault');setHidden([]);setIsolate(false);};
+  const selectedFault = sceneFaults.find((f) => f.partId === selected);
+  const showFault = (fault: Fault) => {
+    select(fault.partId);
+    setInspectionActive(true);
+    setCameraPreset('fault');
+    setHidden([]);
+    setIsolate(false);
+  };
   if (!part) return null;
   return (
     <div
@@ -266,7 +274,9 @@ export default function ModelWorkspace({
             <div className="camera-presets">
               <SearchableSelect
                 label="Camera preset"
-                value={cameraPreset === 'default' || cameraPreset === 'fault' ? 'drain' : cameraPreset}
+                value={
+                  cameraPreset === 'default' || cameraPreset === 'fault' ? 'drain' : cameraPreset
+                }
                 onChange={(e) => {
                   const value = e.target.value as CameraPreset;
                   setCameraPreset(value);
@@ -294,10 +304,37 @@ export default function ModelWorkspace({
               >
                 Return to default
               </button>
-              <label><input type="checkbox" checked={orthographic} onChange={e=>setOrthographic(e.target.checked)}/> Orthographic view</label>
-              <label><input type="checkbox" checked={roofPath} onChange={e=>setRoofPath(e.target.checked)}/> Roof runoff path</label>
-              {roofPath&&<span className="small">{physics.config.values.roofArea.value} m² roof · {(roofDischarge(drainDesign(physics.config),physics.frame)*60000).toFixed(1)} L/min at each step{physics.config.values.roofArea.value===0?' · No roof connected in this scenario':''}</span>}
-              {!!sceneFaults.length && <button onClick={()=>showFault(selectedFault??sceneFaults[0])}>Show fault</button>}
+              <label>
+                <input
+                  type="checkbox"
+                  checked={orthographic}
+                  onChange={(e) => setOrthographic(e.target.checked)}
+                />{' '}
+                Orthographic view
+              </label>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={roofPath}
+                  onChange={(e) => setRoofPath(e.target.checked)}
+                />{' '}
+                Roof runoff path
+              </label>
+              {roofPath && (
+                <span className="small">
+                  {physics.config.values.roofArea.value} m² roof ·{' '}
+                  {(roofDischarge(drainDesign(physics.config), physics.frame) * 60000).toFixed(1)}{' '}
+                  L/min at each step
+                  {physics.config.values.roofArea.value === 0
+                    ? ' · No roof connected in this scenario'
+                    : ''}
+                </span>
+              )}
+              {!!sceneFaults.length && (
+                <button onClick={() => showFault(selectedFault ?? sceneFaults[0])}>
+                  Show fault
+                </button>
+              )}
             </div>
           )}
           {physics && flat ? (
@@ -313,7 +350,7 @@ export default function ModelWorkspace({
               roofPath={roofPath}
               orthographic={orthographic}
               physics={physics}
-              sceneFaults={params.get('mode')==='cleared' ? [] : sceneFaults}
+              sceneFaults={params.get('mode') === 'cleared' ? [] : sceneFaults}
               onShowFault={showFault}
               pulseFault={pulseFault}
               cameraPreset={cameraPreset}
@@ -369,18 +406,39 @@ export default function ModelWorkspace({
               reset={reset}
             />
           )}
-          {physics && !!sceneFaults.length && params.get('mode')!=='cleared' && <div className="scene-faults">
-            <ol aria-label="Faults in this scene">{sceneFaults.map((f,i)=><li key={f.id}>
-              <button onMouseEnter={()=>setPulseFault(f.id)} onMouseLeave={()=>setPulseFault(undefined)} onFocus={()=>setPulseFault(f.id)} onBlur={()=>setPulseFault(undefined)} onClick={()=>showFault(f)}>{i+1} · {faultTitle(f)}</button>
-            </li>)}</ol>
-            {inspectionActive && selectedFault && <section className="scene-fault-detail" aria-label="Selected fault explanation">
-              <strong>{faultTitle(selectedFault)}</strong>
-              <p>{selectedFault.diagnosingInput}</p>
-              <p className="small">Input: {selectedFault.sensorIds.join(', ')||'Human inspection'} · Rule: {selectedFault.ruleId}</p>
-              <p>{faultWaterEffect(selectedFault)}</p>
-              <a href={'/faults?fault='+selectedFault.id}>Open work order {selectedFault.id}</a>
-            </section>}
-          </div>}
+          {physics && !!sceneFaults.length && params.get('mode') !== 'cleared' && (
+            <div className="scene-faults">
+              <ol aria-label="Faults in this scene">
+                {sceneFaults.map((f, i) => (
+                  <li key={f.id}>
+                    <button
+                      onMouseEnter={() => setPulseFault(f.id)}
+                      onMouseLeave={() => setPulseFault(undefined)}
+                      onFocus={() => setPulseFault(f.id)}
+                      onBlur={() => setPulseFault(undefined)}
+                      onClick={() => showFault(f)}
+                    >
+                      {i + 1} · {faultTitle(f)}
+                    </button>
+                  </li>
+                ))}
+              </ol>
+              {inspectionActive && selectedFault && (
+                <section className="scene-fault-detail" aria-label="Selected fault explanation">
+                  <strong>{faultTitle(selectedFault)}</strong>
+                  <p>{selectedFault.diagnosingInput}</p>
+                  <p className="small">
+                    Input: {selectedFault.sensorIds.join(', ') || 'Human inspection'} · Rule:{' '}
+                    {selectedFault.ruleId}
+                  </p>
+                  <p>{faultWaterEffect(selectedFault)}</p>
+                  <a href={'/faults?fault=' + selectedFault.id}>
+                    Open work order {selectedFault.id}
+                  </a>
+                </section>
+              )}
+            </div>
+          )}
           {physics && (
             <SectionCutControls
               physics={physics}
@@ -388,7 +446,10 @@ export default function ModelWorkspace({
               position={cutPosition}
               onAxis={changeAxis}
               onChange={changeCut}
-              onReset={() => { setCutPosition(0); setAssembly('assembled'); }}
+              onReset={() => {
+                setCutPosition(0);
+                setAssembly('assembled');
+              }}
               onActive={setCutActive}
               sampleDepth={sampleDepth}
               sampleAcross={sampleAcross}

@@ -1,0 +1,118 @@
+{
+  "initialFullRun": {
+    "stats": {
+      "startTime": "2026-10-21T17:32:13.223Z",
+      "duration": 622941.487,
+      "expected": 76,
+      "skipped": 0,
+      "unexpected": 6,
+      "flaky": 0
+    },
+    "failures": [
+      {
+        "title": "Round 7 visibility S1",
+        "file": "round7.spec.ts",
+        "status": "unexpected",
+        "errors": [
+          "Error: page.evaluate: TypeError: Cannot read properties of null (reading 'faults')\n    at eval (eval at evaluate (:370:30), <anonymous>:12:39)\n    at async <anonymous>:396:30"
+        ]
+      },
+      {
+        "title": "Round 7 visibility I1",
+        "file": "round7.spec.ts",
+        "status": "unexpected",
+        "errors": [
+          "Error: page.evaluate: TypeError: Cannot read properties of null (reading 'faults')\n    at eval (eval at evaluate (:370:30), <anonymous>:12:39)\n    at async <anonymous>:396:30"
+        ]
+      },
+      {
+        "title": "Round 7 visibility S3",
+        "file": "round7.spec.ts",
+        "status": "unexpected",
+        "errors": [
+          "Error: page.evaluate: TypeError: Cannot read properties of null (reading 'faults')\n    at eval (eval at evaluate (:370:30), <anonymous>:12:39)\n    at async <anonymous>:396:30"
+        ]
+      },
+      {
+        "title": "Round 7 visibility T1",
+        "file": "round7.spec.ts",
+        "status": "unexpected",
+        "errors": [
+          "Error: page.evaluate: TypeError: Cannot read properties of null (reading 'faults')\n    at eval (eval at evaluate (:370:30), <anonymous>:12:39)\n    at async <anonymous>:396:30"
+        ]
+      },
+      {
+        "title": "Round 8B review captures at 1920",
+        "file": "round8b-captures.spec.ts",
+        "status": "unexpected",
+        "errors": [
+          "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m0.7\u001b[39m\nReceived:    \u001b[31m0.6626450730722271\u001b[39m\n\nCall Log:\n- Timeout 5000ms exceeded while waiting on the predicate"
+        ]
+      },
+      {
+        "title": "R1 fit, close-up and stage flow at 1920",
+        "file": "round8b-model.spec.ts",
+        "status": "unexpected",
+        "errors": [
+          "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m0.7\u001b[39m\nReceived:    \u001b[31m0.6626450730722271\u001b[39m\n\nCall Log:\n- Timeout 5000ms exceeded while waiting on the predicate"
+        ]
+      }
+    ]
+  },
+  "responsiveRerun": {
+    "stats": {
+      "startTime": "2026-10-21T17:43:12.521Z",
+      "duration": 95699.772,
+      "expected": 12,
+      "skipped": 0,
+      "unexpected": 1,
+      "flaky": 0
+    },
+    "remainingFailure": "I1 default camera used schematic extents instead of the inlet assembly bounds. Corrected next."
+  },
+  "inletRerun": {
+    "stats": {
+      "startTime": "2026-10-21T17:45:06.924Z",
+      "duration": 45468.239,
+      "expected": 8,
+      "skipped": 0,
+      "unexpected": 1,
+      "flaky": 0
+    },
+    "remainingFailure": "I1 remained too small. Inspection identified stale OrbitControls distance limits clamping the new fitted camera; limits are now applied before update()."
+  },
+  "finalCameraAndVisibilityRerun": {
+    "passed": 9,
+    "failed": 0,
+    "source": "Playwright terminal result: 9 passed (1.7m). The next recording run cleared the shared test-results directory.",
+    "coverage": [
+      "Round 7 S1/I1/S3/T1 visibility",
+      "R1 390/1440/1920 fit",
+      "perspective and orthographic limits",
+      "wheel zoom and reset"
+    ]
+  },
+  "recordQualityClips": {
+    "stats": {
+      "startTime": "2026-10-21T17:51:21.400Z",
+      "duration": 65181.327000000005,
+      "expected": 2,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "quality": "Record",
+    "speed": 300
+  },
+  "finalChecks": {
+    "frontendUnitTests": 93,
+    "frontendUnitFiles": 18,
+    "backendSharedUnitTests": 59,
+    "backendSharedUnitFiles": 8,
+    "typescript": "passed",
+    "lint": "passed",
+    "productionBuild": "passed",
+    "buildWarnings": "Upstream Zod PURE comment placement; Rollup removes the comments.",
+    "regressionCoverage": "82 distinct checks pass across the full run and targeted reruns; not a single final 82/82 run."
+  }
+}

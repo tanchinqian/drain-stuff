@@ -1,0 +1,160 @@
+{
+  "duration": 26.390619,
+  "width": 1580,
+  "height": 1200,
+  "contrast": 218,
+  "quality": "Record",
+  "speed": 300,
+  "progression": [
+    {
+      "second": 360,
+      "ponding": 0,
+      "pipeFill": 0,
+      "jet": false
+    },
+    {
+      "second": 660,
+      "ponding": 0,
+      "pipeFill": 0,
+      "jet": false
+    },
+    {
+      "second": 1020,
+      "ponding": 0,
+      "pipeFill": 0,
+      "jet": false
+    },
+    {
+      "second": 1380,
+      "ponding": 9.322746384425393,
+      "pipeFill": 0,
+      "jet": false
+    },
+    {
+      "second": 1680,
+      "ponding": 31.297168502674907,
+      "pipeFill": 0,
+      "jet": false
+    },
+    {
+      "second": 1980,
+      "ponding": 47.48216611999387,
+      "pipeFill": 0,
+      "jet": false
+    },
+    {
+      "second": 2280,
+      "ponding": 56.44733523497345,
+      "pipeFill": 0,
+      "jet": false
+    },
+    {
+      "second": 2580,
+      "ponding": 61.41593237749262,
+      "pipeFill": 0,
+      "jet": false
+    },
+    {
+      "second": 2880,
+      "ponding": 63.85231171142249,
+      "pipeFill": 0,
+      "jet": false
+    },
+    {
+      "second": 3240,
+      "ponding": 62.988009427037625,
+      "pipeFill": 0,
+      "jet": false
+    },
+    {
+      "second": 3540,
+      "ponding": 60.87921348169369,
+      "pipeFill": 0,
+      "jet": false
+    },
+    {
+      "second": 3840,
+      "ponding": 58.41836947289986,
+      "pipeFill": 0,
+      "jet": false
+    },
+    {
+      "second": 4140,
+      "ponding": 55.86250242142695,
+      "pipeFill": 0,
+      "jet": false
+    },
+    {
+      "second": 4500,
+      "ponding": 52.78680769290185,
+      "pipeFill": 0,
+      "jet": false
+    },
+    {
+      "second": 4800,
+      "ponding": 50.24935228723432,
+      "pipeFill": 0,
+      "jet": false
+    },
+    {
+      "second": 5100,
+      "ponding": 47.76035113173218,
+      "pipeFill": 0,
+      "jet": false
+    },
+    {
+      "second": 5460,
+      "ponding": 44.869810985372766,
+      "pipeFill": 0,
+      "jet": false
+    },
+    {
+      "second": 5760,
+      "ponding": 42.522396452323314,
+      "pipeFill": 0,
+      "jet": false
+    },
+    {
+      "second": 6060,
+      "ponding": 40.22052014560444,
+      "pipeFill": 0,
+      "jet": false
+    },
+    {
+      "second": 6360,
+      "ponding": 37.958444145382465,
+      "pipeFill": 0,
+      "jet": false
+    },
+    {
+      "second": 6660,
+      "ponding": 35.73206087121505,
+      "pipeFill": 0,
+      "jet": false
+    },
+    {
+      "second": 7020,
+      "ponding": 33.10256229615277,
+      "pipeFill": 0,
+      "jet": false
+    },
+    {
+      "second": 7320,
+      "ponding": 30.942817298496596,
+      "pipeFill": 0,
+      "jet": false
+    },
+    {
+      "second": 7620,
+      "ponding": 28.809008661123503,
+      "pipeFill": 0,
+      "jet": false
+    },
+    {
+      "second": 7920,
+      "ponding": 26.699106056118985,
+      "pipeFill": 0,
+      "jet": false
+    }
+  ]
+}

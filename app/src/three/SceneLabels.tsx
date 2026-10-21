@@ -8,16 +8,23 @@ export interface SceneLabel {
   text: string;
   anchor: [number, number, number];
 }
-export default function SceneLabels({ labels }: { labels: SceneLabel[] }) {
+export default function SceneLabels({
+  labels,
+  bottomStack = false,
+}: {
+  labels: SceneLabel[];
+  bottomStack?: boolean;
+}) {
   const { camera, size } = useThree();
   const [placed, setPlaced] = useState<ReturnType<typeof placeLabels>>([]);
   const last = useRef(''),
-    timer = useRef(0), source = useRef('');
+    timer = useRef(0),
+    source = useRef('');
   useFrame((_, delta) => {
     timer.current += delta;
-    const signature=JSON.stringify(labels);
-    if (timer.current < 0.1 && signature===source.current) return;
-    source.current=signature;
+    const signature = JSON.stringify(labels);
+    if (timer.current < 0.1 && signature === source.current) return;
+    source.current = signature;
     timer.current = 0;
     const points = labels
       .map((label) => {
@@ -26,6 +33,11 @@ export default function SceneLabels({ labels }: { labels: SceneLabel[] }) {
       })
       .filter((p) => p.x > -size.width && p.x < size.width * 2);
     const next = placeLabels(points, size.width, size.height);
+    if (bottomStack)
+      next.forEach((p, i) => {
+        p.left = 8;
+        p.top = size.height - 50 - i * 46;
+      });
     const key = JSON.stringify(next);
     if (key !== last.current) {
       last.current = key;
@@ -33,7 +45,12 @@ export default function SceneLabels({ labels }: { labels: SceneLabel[] }) {
     }
   });
   return (
-    <Html fullscreen style={{ pointerEvents: 'none' }} zIndexRange={[25, 0]}>
+    <Html
+      fullscreen
+      calculatePosition={() => [size.width / 2, size.height / 2]}
+      style={{ pointerEvents: 'none' }}
+      zIndexRange={[25, 0]}
+    >
       <svg
         className="model-label-layout"
         width={size.width}

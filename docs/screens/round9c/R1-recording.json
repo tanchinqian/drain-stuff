@@ -1,0 +1,160 @@
+{
+  "duration": 25.694187,
+  "width": 1580,
+  "height": 806,
+  "contrast": 212,
+  "quality": "Record",
+  "speed": 300,
+  "progression": [
+    {
+      "second": 360,
+      "ponding": 0,
+      "pipeFill": 0.009440818801522255,
+      "jet": true
+    },
+    {
+      "second": 660,
+      "ponding": 0,
+      "pipeFill": 0.01055334322154522,
+      "jet": true
+    },
+    {
+      "second": 960,
+      "ponding": 0,
+      "pipeFill": 0.021722620353102684,
+      "jet": true
+    },
+    {
+      "second": 1260,
+      "ponding": 0,
+      "pipeFill": 0.04699167050421238,
+      "jet": true
+    },
+    {
+      "second": 1620,
+      "ponding": 0,
+      "pipeFill": 0.06691799126565456,
+      "jet": true
+    },
+    {
+      "second": 1920,
+      "ponding": 0,
+      "pipeFill": 0.05894673429429531,
+      "jet": true
+    },
+    {
+      "second": 2220,
+      "ponding": 0,
+      "pipeFill": 0.04691851697862148,
+      "jet": true
+    },
+    {
+      "second": 2520,
+      "ponding": 0,
+      "pipeFill": 0.04031412489712238,
+      "jet": true
+    },
+    {
+      "second": 2820,
+      "ponding": 0,
+      "pipeFill": 0.0349192526191473,
+      "jet": true
+    },
+    {
+      "second": 3120,
+      "ponding": 0,
+      "pipeFill": 0.024981943890452385,
+      "jet": true
+    },
+    {
+      "second": 3420,
+      "ponding": 0,
+      "pipeFill": 0.01870069094002247,
+      "jet": true
+    },
+    {
+      "second": 3720,
+      "ponding": 0,
+      "pipeFill": 0.012825513258576393,
+      "jet": true
+    },
+    {
+      "second": 4080,
+      "ponding": 0,
+      "pipeFill": 0.009869227185845375,
+      "jet": true
+    },
+    {
+      "second": 4380,
+      "ponding": 0,
+      "pipeFill": 0.007910879328846931,
+      "jet": true
+    },
+    {
+      "second": 4680,
+      "ponding": 0,
+      "pipeFill": 0.006557105109095573,
+      "jet": true
+    },
+    {
+      "second": 4980,
+      "ponding": 0,
+      "pipeFill": 0.005420783534646034,
+      "jet": true
+    },
+    {
+      "second": 5280,
+      "ponding": 0,
+      "pipeFill": 0.00473257340490818,
+      "jet": true
+    },
+    {
+      "second": 5580,
+      "ponding": 0,
+      "pipeFill": 0.00419977493584156,
+      "jet": true
+    },
+    {
+      "second": 5880,
+      "ponding": 0,
+      "pipeFill": 0.0038539934903383255,
+      "jet": true
+    },
+    {
+      "second": 6240,
+      "ponding": 0,
+      "pipeFill": 0.003432711586356163,
+      "jet": true
+    },
+    {
+      "second": 6540,
+      "ponding": 0,
+      "pipeFill": 0.003148255869746208,
+      "jet": true
+    },
+    {
+      "second": 6840,
+      "ponding": 0,
+      "pipeFill": 0.002909088507294655,
+      "jet": true
+    },
+    {
+      "second": 7140,
+      "ponding": 0,
+      "pipeFill": 0.0026680175215005875,
+      "jet": true
+    },
+    {
+      "second": 7440,
+      "ponding": 0,
+      "pipeFill": 0.002497086301445961,
+      "jet": true
+    },
+    {
+      "second": 7740,
+      "ponding": 0,
+      "pipeFill": 0.0023478399962186813,
+      "jet": true
+    }
+  ]
+}

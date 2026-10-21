@@ -3,8 +3,8 @@ import type { DrainDesign } from '../simulation/physics/design';
 export const rainColour = '#899597';
 export function rainBounds(d: DrainDesign) {
   return {
-    length: Math.max(34,d.length * 2.5 + 4),
-    width: Math.max(26,d.topWidth * 5),
+    length: Math.max(34, d.length * 2.5 + 4),
+    width: Math.max(26, d.topWidth * 5),
     height: Math.max(8, d.depressionDepth * 12),
   };
 }

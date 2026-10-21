@@ -183,7 +183,9 @@ export function createSwaleGeometry(c: PhysicsConfig): ModelGroups {
   layer('transition', t, -m - t / 2 - 0.05, 0xe8dec6, 'sand');
   layer('drainage', g, bottom + g / 2, 0xc5beaa, 'gravel');
   layer('mulch', 0.05, -0.025, 0xbba07c, 'mulch');
-  const textile=k.box('transition',[l,.003,w],[0,-m-t-.05+.002,0],0x8f927f);textile.name='geotextile';Object.assign(textile.material,surfaceMaps('fabric'));
+  const textile = k.box('transition', [l, 0.003, w], [0, -m - t - 0.05 + 0.002, 0], 0x8f927f);
+  textile.name = 'geotextile';
+  Object.assign(textile.material, surfaceMaps('fabric'));
   if (d.nativeDepth > 0)
     layer('media', d.nativeDepth, bottom - d.nativeDepth / 2, 0x9d8465, 'soil');
   // Banks define the 1:z section around the actual bottom width.
@@ -271,8 +273,28 @@ export function createSwaleGeometry(c: PhysicsConfig): ModelGroups {
   k.pipe('overflow', crest - pipeY, 0.15, [l / 2 - 0.5, (crest + pipeY) / 2, -w / 3], true);
   k.grate('overflow', l / 2 - 0.5, crest, -w / 3, 0.32, 0.32);
   k.pipe('outfall', 1.5, r, [l / 2 + 0.75, pipeY - (l / 2) * v.pipeSlope.value, 0]);
-  k.box('outfall', [0.1, 0.8, 1], [l / 2 + 1.45, pipeY + 0.2, 0], palette.well).material.map =
-    hatch('concrete', palette.well);
+  const headwall = new THREE.Shape();
+  headwall.moveTo(-0.5, -0.4);
+  headwall.lineTo(0.5, -0.4);
+  headwall.lineTo(0.5, 0.4);
+  headwall.lineTo(-0.5, 0.4);
+  headwall.closePath();
+  const outletPort = new THREE.Path();
+  outletPort.absarc(0, -0.2, r * 0.98, 0, Math.PI * 2, true);
+  headwall.holes.push(outletPort);
+  const headwallGeometry = new THREE.ExtrudeGeometry(headwall, {
+    depth: 0.1,
+    bevelEnabled: false,
+    curveSegments: 24,
+  });
+  headwallGeometry.rotateY(Math.PI / 2);
+  const wall = k.mesh('outfall', headwallGeometry, palette.well, [
+    l / 2 + 1.4,
+    pipeY - (l / 2) * v.pipeSlope.value + 0.2,
+    0,
+  ]);
+  wall.name = 'outfall-headwall';
+  wall.material.map = hatch('concrete', palette.well);
   k.box('liner', [l, 0.012, w], [0, bottom - 0.015, 0], palette.ink3, 0.35);
   const blade = new THREE.PlaneGeometry(0.045, 0.38, 1, 3);
   blade.translate(0, 0.19, 0);
@@ -285,9 +307,17 @@ export function createSwaleGeometry(c: PhysicsConfig): ModelGroups {
   const material = k.mat(0x667d42),
     wind = { value: 0 };
   material.userData.wind = wind;
-  const flowField={value:null},flowBounds={value:new THREE.Vector4(0,0,1,1)},flowReady={value:0};material.userData.flowField=flowField;material.userData.flowBounds=flowBounds;material.userData.flowReady=flowReady;
+  const flowField = { value: null },
+    flowBounds = { value: new THREE.Vector4(0, 0, 1, 1) },
+    flowReady = { value: 0 };
+  material.userData.flowField = flowField;
+  material.userData.flowBounds = flowBounds;
+  material.userData.flowReady = flowReady;
   material.onBeforeCompile = (shader) => {
-    shader.uniforms.windTime = wind;shader.uniforms.plantFlowField=flowField;shader.uniforms.plantFlowBounds=flowBounds;shader.uniforms.plantFlowReady=flowReady;
+    shader.uniforms.windTime = wind;
+    shader.uniforms.plantFlowField = flowField;
+    shader.uniforms.plantFlowBounds = flowBounds;
+    shader.uniforms.plantFlowReady = flowReady;
     shader.vertexShader =
       'uniform float windTime,plantFlowReady; uniform sampler2D plantFlowField; uniform vec4 plantFlowBounds; varying float plantWet;\n' +
       shader.vertexShader.replace(
@@ -300,7 +330,12 @@ export function createSwaleGeometry(c: PhysicsConfig): ModelGroups {
         transformed.xz+=clamp(velocity,vec2(-1.),vec2(1.))*position.y*position.y*.4;
         plantWet=water.x>.001?1.-smoothstep(water.x,water.x+.08,position.y):0.;`,
       );
-    shader.fragmentShader='varying float plantWet;\n'+shader.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\ndiffuseColor.rgb*=1.-plantWet*.3;');
+    shader.fragmentShader =
+      'varying float plantWet;\n' +
+      shader.fragmentShader.replace(
+        '#include <color_fragment>',
+        '#include <color_fragment>\ndiffuseColor.rgb*=1.-plantWet*.3;',
+      );
   };
   const blades = new THREE.InstancedMesh(blade, material, 580),
     obj = new THREE.Object3D();
@@ -352,7 +387,7 @@ export function createSwaleGeometry(c: PhysicsConfig): ModelGroups {
       obj.updateMatrix();
       bits.setMatrixAt(i, obj.matrix);
     }
-    bits.name=id+'-particles';
+    bits.name = id + '-particles';
     k.groups[id]!.add(bits);
   }
   return finish(k.groups);
@@ -369,8 +404,13 @@ export function createInletGeometry(c: PhysicsConfig): ModelGroups {
       'concrete',
       palette.well,
     );
-  const opening=Math.min(.14,depth*.5);
-  k.box('inlet', [0.1, depth-opening, w], [-l / 2 - 0.05, (depth+opening)/2, 0], palette.well);
+  const opening = Math.min(0.14, depth * 0.5);
+  k.box(
+    'inlet',
+    [0.1, depth - opening, w],
+    [-l / 2 - 0.05, (depth + opening) / 2, 0],
+    palette.well,
+  );
   k.grate('inlet', 0, depth + 0.02, 0, l, w);
   if (v.sediment.value > 0) {
     k.box('pretreat', [l, v.sediment.value, w], [0, v.sediment.value / 2, 0], sceneColours.soil);
@@ -391,10 +431,22 @@ export function createInletGeometry(c: PhysicsConfig): ModelGroups {
       palette.ink3,
     );
   k.pipe('outfall', 1.4, v.pipeDiameter.value / 2, [l / 2 + 0.7, v.pipeDiameter.value / 2, 0]);
-  const wallShape=new THREE.Shape();wallShape.moveTo(-w/2,0);wallShape.lineTo(w/2,0);wallShape.lineTo(w/2,depth);wallShape.lineTo(-w/2,depth);wallShape.closePath();
-  const port=new THREE.Path();port.absarc(0,v.pipeDiameter.value/2,v.pipeDiameter.value*.49,0,Math.PI*2,true);wallShape.holes.push(port);
-  const wallGeometry=new THREE.ExtrudeGeometry(wallShape,{depth:.1,bevelEnabled:false,curveSegments:24});wallGeometry.rotateY(Math.PI/2);
-  k.mesh('outfall',wallGeometry,palette.well,[l/2,0,0]);
+  const wallShape = new THREE.Shape();
+  wallShape.moveTo(-w / 2, 0);
+  wallShape.lineTo(w / 2, 0);
+  wallShape.lineTo(w / 2, depth);
+  wallShape.lineTo(-w / 2, depth);
+  wallShape.closePath();
+  const port = new THREE.Path();
+  port.absarc(0, v.pipeDiameter.value / 2, v.pipeDiameter.value * 0.49, 0, Math.PI * 2, true);
+  wallShape.holes.push(port);
+  const wallGeometry = new THREE.ExtrudeGeometry(wallShape, {
+    depth: 0.1,
+    bevelEnabled: false,
+    curveSegments: 24,
+  });
+  wallGeometry.rotateY(Math.PI / 2);
+  k.mesh('outfall', wallGeometry, palette.well, [l / 2, 0, 0]);
   k.box('overflow', [0.5, 0.04, w], [l / 2 + 0.35, depth, 0], palette.well2);
   k.box('ponding', [l, depth, w], [0, depth / 2, 0], palette.well, 0.02);
   return finish(k.groups);

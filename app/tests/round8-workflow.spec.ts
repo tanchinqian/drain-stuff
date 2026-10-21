@@ -53,7 +53,10 @@ test('Round 8 full workflow, real API, replay, devices and responsive accessibil
   await page.evaluate(() => scrollTo(0, 0));
   await page.screenshot({ path: 'test-results/captures/round8/desktop.png', fullPage: true });
   const axe = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
-  await writeFile('test-results/captures/round8/axe-board.json', JSON.stringify(axe.violations, null, 2));
+  await writeFile(
+    'test-results/captures/round8/axe-board.json',
+    JSON.stringify(axe.violations, null, 2),
+  );
   expect(axe.violations).toEqual([]);
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.evaluate(() => scrollTo(0, 0));
@@ -142,7 +145,10 @@ test('Round 8 full workflow, real API, replay, devices and responsive accessibil
   await panel.getByRole('button', { name: 'Verify clearance', exact: true }).click();
   await expect(panel.locator('[aria-current=step]')).toHaveText('Verified', { timeout: 180000 });
   await expect(panel).toContainText('Verification re-run: overflow');
-  await page.screenshot({ path: 'test-results/captures/round8/work-order-verified.png', fullPage: true });
+  await page.screenshot({
+    path: 'test-results/captures/round8/work-order-verified.png',
+    fullPage: true,
+  });
   await panel
     .getByRole('textbox', { name: 'Required note' })
     .fill('Evidence reviewed and accepted');
@@ -154,7 +160,7 @@ test('Round 8 full workflow, real API, replay, devices and responsive accessibil
   await diag.getByRole('button', { name: 'Accept', exact: true }).click();
   await expect(diag).toContainText('Recorded in the audit log');
   await page.screenshot({ path: 'test-results/captures/round8/diagnosis.png', fullPage: true });
-  await expect(diag.getByRole('button',{name:'Accept',exact:true})).toBeDisabled();
+  await expect(diag.getByRole('button', { name: 'Accept', exact: true })).toBeDisabled();
   await page.goto('/faults?asset=S2&escalate=1');
   await page.getByRole('textbox', { name: 'Owner / recipient' }).fill('Township owner');
   await page
@@ -162,7 +168,10 @@ test('Round 8 full workflow, real API, replay, devices and responsive accessibil
     .fill('Capacity remains insufficient after clearing');
   await page.getByRole('button', { name: 'Record escalation', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Township owner · recorded' })).toBeVisible();
-  await page.screenshot({ path: 'test-results/captures/round8/capacity-escalation.png', fullPage: true });
+  await page.screenshot({
+    path: 'test-results/captures/round8/capacity-escalation.png',
+    fullPage: true,
+  });
   const id = randomBytes(8).toString('hex');
   await page.goto('/sensors');
   await page.getByRole('button', { name: 'Register device', exact: true }).click();
@@ -203,7 +212,10 @@ test('Round 8 full workflow, real API, replay, devices and responsive accessibil
   await page.goto('/sensors?sensor=DEV-' + id);
   await expect(page.getByRole('dialog')).toContainText('Ultrasonic level', { timeout: 15000 });
   await expect(page.getByRole('dialog')).toContainText('50');
-  await page.screenshot({ path: 'test-results/captures/round8/device-reading.png', fullPage: true });
+  await page.screenshot({
+    path: 'test-results/captures/round8/device-reading.png',
+    fullPage: true,
+  });
   await page.goto('/feature/R1?stormRunId=' + jobId + '&part=inlet');
   await expect(page.locator('.cad-scene .scene-design-stamp')).toBeVisible({
     timeout: 30000,
@@ -211,7 +223,7 @@ test('Round 8 full workflow, real API, replay, devices and responsive accessibil
   await expect(page.locator('.cad-scene canvas')).toBeVisible({ timeout: 30000 });
   await page.getByRole('button', { name: 'Debug', exact: true }).click();
   await expect(page.locator('.model-workspace')).toContainText('DEV-' + id);
-  await expect(page.getByRole('button', { name: 'Play storm', exact: true })).toBeEnabled({
+  await expect(page.getByRole('slider', { name: 'Storm timeline', exact: true })).toBeEnabled({
     timeout: 180000,
   });
   const timeline = page.getByRole('slider', { name: 'Storm timeline', exact: true });
@@ -219,7 +231,10 @@ test('Round 8 full workflow, real API, replay, devices and responsive accessibil
   await timeline.press('Home');
   for (let minute = 0; minute < 20; minute++) await timeline.press('ArrowRight');
   await expect(page.locator('.physics-playback')).toHaveAttribute('data-model-minute', '20');
-  await page.screenshot({ path: 'test-results/captures/round8/typical-roadside.png', fullPage: true });
+  await page.screenshot({
+    path: 'test-results/captures/round8/typical-roadside.png',
+    fullPage: true,
+  });
   await page.getByRole('button', { name: 'If cleared', exact: true }).click();
   await expect(page.getByRole('button', { name: 'If cleared', exact: true })).toHaveAttribute(
     'aria-pressed',

@@ -54,7 +54,8 @@ export default function SimulationDriver() {
   useEffect(() => {
     if (!ready || !active) return;
     const ids = pathname.startsWith('/feature/')
-      ? featureIds.filter((id) => id === pathname.split('/')[2]) : [...featureIds];
+      ? featureIds.filter((id) => id === pathname.split('/')[2])
+      : [...featureIds];
     const state = useSimulation.getState(),
       results: Record<string, PhysicsRun> = { ...state.runs };
     const needed = ids.filter((id) => !results[id]);
@@ -88,14 +89,19 @@ export default function SimulationDriver() {
       if (needed.every((id) => results[id])) {
         clearTimeout(timeout);
         const current = useSimulation.getState();
-        const openInRain = pathname.startsWith('/feature/') && !current.replay?.preserveClock && current.second === 0;
+        const openInRain =
+          pathname.startsWith('/feature/') &&
+          !current.replay?.preserveClock &&
+          current.second === 0;
         const opening = results[ids[0]].config.values.duration.value * 0.4;
         useSimulation.setState({
           runs: results,
           busy: false,
           error: null,
           second: openInRain ? opening : current.second,
-          playing: openInRain ? !window.matchMedia('(prefers-reduced-motion: reduce)').matches : current.playing,
+          playing: openInRain
+            ? !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+            : current.playing,
           replay: current.replay ? { ...current.replay, preserveClock: true } : null,
         });
         worker.terminate();
@@ -128,7 +134,8 @@ export default function SimulationDriver() {
     motion.addEventListener('change', stop);
     let last = performance.now();
     const timer = window.setInterval(() => {
-      const now = performance.now(), elapsed = (now - last) / 1000;
+      const now = performance.now(),
+        elapsed = (now - last) / 1000;
       last = now;
       const s = useSimulation.getState(),
         end = s.configs.S1.values.duration.value + s.configs.S1.values.recovery.value;

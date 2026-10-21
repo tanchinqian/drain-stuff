@@ -13,7 +13,7 @@ Checks: TypeScript passed; both browser cases passed (30 random switches and 10 
 
 Excavation/ground continuity is being handled with Stage 0B because both use the same street surface.
 
-## Remaining stages
+## Initial remaining stages (historical)
 
 0C rain opening; 0B street continuity; 0D faults; 1 rain distribution; 3/3A flow path; 2 surface solver; remaining surroundings/material interactions and evidence.
 
@@ -58,3 +58,12 @@ Replaced the separate deep ground slab and oversized rectangular hole with a con
 - Connected wet finish, retained mulch wetness/film appearance, selected chip flotation, depth-sampled soil/sand/gravel/geotextile, clog/wet sock shading, head-gated dam spill and grid-driven vegetation bending/wetting. Removed the old floating green ellipses; folded leaves use the velocity field.
 - Added the material interaction table and explicit limits in WATER_INTERACTIONS.md. The Richards cross-bed field is still repeated along the asset length; this is stated in Model details instead of inventing a 3D soil field.
 - Eleven focused material/surface tests passed; four browser flow/fault tests passed without shader errors. Final screenshot acceptance and the full regression/performance pass remain.
+
+
+## Final integration and verification
+
+The scene stages are integrated and staged commits were pushed through `9a60bbf`. Final corrections fix overlay origins, retained dimension/sediment labels, manual fault outlines, foreground occlusion, road/bed leaf clipping, the outfall port, particle timing and camera bounds. Existing camera limits were being applied before the new fit; the shared controls now receive their limits before `update()`.
+
+The full regression run passed 76/82. The six failures were resolved through a mock-data lookup fix, a wider-screen R1 height fix and the I1 camera correction; targeted reruns pass their affected coverage. Tests now acknowledge the deliberately changed autoplay and persistent-fault rules. They retain the existing layout, flow and volume thresholds.
+
+See [ROUND9C_RESULTS.md](ROUND9C_RESULTS.md) for stage status, performance, evidence and limitations. Stage 2's core solver and constraints are implemented; fine caustics and grass-scale wakes remain below the requested visual realism target. Other stages are complete within their stated visual rules. Final recordings use Record quality. No hydraulic-engine, Richards, API or AI changes were made in this round.
