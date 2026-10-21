@@ -3,6 +3,7 @@ import { useSelection } from '../state';
 import { useNavigate } from 'react-router-dom';
 import { featureCallouts, pilotByBuilding, planPoint, site } from '../site/layout';
 import type { RainPlayback } from '../site/weather';
+import type { ForecastImpact } from '../../../shared/src/forecast';
 import RainfallOverlay from './RainfallOverlay';
 
 export default function PlanMap({
@@ -15,6 +16,10 @@ export default function PlanMap({
   showSensors,
   cloudOpacity,
   rainPlayback,
+  forecastImpacts,
+  faultCounts,
+  onSelectHouse,
+  assetCallouts = featureCallouts,
   ranks = {},
   selectedAsset,
   onSelectAsset,
@@ -29,13 +34,17 @@ export default function PlanMap({
   showSensors: boolean;
   cloudOpacity: number;
   rainPlayback?: RainPlayback;
+  forecastImpacts?: ForecastImpact[];
+  faultCounts?: Record<string, number>;
+  onSelectHouse?: (id: string) => void;
+  assetCallouts?: Record<string, [number, number]>;
   ranks?: Record<string, number>;
   selectedAsset?: string;
   onSelectAsset?: (id: string) => void;
   showHouseList?: boolean;
 }) {
   const selectHouse = useSelection((s) => s.selectHouse),
-    selected = useSelection((s) => s.houseId),
+    selected = useSelection((s) => onSelectHouse ? selectedAsset : s.houseId),
     zoneId = useSelection((s) => s.zoneId);
   const navigate = useNavigate();
   return (
@@ -73,7 +82,7 @@ export default function PlanMap({
             id = pilotId || h.id;
           const p = pilot ? [pilot.x, pilot.y] : [h.x, h.z];
           const choose = () => {
-            if (pilot) selectHouse(id);
+            if (pilot) { if (onSelectHouse) onSelectHouse(id); else selectHouse(id); }
           };
           return (
             <g
@@ -147,7 +156,7 @@ export default function PlanMap({
           })()}
         {features.map((f) => {
           const [x1, y1] = planPoint(f.x, f.y),
-            [x2, y2] = planPoint(...(featureCallouts[f.id] || [f.x, f.y]));
+            [x2, y2] = planPoint(...(assetCallouts[f.id] || [f.x, f.y]));
           return (
             <line
               key={f.id}
@@ -162,13 +171,15 @@ export default function PlanMap({
           );
         })}
         {features.map((f) => {
-          const [x, y] = planPoint(...(featureCallouts[f.id] || [f.x, f.y]));
+          const [x, y] = planPoint(...(assetCallouts[f.id] || [f.x, f.y]));
+          const impact = forecastImpacts?.find(impact => impact.asset === f.id);
           return (
             <g
               key={f.id}
               role="button"
               tabIndex={0}
-              aria-label={'Open feature ' + f.id}
+              aria-label={faultCounts ? `View ${f.id} faults` : 'Open feature ' + f.id}
+              data-asset-id={f.id}
               transform={`translate(${x},${y})`}
               onClick={(e) => {
                 e.stopPropagation();
@@ -185,10 +196,10 @@ export default function PlanMap({
               }}
             >
               <rect
-                x="-22"
+                x={impact || faultCounts ? '-52' : '-22'}
                 y="-22"
-                width="44"
-                height="44"
+                width={impact || faultCounts ? '104' : '44'}
+                height={impact && faultCounts ? '85' : impact || faultCounts ? '66' : '44'}
                 rx="2"
                 fill={selectedAsset === f.id ? 'var(--ink)' : 'var(--panel)'}
                 stroke="var(--ink)"
@@ -202,6 +213,8 @@ export default function PlanMap({
                 {ranks[f.id] ? ranks[f.id] + '·' : ''}
                 {f.id}
               </text>
+              {impact && <text textAnchor="middle" y="29" style={{ fontSize: 11, fill: selectedAsset === f.id ? 'var(--panel)' : 'var(--ink)' }}>{impact.peakMm.toFixed(0)} mm peak</text>}
+              {faultCounts && <text textAnchor="middle" y={impact ? '49' : '29'} style={{ fontSize: 11, fill: selectedAsset === f.id ? 'var(--panel)' : 'var(--ink)' }}>{faultCounts[f.id] ?? 0} open</text>}
             </g>
           );
         })}

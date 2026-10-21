@@ -1624,6 +1624,71 @@ main {
   padding: 14px;
   margin: 12px 0;
 }
+.fault-map-toolbar { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; margin-bottom: 20px; }
+.fault-register-view { margin-bottom: 20px; }
+.fault-chat-launcher { position: fixed; right: 24px; bottom: 20px; z-index: 40; display: flex; align-items: center; gap: 9px; padding: 13px 18px; background: var(--ink); color: var(--panel); border-color: var(--ink); box-shadow: 0 4px 18px #302b2230; }
+.fault-chat-window { position: fixed; right: 24px; bottom: 82px; z-index: 40; width: min(430px, calc(100vw - 32px)); height: min(640px, calc(100dvh - 110px)); display: flex; flex-direction: column; border: 1px solid var(--border); background: var(--panel); box-shadow: 0 8px 32px #302b2230; border-radius: 8px; overflow: hidden; }
+.fault-chat-header { padding: 16px; display: flex; gap: 12px; justify-content: space-between; align-items: start; border-bottom: 1px solid var(--border); }
+.fault-chat-header h2 { font-size: 18px; }
+.fault-chat-header p { margin: 6px 0 0; font-size: 12px; color: var(--ink2); }
+.fault-chat-header button { padding: 7px; min-height: 34px; }
+.fault-chat-scope { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 16px; background: var(--well); font-size: 12px; }
+.fault-chat-scope button { font-size: 12px; padding: 5px; }
+.fault-chat-log { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 16px; }
+.fault-chat-intro { font-size: 14px; line-height: 1.5; }
+.fault-chat-prompts { display: grid; gap: 9px; margin-top: 14px; }
+.fault-chat-prompts button { text-align: left; white-space: normal; font-size: 13px; }
+.fault-chat-message { padding: 12px; margin-bottom: 12px; background: var(--well); font-size: 14px; line-height: 1.5; overflow-wrap: anywhere; }
+.fault-chat-message.user { background: var(--well2); margin-left: 24px; }
+.fault-chat-message strong { font-size: 12px; }
+.fault-chat-message > p { white-space: pre-wrap; margin: 8px 0 0; }
+.fault-chat-message > p.small { font-size: 11px; }
+.fault-chat-sources { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.fault-chat-sources button, .fault-chat-sources a { display: inline-block; max-width: 100%; padding: 4px 7px; font-size: 11px; color: var(--ink); border: 1px solid var(--border); background: var(--panel); overflow-wrap: anywhere; white-space: normal; }
+.fault-chat-connection { padding: 7px 16px; font-size: 11px; border-top: 1px solid var(--border); color: var(--ink2); }
+.fault-chat-connection button { margin-top: 8px; font-size: 12px; padding: 5px 8px; }
+.fault-chat-composer { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; padding: 12px; border-top: 1px solid var(--border); }
+.fault-chat-composer textarea { resize: none; min-height: 64px; max-height: 100px; }
+.fault-chat-composer > p { grid-column: 1 / -1; font-size: 12px; color: var(--heat-3); }
+.fault-chat-composer > button { align-self: end; padding: 12px; }
+@media(max-width: 600px) {
+  .fault-chat-launcher { right: 12px; bottom: 12px; }
+  .fault-chat-window { right: 8px; bottom: 74px; width: calc(100vw - 16px); height: min(600px, calc(100dvh - 90px)); }
+}
+.fault-map-toolbar .field { flex: 1 1 130px; min-width: 0; margin: 0; }
+.fault-map-toolbar .field:first-child { flex-basis: 230px; }
+.fault-map-toolbar > button { min-height: 44px; }
+.fault-map-layout { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(310px, 1fr); gap: 22px; align-items: start; }
+.fault-map-model { min-width: 0; position: sticky; top: 12px; }
+.fault-map-model .panel-heading { flex-wrap: wrap; gap: 12px; }
+.fault-map-model .neighbourhood-scene { height: clamp(350px, 55vh, 560px); }
+.fault-map-model .plan-svg { width: 100%; height: auto; display: block; }
+.fault-map-count { display: block; font-size: 11px; font-weight: 400; margin-top: 4px; white-space: nowrap; }
+.fault-map-model .feature-pin { display: grid; gap: 2px; justify-items: center; }
+.fault-map-records { min-width: 0; }
+.fault-map-records > .panel-heading { align-items: start; gap: 12px; }
+.fault-map-cards { display: grid; gap: 14px; margin-block: 16px; }
+.fault-record-card { border: 1px solid var(--border); padding: 16px; background: var(--well); }
+.fault-record-card > .panel-heading { align-items: start; flex-wrap: wrap; gap: 8px; }
+.fault-record-card h3 { min-width: 0; font-size: 16px; }
+.fault-record-card h3 button { font-size: inherit; text-align: left; padding: 0; white-space: normal; }
+.fault-record-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 16px 0; }
+.fault-record-fields > div { min-width: 0; }
+.fault-record-fields dt { color: var(--ink2); font-size: 12px; margin-bottom: 4px; }
+.fault-record-fields dd { margin: 0; font-size: 13px; overflow-wrap: anywhere; }
+.fault-record-rule { grid-column: 1 / -1; }
+.fault-record-rule button { font-size: inherit; text-align: left; padding: 0; white-space: normal; }
+.fault-detail-metadata { padding-bottom: 18px; border-bottom: 1px solid var(--border); }
+@media(max-width: 1150px) {
+  .fault-map-layout { grid-template-columns: minmax(0, 1fr); }
+  .fault-map-model { position: static; }
+  .fault-map-cards { grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); }
+}
+@media(max-width: 760px) {
+  .fault-map-toolbar .field { flex-basis: calc(50% - 12px); }
+  .fault-map-toolbar .field:first-child { flex-basis: 100%; }
+  .fault-map-model .neighbourhood-scene { height: 360px; }
+}
 .fault-card h3 {
   margin-top: 10px;
 }
@@ -2461,11 +2526,48 @@ main > .about {
 .quality-status { font-size: 12px; color: #5e564b; margin-right: auto; align-self: center; }
 
 /* Storm triage extends the Map desk register. */
-.storm-inputs { margin-bottom: 18px; }
+.storm-inputs { margin-block: 18px; padding-block: 18px; border-block: 1px solid var(--border); }
 .storm-form { display: flex; flex-wrap: wrap; align-items: end; gap: 14px; margin: 16px 0; }
 .storm-form .field { min-width: 180px; flex: 0 1 260px; }
-.triage-layout { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 18px; align-items: start; }
-.triage-map { position: sticky; top: 12px; min-width: 0; }
+.weather-view-switch { margin: 16px 0; }
+.forecast-map-controls { display: flex; align-items: end; flex-wrap: wrap; gap: 12px 18px; margin-top: 16px; }
+.forecast-map-day { display: grid; gap: 6px; font-size: 12px; flex: 0 0 190px; }
+.forecast-map-day select { width: 100%; min-height: 44px; }
+.forecast-map-time-picker { display: grid; gap: 6px; flex: 1 1 520px; min-width: 0; }
+.forecast-map-times { display: flex; gap: 4px; overflow-x: auto; padding-bottom: 4px; }
+.forecast-map-times button { display: grid; justify-items: center; gap: 6px; flex: 1 0 auto; padding: 8px; font-size: 12px; white-space: nowrap; min-height: 44px; }
+.forecast-time-icon { font-size: 23px; line-height: 1.2; }
+.triage-map:has(.forecast-map-controls) .neighbourhood-scene { height: clamp(280px, 43vh, 430px); }
+.triage-map:has(.forecast-map-controls) .plan-svg { max-height: 43vh; min-height: 240px; }
+.weather-forecast { border-top: 1px solid var(--border); margin-top: 20px; padding-top: 20px; }
+.forecast-source { font-size: 12px; color: var(--ink2); background: var(--well2); padding: 6px 10px; }
+.forecast-current { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; margin: 20px 0; }
+.forecast-icon { font-size: 48px; line-height: 1.2; }
+.forecast-temperature { font-size: 48px; font-weight: 500; letter-spacing: -2px; white-space: nowrap; }
+.forecast-temperature > span { font-size: 21px; vertical-align: super; letter-spacing: 0; }
+.forecast-facts, .forecast-condition { display: grid; gap: 4px; font-size: 13px; color: var(--ink2); }
+.forecast-condition { margin-left: auto; text-align: right; }
+.forecast-condition strong { color: var(--ink); font-size: 19px; }
+.forecast-chart { color: #9b681a; }
+.forecast-chart svg { display: block; width: 100%; height: 120px; overflow: visible; }
+.forecast-chart text { font-size: 12px; fill: var(--ink2); }
+.forecast-impact { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--border); }
+.forecast-impact-assets { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin: 16px 0; }
+.forecast-impact-assets > div { display: grid; gap: 6px; padding: 12px; border: 1px solid var(--border); background: var(--well); font-size: 12px; }
+.forecast-impact-assets strong { font-size: 15px; }
+.forecast-attribution { margin-top: 18px; }
+.forecast-pin-depth { display: block; font-size: 11px; font-weight: 400; margin-top: 4px; white-space: nowrap; }
+
+@media(max-width: 640px) {
+  .forecast-current { gap: 12px; }
+  .forecast-condition { width: 100%; text-align: left; margin-left: 0; }
+  .forecast-impact-assets { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .forecast-chart svg { height: 100px; }
+  .forecast-chart { overflow-x: auto; }
+  .forecast-chart svg { min-width: 640px; }
+}
+.triage-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; align-items: start; }
+.triage-map { min-width: 0; }
 .triage-map .neighbourhood-scene { height: 480px; }
 .triage-row { padding: 18px 12px; border-top: 1px solid var(--border); }
 .triage-row.selected { background: var(--well2); }

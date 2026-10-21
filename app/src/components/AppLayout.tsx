@@ -17,11 +17,6 @@ export default function AppLayout() {
           <Waves size={24} aria-hidden="true" />
           Drain Trial Console
         </Link>
-        <div className="inline">
-          <Link className="button" to={'/about' + suffix}>
-            Limits
-          </Link>
-        </div>
       </header>
       <nav className="navigation" aria-label="Console pages">
         {[
@@ -29,7 +24,6 @@ export default function AppLayout() {
           ['/faults', 'Faults'],
           ['/sensors', 'Sensors'],
           ['/materials', 'Materials and trial'],
-          ['/about', 'About'],
         ].map(([to, label]) => (
           <NavLink end={to === '/'} key={to} to={to + suffix}>
             {label}

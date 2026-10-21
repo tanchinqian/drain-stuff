@@ -1,4 +1,6 @@
 import { mockRequest } from './mock';
+import type { FaultChatAnswer, FaultChatInput, FaultChatStatus } from '../../../shared/src/faultChat';
+import type { ForecastResponse } from '../../../shared/src/forecast';
 import type {
   Sensor,
   SensorReading,
@@ -51,7 +53,7 @@ export function showDataNotice() {
     (import.meta.env.VITE_SHOW_DATA_NOTICE !== 'false' && isMock)
   );
 }
-async function request<T>(path: string, body?: unknown, timeoutMs = 15000): Promise<T> {
+async function request<T>(path: string, body?: unknown, timeoutMs = 15000, networkError = 'Connection lost. Your change was not saved. Reconnect before trying again.'): Promise<T> {
   await selectSource();
   if (isMock) return (await mockRequest(path, body === undefined ? 'GET' : 'POST', body)) as T;
   let response: Response;
@@ -67,7 +69,7 @@ async function request<T>(path: string, body?: unknown, timeoutMs = 15000): Prom
     });
   } catch {
     if (body !== undefined)
-      throw new Error('Connection lost. Your change was not saved. Reconnect before trying again.');
+      throw new Error(networkError);
     isMock = true;
     if (typeof window !== 'undefined') window.dispatchEvent(new Event('api-source-change'));
     return (await mockRequest(path, 'GET')) as T;
@@ -108,6 +110,8 @@ interface StormJob {
   progress?: import('../../../shared/src/contract').StormProgress | null;
 }
 export const api = {
+  faultChatStatus: () => request<FaultChatStatus>('/ai/fault-chat/status'),
+  faultChat: (input: FaultChatInput) => request<FaultChatAnswer>('/ai/fault-chat', input, 130000, 'Connection to the assistant was lost. Try again.'),
   aiInfo:()=>request<{promptVersion:string;provider:string;mode:string;model?:string|null;configured?:boolean}>('/ai/config'),
   diagnosisHints:()=>request<Record<string,string>>('/ai/hints'),
   devices:()=>request<import('../../../shared/src/iot').Device[]>('/devices'),
@@ -127,6 +131,7 @@ export const api = {
     position: number;
     reason: string;
   }) => request<Ok>('/triage/overrides', input),
+  forecast: () => request<ForecastResponse>('/weather/forecast'),
   warnings: () => request<{ available: boolean; warnings?: unknown[] }>('/weather/warnings'),
   faultLifecycle: (
     id: string,

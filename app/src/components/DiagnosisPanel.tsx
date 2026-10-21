@@ -36,6 +36,7 @@ export default function DiagnosisPanel({ faultId, partContext, inline = false }:
     <summary>{inline?'AI diagnosis':'Suggested diagnosis'}<span>{result ? result.confidence+' confidence · '+result.mode : 'Review the recorded finding and supporting sources'}</span></summary>
     <div className="diagnosis-content">
       <div className="actions"><button className="text-action" disabled={query.isFetching||busy} onClick={()=>{setReview(null);void query.refetch();}}>{query.isFetching?'Analysing…':'Refresh'}</button></div>
+      {inline && partContext && <button onClick={() => window.dispatchEvent(new CustomEvent('fault-chat-follow-up', {detail: {assetId: partContext.ownerId, partId: partContext.partId, faultId, diagnosisId: result?.id}}))}>Ask a follow-up</button>}
       {(error||query.error) && <p role="alert">{error||query.error?.message} Use Refresh to retry.</p>}
       {!result && query.isFetching && <p role="status">Comparing this finding with sourced cases and the configured model…</p>}
       {result && <>
