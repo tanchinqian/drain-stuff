@@ -1,5 +1,27 @@
 import { test, expect } from '@playwright/test';
 import { mkdir } from 'node:fs/promises';
+test('Round 9C GPU surface solver preserves a still lake',async({page})=>{
+  const errors:string[]=[];page.on('console',m=>{if(m.type()==='error'&&/THREE|shader|WebGL/i.test(m.text()))errors.push(m.text());});
+  await page.goto('/');
+  const result=await page.evaluate(async()=>{const path='/tests/gpuSurfaceHarness.ts';const {verifyGpuSurface}=await import(path);return verifyGpuSurface();});
+  expect(result.finite).toBe(true);expect(result.nonnegative).toBe(true);expect(result.drift).toBeLessThan(.00001);expect(result.motion).toBeLessThan(.00001);expect(result.volumeError).toBeLessThan(.001);expect(result.frontError).toBeLessThan(.001);expect(result.frontPositive).toBe(true);expect(errors).toEqual([]);
+});
+for(const backend of ['gpu','worker'])test('Round 9C surface reconciliation '+backend,async({page})=>{
+  test.setTimeout(120000);
+  if(backend==='worker')await page.addInitScript(()=>{
+    const original=WebGL2RenderingContext.prototype.getExtension;
+    WebGL2RenderingContext.prototype.getExtension=function(name:string){return name==='EXT_color_buffer_float'?null:original.call(this,name);};
+  });
+  await page.goto('/feature/S1');const scene=page.locator('.cad-scene'),clock=page.getByRole('slider',{name:'Storm timeline',exact:true});
+  await expect(clock).toBeEnabled({timeout:60000});
+  for(const minute of [0,18,45,165]){
+    await clock.fill(String(minute));
+    await expect(scene).toHaveAttribute('data-surface-backend',backend==='gpu'?'WebGL2 float':'CPU worker');
+    await expect.poll(async()=>Number(await scene.getAttribute('data-surface-bed-error'))).toBeLessThan(.03);
+    await expect.poll(async()=>Number(await scene.getAttribute('data-surface-gutter-error'))).toBeLessThan(.03);
+    await expect.poll(async()=>Number(await scene.getAttribute('data-surface-reference-error'))).toBeLessThan(.001);
+  }
+});
 for(const asset of ['S1','R1'])test('Round 9C roof and drain flow '+asset,async({page})=>{
   const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error'&&/THREE|shader|WebGL/i.test(m.text()))errors.push(m.text());});
   await page.goto('/feature/'+asset);

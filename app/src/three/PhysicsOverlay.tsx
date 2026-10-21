@@ -133,7 +133,7 @@ export function PhysicsWater({
     return (
       <group>
         {h > 0.000001 && (
-          <mesh name="ponded-water" geometry={geometry}>
+          <mesh name="ponded-water" geometry={geometry} visible={false}>
             {water(h)}
           </mesh>
         )}

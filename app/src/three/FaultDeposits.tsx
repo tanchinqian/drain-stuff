@@ -1,4 +1,5 @@
 import { useEffect, useMemo } from 'react';
+import {leafGeometry} from './FloatingLeaves';
 import { InstancedMesh, Object3D, BoxGeometry, MeshStandardMaterial, type Plane } from 'three';
 import type { Fault, PartId } from '../api/types';
 import type { ModelPhysics } from './PhysicsOverlay';
@@ -42,7 +43,7 @@ export default function FaultDeposits({
       roughness: 0.9,
       clippingPlanes: plane ? [plane] : [],
     });
-    const mesh = new InstancedMesh(new BoxGeometry(1, 1, 1), material, count),
+    const mesh = new InstancedMesh(id==='inlet'?leafGeometry():new BoxGeometry(1, 1, 1), material, count),
       o = new Object3D();
     for (let i = 0; i < count; i++) {
       o.position.set(

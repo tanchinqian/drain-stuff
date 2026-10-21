@@ -31,6 +31,8 @@ import SectionCaps from './SectionCaps';
 import { moistureTexture, wetMaterial } from './soilMaterial';
 import { StormRain, rainCount, useReducedMotion } from './WaterEffects';
 import { drainDesign } from '../simulation/physics/design';
+import FloatingLeaves from './FloatingLeaves';
+import SurfaceWater from './SurfaceWaterScene';
 import CatchmentContext from './CatchmentContext';
 import SceneLabels, { type SceneLabel } from './SceneLabels';
 import FaultDeposits from './FaultDeposits';
@@ -461,6 +463,8 @@ function Model(props: Props) {
       {props.physics && props.dimensionsVisible && props.assembly !== 'exploded' && (
         <DimensionLines config={props.physics.config} />
       )}
+      {props.physics && <FloatingLeaves physics={props.physics} plane={props.assembly==='section'?plane:undefined} low={!!props.lowQuality}/>}
+      {props.physics && <SurfaceWater physics={props.physics} plane={props.assembly==='section'?plane:undefined} low={props.lowQuality} record={props.recordQuality}/>}
       {props.physics && <StormRain physics={props.physics} low={props.lowQuality} record={props.recordQuality} />}
       <group name="drain-parts">
         {props.parts.map((part, partIndex) => {
@@ -675,6 +679,7 @@ export default function DrainScene(props: Props) {
       {props.physics?.frame && <span className="scene-rain-status">
         {props.physics.frame.rain > 0 ? `Rain: ${props.physics.frame.rain * 3.6e6 >= 50 ? 'Heavy' : props.physics.frame.rain * 3.6e6 >= 10 ? 'Moderate' : 'Light'} ${(props.physics.frame.rain * 3.6e6).toFixed(1)} mm/h` : 'Rain stopped'}
       </span>}
+      {props.mode === 'Debug' && <output data-water-debug className="surface-debug" aria-label="Surface-water diagnostics"/>}
       {props.mode === 'Debug' && (
         <output className="scene-performance">
           {fps ? fps.toFixed(0) + ' FPS' : 'Measuring FPS'} Â·{' '}
@@ -723,6 +728,11 @@ function RenderBudget({
         if (o.name === 'fault-outline') outlines++;
       });
       element.dataset.faultOutlines = String(outlines);
+      const fluid=scene.userData.surfaceStats;
+      if(fluid){element.dataset.surfaceBackend=fluid.backend;element.dataset.surfaceBedError=String(fluid.bedError??0);element.dataset.surfaceGutterError=String(fluid.gutterError??0);element.dataset.surfaceReferenceError=String(fluid.referenceError??0);element.dataset.surfaceSolverMs=String(fluid.solverMs??0);element.dataset.surfaceGpuMs=String(fluid.gpuMs??'unavailable');}
+      const diagnostic=element.querySelector<HTMLOutputElement>('[data-water-debug]');
+      if(diagnostic&&fluid)diagnostic.textContent=`${fluid.backend} ${fluid.nx}×${fluid.nz} · bed ${(100*(fluid.bedError??0)).toFixed(2)}%, gutter ${(100*(fluid.gutterError??0)).toFixed(2)}% volume error · reference ${(1000*(fluid.referenceError??0)).toFixed(2)} mm · solver ${(fluid.solverMs??0).toFixed(2)} ms CPU${fluid.gpuMs==null?' · GPU timer unavailable':` / ${fluid.gpuMs.toFixed(2)} ms GPU`} · rain ${(scene.userData.rainMs??0).toFixed(2)} ms · particles ${(scene.userData.particleMs??0).toFixed(2)} ms`;
+      element.dataset.rainMs=String(scene.userData.rainMs??0);element.dataset.particleMs=String(scene.userData.particleMs??0);
       const outlined: string[] = [];
       let clipped = true;
       scene.traverse((o) => {
@@ -846,8 +856,8 @@ function RenderBudget({
     const fps = count.current / elapsed.current;
     gl.domElement.dataset.renderFps = fps.toFixed(1);
     stable.current = fps >= 55 ? stable.current + elapsed.current : 0;
-    slowWindows.current = fps < 45 ? slowWindows.current + 1 : 0;
-    onBudget(fps, low ? stable.current < 8 : slowWindows.current >= 2);
+    slowWindows.current = fps < 48 ? slowWindows.current + 1 : 0;
+    onBudget(fps, low ? stable.current < 8 : slowWindows.current >= 1);
     elapsed.current = 0;
     count.current = 0;
   });

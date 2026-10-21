@@ -14,6 +14,7 @@ import { WaterMaterial } from './WaterEffects';
 import FlowTrace from './FlowTrace';
 import { contextAtlas, sceneColours, surfaceMaps, variation, type Surface } from './sceneMaterials';
 import { surfaceWetness } from './sceneMetrics';
+import StreetPavement from './StreetPavement';
 import RoofConveyance from './RoofConveyance';
 import {outfallPose} from './flowPhysics';
 import { streetGeometry } from './streetGeometry';
@@ -160,7 +161,6 @@ export default function CatchmentContext({
     q = f?.flux.inlet ?? 0;
   const pose=outfallPose(d,physics.config);
   const roadQ = f?.links.find((l) => l.id === 'property drain to kerb flow')?.discharge ?? 0;
-  const level = f?.network.find((n) => n.id === 'kerb flow')?.depth ?? 0;
   const ground = d.bottomY - d.nativeDepth - 0.08;
   const houseZ = footZ - c.footpathWidth / 2 - c.roofEdgeDepth / 2 - 0.25,
     houseHeight = 4.8;
@@ -209,13 +209,7 @@ export default function CatchmentContext({
         kind="soil"
         wet={wet}
       />
-      <SurfaceBox
-        name="road"
-        position={[roadX-.1, c.kerbHeight - 0.06, 0]}
-        size={[Math.max(.1,c.roadWidth-.2), 0.12, Math.max(40, d.topWidth + 8)]}
-        kind="asphalt"
-        wet={wet}
-      />
+      <StreetPavement design={d} wet={wet}/>
       <SurfaceBox
         name="footpath"
         position={[0, c.kerbHeight - 0.04, footZ]}
@@ -245,12 +239,6 @@ export default function CatchmentContext({
         [roadX - c.roadWidth / 2 + 0.15, c.kerbHeight + 0.001, 0],
         [0.06, 0.003, Math.max(40, d.topWidth + 8)],
         '#cec8b5',
-      )}
-      {level > 0 && (
-        <mesh name="upstream-ponding" position={[roadX, c.kerbHeight + level / 2, 0]}>
-          <boxGeometry args={[c.roadWidth, level, d.topWidth + 0.4]} />
-          <WaterMaterial design={d} depth={level} low={low} />
-        </mesh>
       )}
       {c.roofArea > 0 && (
         <group

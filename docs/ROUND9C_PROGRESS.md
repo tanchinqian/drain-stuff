@@ -41,3 +41,9 @@ Replaced the separate deep ground slab and oversized rectangular hole with a con
 - Added a connected roof/gutter/downpipe/lot-drain/sump/covered-crossing route with a highlight and exact engine roof-discharge readout. R1's default roof area is zero and its UI says so.
 - Thirteen focused flow/ground/metric tests passed, including 2 mm segment continuity, ballistic trajectory, zero/submerged jets and saturation gating. TypeScript passed. Browser flow/section checks capture S1/R1 and inspect WebGL errors.
 - Surface distribution, obstacle head differences and rain impulse propagation remain Stage 2 work. Material-specific sock/dam behavior remains Stage 4 work. The pipe/roof route does not alter the engine.
+
+## Stage 2 — constrained surface water
+- Implemented WebGL2 float ping-pong Saint–Venant display solver with hydrostatic reconstruction, Manning drag, CFL bounds, terrain/obstacles, engine sources/sinks, zero-net rain impulses and region storage/reference reconciliation. Added a smaller CPU-worker fallback.
+- Surface rendering now uses the grid depth, slope and velocity; folded leaves advect with the field. Debug exposes backend, resolution, volume/depth agreement and measured costs. Road top and flow terrain share the crossfall function.
+- Thirteen focused CPU tests passed (solver, leaf motion, ground and flow); real-GPU still-lake and wet/dry conservation passed. GPU and fallback live timeline checks passed at 0/18/45/165 minutes; section regressions passed after integration.
+- This is a real-time local display solver. Reconciliation is explicit engine forcing and can be large during seeks. It does not replace the hydraulic engine or claim site prediction. Final frame-review acceptance, comparative browser FPS and evidence recordings remain to be done.

@@ -119,3 +119,14 @@ Legacy suction/HCO/field-capacity controls below no longer drive Richards transp
 - Screen diameter magnification: 4×; streak exposure 1/45 s; wind lean 0.08 m per metre fallen.
 - High density remains 28 streaks per mm/h, capped at 2,048; Record 60 capped at 4,096; Low 10 capped at 512. These are representative counts, not a sampled water volume.
 - Heavy mist starts at 40 mm/h, opacity capped at 0.12. Collision sampling is spread over frames (128 new rays/frame); unsampled drops remain hidden.
+
+
+### Round 9C display surface parameters — illustrative, not hydraulic calibration
+- Grid High 256×128, Low 128×64, Record 384×192; CPU fallback 64×32.
+- CFL coefficient 0.35; GPU uses a further 0.5 safety factor for each batch, at most 24 substeps. No simulation step follows the storm playback multiplier.
+- Manning n: road 0.025, chamber 0.02, bed 0.06, rock zone 0.10, sock zone 0.15.
+- Visual road crossfall 0.02, gutter slope capped at 0.02; reference datum matches the assembly.
+- Check-dam crest 0.12 m from existing geometry. Sock obstacle 0.07–0.15 m based on openness. A restriction cannot be drawn narrower than two cells.
+- Dry numerical threshold 1e-7 m; visible water threshold 0.0001 m; depth surface offset 0.0002 m for raster overlap.
+- Pore seepage visibility threshold S >= 0.85, and positive engine underdrain flux required.
+- Reconciliation every engine-frame change or 0.1 real s; reference-cell height fixed, other depths scaled to engine volume. This is an explicit visual constraint.
