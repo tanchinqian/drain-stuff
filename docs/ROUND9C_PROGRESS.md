@@ -30,3 +30,8 @@ Replaced the separate deep ground slab and oversized rectangular hole with a con
 - Verified/closed findings are excluded. Recorded cues describe an inspection finding; they do not change simulated hydraulics.
 - Validation: TypeScript passed; S1 and R1 browser fixtures both verified badge/tint/obstruction presence and removal after verification (2 passed). Captures saved in this directory's screens/round9c folder.
 - Limitation: badges use a fixed margin column; exceptionally long lists may need scrolling.
+
+## Stage 1 — rain distribution and impacts
+- Added conditional Marshall–Palmer sampling, Atlas terminal speeds, motion-stretched streaks, actual-mesh collision rays, rings, hard-surface splashes and intensity-driven mist. Rain moved outside the drain part visibility/clipping hierarchy.
+- TypeScript and statistical distribution/fall-speed checks passed. Rain is a representative population in the published speed-fit range; not every physical droplet is drawn.
+- Roof conveyance is completed with Stage 3A; impulse coupling depends on Stage 2. Those dependencies are not claimed complete here.

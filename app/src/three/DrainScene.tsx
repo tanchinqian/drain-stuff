@@ -29,7 +29,7 @@ import { createCompostParts } from './compostGeometry';
 import { sensorMarkers } from '../api/sensorViews';
 import SectionCaps from './SectionCaps';
 import { moistureTexture, wetMaterial } from './soilMaterial';
-import { rainCount, useReducedMotion } from './WaterEffects';
+import { StormRain, rainCount, useReducedMotion } from './WaterEffects';
 import { drainDesign } from '../simulation/physics/design';
 import CatchmentContext from './CatchmentContext';
 import SceneLabels, { type SceneLabel } from './SceneLabels';
@@ -459,6 +459,7 @@ function Model(props: Props) {
       {props.physics && props.dimensionsVisible && props.assembly !== 'exploded' && (
         <DimensionLines config={props.physics.config} />
       )}
+      {props.physics && <StormRain physics={props.physics} low={props.lowQuality} record={props.recordQuality} />}
       <group name="drain-parts">
         {props.parts.map((part, partIndex) => {
           const id = part.partId,
@@ -516,7 +517,6 @@ function Model(props: Props) {
                     physics={props.physics}
                     plane={props.assembly === 'section' ? plane : undefined}
                     low={props.lowQuality}
-                    record={props.recordQuality}
                   />
                 </>
               )}

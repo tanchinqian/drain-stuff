@@ -17,7 +17,7 @@ import type { PhysicsConfig } from '../simulation/physics/config';
 import type { PhysicsFrame } from '../simulation/physics/engine';
 import { drainDesign } from '../simulation/physics/design';
 import { channelPrism } from './physicsGeometry';
-import { StormRain, WaterMaterial, Seepage } from './WaterEffects';
+import { WaterMaterial, Seepage } from './WaterEffects';
 import SectionCaps from './SectionCaps';
 import { flowSpeed } from './visibility';
 import FlowTrace from './FlowTrace';
@@ -59,13 +59,11 @@ export function PhysicsWater({
   physics,
   plane,
   low = false,
-  record = false,
 }: {
   id: PartId;
   physics: ModelPhysics;
   plane?: Plane;
   low?: boolean;
-  record?: boolean;
 }) {
   const d = drainDesign(physics.config),
     v = physics.config.values,
@@ -144,7 +142,6 @@ export function PhysicsWater({
   if (id === 'ponding')
     return (
       <group>
-        <StormRain physics={physics} low={low} record={record} plane={plane} />
         {h > 0.000001 && (
           <mesh name="ponded-water" geometry={geometry}>
             {water(h)}

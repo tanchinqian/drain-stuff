@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { drainDesign, terrainHeight, type DrainDesign } from '../simulation/physics/design';
 import type { ModelPhysics } from './PhysicsOverlay';
 import { rainBounds, rainColour } from './visibility';
+import { dropDiameter, terminalSpeed, rainPhase, mistStrength } from './rainPhysics';
 
 export function useReducedMotion() {
   const [reduced, setReduced] = useState(
@@ -30,140 +31,95 @@ export const rainCount = (rain: number, low = false, record = false) =>
       );
 export const seepageCount = (q: number, low = false) =>
   q > 0 ? Math.min(low ? 12 : 40, Math.ceil(q * 60000 * 2)) : 0;
-export function StormRain({
-  physics,
-  low = false,
-  record = false,
-}: {
-  physics: ModelPhysics;
-  low?: boolean;
-  record?: boolean;
-  plane?: THREE.Plane;
-}) {
-  const d = drainDesign(physics.config),
-    frame = physics.frame;
-  const count = rainCount(frame?.rain ?? 0, low, record),
-    reduced = useReducedMotion();
-  const drops = useRef<THREE.InstancedMesh>(null),
-    impacts = useRef<THREE.InstancedMesh>(null);
-  const time = useRef(0),
-    object = useMemo(() => new THREE.Object3D(), []);
-  const invalidate = useThree((s) => s.invalidate);
-  const bounds = rainBounds(d);
-  const impactPoints = useMemo(
-    () =>
-      Array.from({ length: count }, (_, i) => {
-        const x = (random(i + 1) - 0.5) * bounds.length,
-          z = (random(i + 999) - 0.5) * bounds.width;
-        const onBed = Math.abs(x) <= d.length / 2 && Math.abs(z) <= d.topWidth / 2;
-        let y = onBed
-          ? Math.max(terrainHeight(d, z), frame?.ponding ?? 0)
-          : d.bottomY - d.nativeDepth;
-        const c = d.catchment,
-          roadX = -d.length / 2 - c.roadWidth / 2 - 0.7;
-        if (
-          Math.abs(x - roadX) <= c.roadWidth / 2 &&
-          Math.abs(z) <= Math.max(40, d.topWidth + 8) / 2
-        )
-          y = c.kerbHeight;
-        const footZ = -d.topWidth / 2 - c.footpathWidth / 2;
-        if (Math.abs(x) < (d.length + 1) / 2 && Math.abs(z - footZ) < c.footpathWidth / 2)
-          y = c.kerbHeight;
-        if (
-          c.roofArea > 0 &&
-          Math.abs(x) < d.length * 0.375 &&
-          Math.abs(z - (footZ - c.footpathWidth / 2 - c.roofEdgeDepth / 2 - 0.25)) <
-            c.roofEdgeDepth / 2
-        )
-          y = c.kerbHeight + 4.99;
-        return { x, z, y };
-      }),
-    [
-      count,
-      bounds.length,
-      bounds.width,
-      d.length,
-      d.topWidth,
-      d.bottomY,
-      d.nativeDepth,
-      frame?.ponding,
-    ],
-  );
-  useFrame((_, delta) => {
-    if (!drops.current || !impacts.current || !count) return;
-    if (!reduced) time.current += Math.min(delta, 0.1);
-    for (let i = 0; i < count; i++) {
-      const { x, z, y: impactY } = impactPoints[i];
-      const speed = 5.5 + random(i + 42) * 2;
-      const phase = ((time.current * speed) / bounds.height + random(i + 222)) % 1;
-      const altitude = impactY + (1 - phase) * bounds.height;
-      object.position.set(x - (altitude - impactY) * 0.08, altitude, z);
-      object.rotation.set(0, 0, -0.08);
-      const distanceFade = 0.5 + 0.5 * (z / bounds.width + 0.5);
-      object.scale.set(
-        0.01 * distanceFade,
-        Math.min(
-          0.25 + Math.min(0.35, (frame?.rain ?? 0) * 3.6e6 * 0.004) + random(i + 8) * 0.14,
-          Math.max(0.001, altitude - impactY),
-        ),
-        0.01 * distanceFade,
-      );
-      object.updateMatrix();
-      drops.current.setMatrixAt(i, object.matrix);
-      const age = (phase + 0.15) % 1;
-      object.position.set(x, impactY + 0.001, z);
-      object.rotation.set(-Math.PI / 2, 0, 0);
-      object.scale.setScalar(age < 0.18 ? 0.015 + age * 0.35 : 0);
-      object.updateMatrix();
-      impacts.current.setMatrixAt(i, object.matrix);
+export function StormRain({physics,low=false,record=false}:{physics:ModelPhysics;low?:boolean;record?:boolean}) {
+  const d=drainDesign(physics.config), frame=physics.frame, rain=frame?.rain??0;
+  const count=rainCount(rain,low,record), reduced=useReducedMotion();
+  const drops=useRef<THREE.InstancedMesh>(null), impacts=useRef<THREE.InstancedMesh>(null), mist=useRef<THREE.InstancedMesh>(null), splashes=useRef<THREE.InstancedMesh>(null);
+  const time=useRef(0), object=useMemo(()=>new THREE.Object3D(),[]), {scene,invalidate}=useThree();
+  const bounds=rainBounds(d), strength=mistStrength(rain);
+  // Stable x/z samples retain their collision height as density changes. Real meshes are ray-cast once.
+  const samples=useMemo(()=>Array.from({length:4096},(_,i)=>({x:(random(i+1)-.5)*bounds.length,z:(random(i+999)-.5)*bounds.width,y:NaN,previous:1})),[bounds.length,bounds.width,physics.config]);
+  const collision=useMemo(()=>({ray:new THREE.Raycaster(), meshes:[] as THREE.Object3D[],ready:false}),[samples]);
+  useFrame((_,delta)=>{
+    if(!drops.current||!impacts.current||!count||document.hidden)return;
+    const started=performance.now();
+    if(!reduced)time.current+=Math.min(delta,.1);
+    if(!collision.ready) {
+      scene.updateMatrixWorld(true);
+      scene.traverse(o=>{
+        const mesh=o as THREE.Mesh;
+        if(!mesh.isMesh||o.userData.sectionPass)return;
+        let part=false, context=false, parent:THREE.Object3D|null=o;
+        while(parent){part ||= !!parent.userData.physicalPart;context ||= parent.name==='catchment-context';parent=parent.parent;}
+        const materials=Array.isArray(mesh.material)?mesh.material:[mesh.material];
+        if((part||context)&&materials.every(m=>!m.transparent))collision.meshes.push(o);
+      });
+      collision.ready=true;
     }
-    drops.current.instanceMatrix.needsUpdate = true;
-    impacts.current.instanceMatrix.needsUpdate = true;
-    if (!reduced) invalidate();
+    let casts=0;
+    for(let i=0;i<count;i++) {
+      const p=samples[i], {x,z}=p;
+      if(Number.isNaN(p.y)&&casts++<128){
+        collision.ray.set(new THREE.Vector3(x,30,z),new THREE.Vector3(0,-1,0));
+        p.y=collision.ray.intersectObjects(collision.meshes,false)[0]?.point.y??d.catchment.kerbHeight;
+      }
+      if(Number.isNaN(p.y)){object.scale.setScalar(0);object.updateMatrix();drops.current.setMatrixAt(i,object.matrix);impacts.current.setMatrixAt(i,object.matrix);continue;}
+      const onBed=Math.abs(x)<=d.length/2&&Math.abs(z)<=d.topWidth/2;
+      const fallback=onBed?terrainHeight(d,z):d.catchment.kerbHeight;
+      const solidY=Number.isFinite(p.y)?p.y:fallback;
+      const impactY=onBed?Math.max(solidY,frame?.ponding??0):solidY;
+      const diameter=dropDiameter(rain*3.6e6,random(i+42)), speed=terminalSpeed(diameter);
+      const phase=rainPhase(time.current,diameter,bounds.height,random(i+222));
+      const altitude=impactY+(1-phase)*bounds.height, length=Math.min(speed/45,Math.max(.001,altitude-impactY));
+      object.position.set(x-(altitude-impactY)*.08,altitude+length/2,z);
+      object.rotation.set(0,0,-.08);
+      // Width is magnified for screen visibility; physical diameter still determines fall speed.
+      object.scale.set(diameter*.004,length,diameter*.004);object.updateMatrix();drops.current.setMatrixAt(i,object.matrix);
+      const sinceImpact=phase*bounds.height/speed, age=sinceImpact/.18;
+      object.position.set(x,impactY+.003,z);object.rotation.set(-Math.PI/2,0,0);
+      object.scale.setScalar(age<1?.008+age*.07:0);object.updateMatrix();impacts.current.setMatrixAt(i,object.matrix);
+      if(phase<p.previous&&!reduced){
+        const impulses=(scene.userData.rainImpulses??=[]) as {x:number;z:number;strength:number}[];
+        if(impulses.length<128)impulses.push({x,z,strength:diameter*.00008});
+      }
+      p.previous=phase;
+      if(splashes.current){
+        object.position.set(x+sinceImpact*.2,impactY+Math.max(0,.65*sinceImpact-4.905*sinceImpact*sinceImpact),z+sinceImpact*.1);
+        object.rotation.set(0,0,0);object.scale.setScalar(age<.7&&impactY<=solidY+.004?.004*diameter:0);object.updateMatrix();splashes.current.setMatrixAt(i,object.matrix);
+      }
+    }
+    drops.current.instanceMatrix.needsUpdate=true;impacts.current.instanceMatrix.needsUpdate=true;if(splashes.current)splashes.current.instanceMatrix.needsUpdate=true;
+    if(mist.current) {
+      for(let i=0;i<24;i++){
+        object.position.set((random(i+800)-.5)*bounds.length,.3+(i%3)*.16,(random(i+300)-.5)*bounds.width);
+        object.rotation.set(-Math.PI/2,0,time.current*.025);object.scale.set(1.2,.7,1);object.updateMatrix();mist.current.setMatrixAt(i,object.matrix);
+      }
+      mist.current.instanceMatrix.needsUpdate=true;
+    }
+    scene.userData.rainMs=performance.now()-started;
+    if(!reduced)invalidate();
   });
-  if (!count) return null;
-  return (
-    <group name="storm-rain" userData={{ bounds, colour: rainColour }}>
-      <instancedMesh
-        name="rain-streaks"
-        ref={drops}
-        args={[undefined, undefined, count]}
-        frustumCulled={false}
-      >
-        <boxGeometry args={[1, 1, 1]} />
-        <meshBasicMaterial
-          color="#adbdbb"
-          transparent
-          opacity={Math.min(0.9, 0.5 + ((frame?.rain ?? 0) * 3.6e6) / 160)}
-          onBeforeCompile={(shader) => {
-            shader.vertexShader =
-              'varying float rainFade;\n' +
-              shader.vertexShader.replace(
-                '#include <project_vertex>',
-                '#include <project_vertex>\nrainFade = clamp(1.3 - abs(mvPosition.z) / 55.0, 0.3, 1.0);',
-              );
-            shader.fragmentShader =
-              'varying float rainFade;\n' +
-              shader.fragmentShader.replace(
-                '#include <color_fragment>',
-                '#include <color_fragment>\ndiffuseColor.a *= rainFade;',
-              );
-          }}
-          depthWrite={false}
-        />
-      </instancedMesh>
-      <instancedMesh ref={impacts} args={[undefined, undefined, count]} frustumCulled={false}>
-        <ringGeometry args={[0.7, 1, low ? 8 : 16]} />
-        <meshBasicMaterial
-          color="#b6c9c7"
-          side={THREE.DoubleSide}
-          transparent
-          opacity={0.45}
-          depthWrite={false}
-        />
-      </instancedMesh>
-    </group>
-  );
+  if(!count)return null;
+  return <group name="storm-rain" userData={{bounds,colour:rainColour,dropDistribution:'conditional Marshall-Palmer',realTime:true}}>
+    <instancedMesh name="rain-streaks" ref={drops} args={[undefined,undefined,count]} frustumCulled={false}>
+      <boxGeometry/>
+      <meshBasicMaterial color="#adbdbb" transparent opacity={Math.min(.9,.5+rain*3.6e6/160)} depthWrite={false}
+        onBeforeCompile={shader=>{
+          shader.vertexShader='varying float rainFade;\n'+shader.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\nrainFade=clamp(1.3-abs(mvPosition.z)/55.0,0.3,1.0);');
+          shader.fragmentShader='varying float rainFade;\n'+shader.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\ndiffuseColor.a*=rainFade;');
+        }}/>
+    </instancedMesh>
+    <instancedMesh name="rain-impacts" ref={impacts} args={[undefined,undefined,count]} frustumCulled={false}>
+      <ringGeometry args={[.7,1,low?8:16]}/><meshBasicMaterial color="#b6c9c7" side={THREE.DoubleSide} transparent opacity={.45} depthWrite={false}/>
+    </instancedMesh>
+    {!low&&<instancedMesh name="rain-splash-particles" ref={splashes} args={[undefined,undefined,count]} frustumCulled={false}>
+      <tetrahedronGeometry/><meshBasicMaterial color="#ccd9d4" transparent opacity={.6} depthWrite={false}/>
+    </instancedMesh>}
+    {strength>0&&!low&&<instancedMesh name="rain-mist" ref={mist} args={[undefined,undefined,24]} frustumCulled={false}>
+      <planeGeometry/><meshBasicMaterial color="#c8d3ce" transparent opacity={strength} depthWrite={false} side={THREE.DoubleSide}
+        onBeforeCompile={shader=>{shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\ndiffuseColor.a*=exp(-12.0*dot(vUv-0.5,vUv-0.5));');shader.defines={...shader.defines,USE_UV:''};}}/>
+    </instancedMesh>}
+  </group>;
 }
 
 export function WaterMaterial({

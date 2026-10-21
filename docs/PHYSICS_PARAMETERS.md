@@ -112,3 +112,10 @@ Legacy suction/HCO/field-capacity controls below no longer drive Richards transp
 | holding | 0.65 | kg/kg dry solids | placeholder | leachate drainage |
 | covered | 1 | 0 or 1 | placeholder | rain interception |
 | sumpArea | 0.25 | m2 | placeholder | sump level |
+
+
+### Round 9C rain visuals — illustrative rendering parameters
+- Visible diameter interval: 0.6–5.8 mm; conditional Marshall–Palmer samples.
+- Screen diameter magnification: 4×; streak exposure 1/45 s; wind lean 0.08 m per metre fallen.
+- High density remains 28 streaks per mm/h, capped at 2,048; Record 60 capped at 4,096; Low 10 capped at 512. These are representative counts, not a sampled water volume.
+- Heavy mist starts at 40 mm/h, opacity capped at 0.12. Collision sampling is spread over frames (128 new rays/frame); unsampled drops remain hidden.
