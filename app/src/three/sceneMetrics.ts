@@ -4,7 +4,7 @@ import { drainDesign, type DrainDesign } from '../simulation/physics/design';
 import { frontDepth } from './visibility';
 
 export type CutAxis = 'X' | 'Y' | 'Z';
-export type CameraPreset = 'default' | 'overview' | 'drain' | 'inlet';
+export type CameraPreset = 'default' | 'overview' | 'drain' | 'inlet' | 'fault';
 // UI axes: across the bed, along the asset, and depth; Three.js uses Y up.
 export const cutNormal = (axis: CutAxis): [number, number, number] =>
   axis === 'X' ? [0, 0, -1] : axis === 'Y' ? [-1, 0, 0] : [0, -1, 0];

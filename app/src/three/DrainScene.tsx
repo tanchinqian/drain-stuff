@@ -12,8 +12,11 @@ import {
   Vector3,
   InstancedMesh,
   PCFSoftShadowMap,
+  Color,
 } from 'three';
-import type { Config, Part, PartId, Sensor } from '../api/types';
+import type { Config, Fault, Part, PartId, Sensor } from '../api/types';
+import FaultCallouts from './FaultCallouts';
+import { faultConfirmed } from './faultCues';
 import { createDrainParts, palette } from './geometry';
 import { useSelection } from '../state';
 import { createPhysicsGeometry } from './physicsGeometry';
@@ -38,6 +41,9 @@ export type Assembly = 'exploded' | 'assembled' | 'section';
 export type ViewMode = 'Operator' | 'Debug' | 'Troubleshoot';
 export type Offsets = Partial<Record<PartId, [number, number, number]>>;
 export interface Props {
+  sceneFaults?: Fault[];
+  onShowFault?: (fault: Fault) => void;
+  pulseFault?: string;
   lowQuality?: boolean;
   cameraPreset?: CameraPreset;
   recordQuality?: boolean;
@@ -223,6 +229,13 @@ function Model(props: Props) {
           material.depthWrite = !dim && baseOpacity === 1;
           if (material instanceof MeshStandardMaterial)
             material.wireframe = !part.installed || (props.mode === 'Debug' && props.wireframe);
+          if (props.physics && material instanceof MeshStandardMaterial) {
+            material.userData.unflaggedColour ??= material.color.clone();
+            material.color.copy(material.userData.unflaggedColour);
+            const finding=props.sceneFaults?.find(f=>f.partId===part.partId);
+            if(finding) material.color.lerp(new Color(faultConfirmed(finding)?'#a94d39':'#c49a45'),.34);
+            material.userData.faultTint=!!finding;
+          }
           material.needsUpdate = true;
         });
         if (object instanceof Line) object.visible = props.edges || props.mode === 'Debug';
@@ -240,9 +253,12 @@ function Model(props: Props) {
     props.wireframe,
     props.edges,
     props.parts,
+    props.sceneFaults,
   ]);
   const fitBounds = useMemo(() => {
     if (!design) return undefined;
+    if (props.cameraPreset === 'fault' && groups[selected])
+      return (groups[selected]!.userData.localBounds as Box3).clone().expandByScalar(.7);
     if (props.cameraPreset === 'inlet')
       return new Box3().setFromCenterAndSize(
         new Vector3(-design.length / 2, props.physics!.config.values.crest.value / 2, 0),
@@ -267,7 +283,7 @@ function Model(props: Props) {
       if (g?.userData.localBounds) bounds.union(g.userData.localBounds);
     });
     return bounds;
-  }, [groups, props.featureId, props.cameraPreset]);
+  }, [groups, props.featureId, props.cameraPreset, selected]);
   const fitTarget = fitBounds?.getCenter(new Vector3());
   const annotations: SceneLabel[] = [];
   const f = props.physics?.frame;
@@ -422,7 +438,13 @@ function Model(props: Props) {
           <Edges color={palette.ink3} />
         </mesh>
       )}
-      <SceneLabels labels={annotations} />
+      <SceneLabels labels={props.sceneFaults?.length ? [] : annotations} />
+      {!!props.sceneFaults?.length && props.onShowFault && <FaultCallouts
+        items={props.sceneFaults.flatMap(fault=>{
+          const g=groups[fault.partId];if(!g)return [];
+          const b=g.userData.localBounds as Box3, p=b.getCenter(new Vector3());p.y=b.max.y;
+          return [{fault,anchor:[p.x,p.y,p.z] as [number,number,number]}];
+        })} onSelect={props.onShowFault} pulse={props.pulseFault} />}
       {design && props.assembly === 'section' && props.onCutChange && (
         <CutPlane
           design={design}
@@ -487,6 +509,7 @@ function Model(props: Props) {
                     physics={props.physics}
                     plane={props.assembly === 'section' ? plane : undefined}
                     confirmed={!!props.physicalFaults?.includes(id)}
+                    finding={props.sceneFaults?.find(f=>f.partId===id)}
                   />
                   <PhysicsWater
                     id={id}
@@ -507,7 +530,7 @@ function Model(props: Props) {
               {part.installed &&
                 part.sensorIds.length > 0 &&
                 part.status !== 'ok' &&
-                (props.mode === 'Troubleshoot' || (props.inspectionActive && selected === id)) && (
+                (props.sceneFaults?.some(f=>f.partId===id) || props.mode === 'Troubleshoot' || (props.inspectionActive && selected === id)) && (
                   <PartHighlight
                     natural={!!props.physics}
                     group={geometry}
@@ -764,6 +787,13 @@ function RenderBudget({
         if (o.userData.confirmedFault) deposits.push(o.name.replace('confirmed-deposit-', ''));
       });
       element.dataset.depositParts = deposits.join(',');
+      let tintCount=0, obstructionCount=0;
+      scene.traverse(o=>{
+        if(o instanceof Mesh && !o.userData.sectionPass && (Array.isArray(o.material)?o.material:[o.material]).some(m=>m.userData.faultTint)) tintCount++;
+        if(o.userData.faultFinding) obstructionCount++;
+      });
+      element.dataset.faultTintCount=String(tintCount);
+      element.dataset.faultObstructionCount=String(obstructionCount);
       element.dataset.rainBounds = JSON.stringify(
         scene.getObjectByName('storm-rain')?.userData.bounds ?? null,
       );

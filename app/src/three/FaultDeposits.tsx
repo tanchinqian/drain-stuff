@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import { InstancedMesh, Object3D, BoxGeometry, MeshStandardMaterial, type Plane } from 'three';
-import type { PartId } from '../api/types';
+import type { Fault, PartId } from '../api/types';
 import type { ModelPhysics } from './PhysicsOverlay';
 import { drainDesign } from '../simulation/physics/design';
 import { surfaceMaps, variation } from './sceneMaterials';
@@ -21,14 +21,17 @@ export default function FaultDeposits({
   physics,
   confirmed,
   plane,
+  finding,
 }: {
   id: PartId;
   physics: ModelPhysics;
   confirmed: boolean;
   plane?: Plane;
+  finding?: Fault;
 }) {
   const d = drainDesign(physics.config);
-  const amount = depositAmount(physics.config, id, confirmed);
+  // Recorded obstruction cues are illustrative; they never change the hydraulic configuration.
+  const amount = Math.max(depositAmount(physics.config, id, confirmed), finding?.type==='blockage' ? .45 : finding?.type==='sediment' ? .3 : 0);
   const deposit = useMemo(() => {
     if (amount <= 0) return;
     const count = Math.ceil(Math.max(0, amount) * 55),
@@ -45,8 +48,8 @@ export default function FaultDeposits({
       o.position.set(
         id === 'underdrain'
           ? (variation(i + 51) - 0.5) * d.length
-          : -d.length / 2 + (id === 'inlet' ? -0.4 : 0.8) + (variation(i + 72) - 0.5) * 0.2,
-        id === 'underdrain' ? d.pipeY - d.pipeDiameter * 0.38 : id === 'sock' ? 0.03 : 0.015,
+          : -d.length / 2 + (id === 'inlet' ? physics.config.kind==='inlet' ? .2 : -0.4 : 0.8) + (variation(i + 72) - 0.5) * 0.2,
+        id === 'underdrain' ? d.pipeY - d.pipeDiameter * 0.38 : physics.config.kind==='inlet' && finding?.type==='blockage' ? d.depressionDepth+.025 : id === 'sock' ? 0.03 : 0.015,
         (variation(i + 90) - 0.5) * 0.8,
       );
       o.rotation.set(variation(i + 5) * 0.3, variation(i + 6) * 6, variation(i + 7) * 0.3);
@@ -55,10 +58,11 @@ export default function FaultDeposits({
       mesh.setMatrixAt(i, o.matrix);
     }
     mesh.name = 'confirmed-deposit-' + id;
-    mesh.userData.confirmedFault = true;
+    mesh.userData.confirmedFault = confirmed;
+    mesh.userData.faultFinding = finding?.id;
     mesh.castShadow = mesh.receiveShadow = true;
     return mesh;
-  }, [id, amount, d.length, d.pipeY, d.pipeDiameter, plane]);
+  }, [id, amount, d.length, d.pipeY, d.pipeDiameter, plane, finding?.id, finding?.type, confirmed, physics.config.kind, d.depressionDepth]);
   useEffect(
     () => () => {
       if (!deposit) return;

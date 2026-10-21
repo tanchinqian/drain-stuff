@@ -218,13 +218,13 @@ export default function Faults() {
           <section className="fault-summary"><h3>Summary</h3><p>{active.diagnosingInput}</p></section>
           <Link
             className="button"
-            to={partLink(
+            to={active.featureId.startsWith('B-') ? partLink(
               active.featureId,
               active.partId,
               active.featureId.startsWith('B-') ? 'compost' : 'drainage',
-            )}
+            ) : `/feature/${active.featureId}?part=${active.partId}&showFault=1`}
           >
-            Inspect this part
+            {active.featureId.startsWith('B-') ? 'Inspect this part' : 'Show fault in 3D'}
           </Link>
           <WorkOrderPanel key={active.id} fault={active} />
           <DiagnosisPanel key={'diagnosis-' + active.id} faultId={active.id} />

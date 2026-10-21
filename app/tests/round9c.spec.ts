@@ -1,5 +1,37 @@
 import { test, expect } from '@playwright/test';
 import { mkdir } from 'node:fs/promises';
+for (const asset of ['S1','R1']) test('Round 9C confirmed fault cues clear after verification '+asset,async({page})=>{
+  test.setTimeout(90000);
+  await page.goto('/feature/'+asset);
+  await expect(page.getByRole('slider',{name:'Storm timeline',exact:true})).toBeEnabled({timeout:60000});
+  await page.evaluate(async(asset)=>{
+    const path='/src/api/mock/seed.ts', {generateMock}=await import(path), db=generateMock();
+    db.faults=[];
+    db.faults.push({id:'F-001',featureId:asset,partId:'inlet',type:'blockage',ruleId:'inlet_debris',sensorIds:[],sensorStatusesAtAlert:{},diagnosingInput:'Leaves obstructing the grate',severity:3,openedAt:new Date().toISOString(),status:'open',zone:'A',workOrder:{state:'confirmed'}});
+    localStorage.setItem('drain-trial-console-v1',JSON.stringify(db));
+  },asset);
+  await page.reload();
+  const scene=page.locator('.cad-scene');
+  await expect(scene.locator('[data-fault-badge="F-001"]')).toBeVisible({timeout:60000});
+  await expect(scene.locator('[data-fault-badge="F-001"]')).toHaveAttribute('data-confirmed','true');
+  await expect.poll(async()=>Number(await scene.getAttribute('data-fault-tint-count'))).toBeGreaterThan(0);
+  await expect.poll(async()=>Number(await scene.getAttribute('data-fault-obstruction-count'))).toBeGreaterThan(0);
+  await page.getByRole('button',{name:'Show fault',exact:true}).click();
+  await expect(scene).toHaveAttribute('data-camera-preset','fault');
+  await expect(page.getByRole('region',{name:'Selected fault explanation'})).toContainText('road side');
+  await mkdir('../docs/screens/round9c',{recursive:true});
+  await scene.screenshot({path:`../docs/screens/round9c/${asset}-confirmed-fault.png`});
+  await page.evaluate(()=>{
+    const db=JSON.parse(localStorage.getItem('drain-trial-console-v1')!);
+    db.faults.find((f:{id:string})=>f.id==='F-001').workOrder.state='verified';
+    localStorage.setItem('drain-trial-console-v1',JSON.stringify(db));
+  });
+  await page.reload();
+  await expect(page.getByRole('slider',{name:'Storm timeline',exact:true})).toBeEnabled({timeout:60000});
+  await expect(scene.locator('[data-fault-badge="F-001"]')).toHaveCount(0);
+  await expect.poll(()=>scene.getAttribute('data-fault-tint-count')).toBe('0');
+  await expect.poll(()=>scene.getAttribute('data-fault-obstruction-count')).toBe('0');
+});
 test('Round 9C opens in rain and allows a paused dry state', async ({page}) => {
   await page.goto('/feature/S1');
   const timeline=page.getByRole('slider',{name:'Storm timeline',exact:true}), scene=page.locator('.cad-scene');

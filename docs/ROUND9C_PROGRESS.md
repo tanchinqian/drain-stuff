@@ -24,3 +24,9 @@ Fresh feature calculations open at 40% of rain duration, playing unless reduced 
 ## Stage 0B â€” ground continuity, first two items
 Replaced the separate deep ground slab and oversized rectangular hole with a continuous surface and fitted excavation including inlet and outfall corridors, closed walls and a floor. Soil only appears within the pit; paving retains a supporting base. Two numerical geometry checks cover 10 radial directions and 89 distances each; both S1/R1 section browser checks pass again. The later surroundings/perspective work remains pending.
 
+
+## Stage 0D — persistent fault cues
+- Added anchored badges, material tint, matching obstruction cues, a numbered fault list and a focused explanation with work-order link. Show fault focuses the part from the scene, register and storm results.
+- Verified/closed findings are excluded. Recorded cues describe an inspection finding; they do not change simulated hydraulics.
+- Validation: TypeScript passed; S1 and R1 browser fixtures both verified badge/tint/obstruction presence and removal after verification (2 passed). Captures saved in this directory's screens/round9c folder.
+- Limitation: badges use a fixed margin column; exceptionally long lists may need scrolling.

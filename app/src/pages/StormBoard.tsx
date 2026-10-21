@@ -425,6 +425,7 @@ export default function StormBoard() {
                       >
                         Replay in 3D
                       </button>
+                      {!!related.length && <Link className="button" to={`/feature/${row.asset}?stormRunId=${jobId}&mode=installed&part=${related[0].partId}&showFault=1`}>Show fault</Link>}
                       <Link
                         className="button"
                         to={
