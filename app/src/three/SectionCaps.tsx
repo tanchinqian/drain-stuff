@@ -1,4 +1,4 @@
-import { useMemo, useEffect } from 'react';
+import { useMemo, useEffect, useLayoutEffect } from 'react';
 import * as THREE from 'three';
 import type { ModelPhysics } from './PhysicsOverlay';
 import { moistureTexture, wetMaterial } from './soilMaterial';
@@ -52,6 +52,9 @@ export default function SectionCaps({
           material.stencilZPass =
             side === THREE.BackSide ? THREE.IncrementWrapStencilOp : THREE.DecrementWrapStencilOp;
         const mask = new THREE.Mesh(object.geometry, material);
+        mask.userData.sectionPass = true;
+        mask.frustumCulled = false;
+        if (side === THREE.BackSide) mask.onBeforeRender = renderer => renderer.clearStencil();
         mask.matrixAutoUpdate = false;
         mask.matrix.copy(object.matrix);
         mask.renderOrder = order;
@@ -93,12 +96,17 @@ export default function SectionCaps({
         material.map.needsUpdate = true;
       }
       material.side = THREE.DoubleSide;
+      // Keep mask and cap in the same render queue; transparent caps otherwise run after other masks.
+      material.transparent = false;
+      material.depthWrite = true;
       material.clippingPlanes = [];
       material.stencilWrite = true;
       material.stencilRef = 0;
       material.stencilFunc = THREE.NotEqualStencilFunc;
       material.stencilFail = material.stencilZFail = material.stencilZPass = THREE.ReplaceStencilOp;
       const cap = new THREE.Mesh(new THREE.PlaneGeometry(30, 30), material);
+      cap.userData.sectionPass = true;
+      cap.frustumCulled = false;
       cap.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), plane.normal);
       plane.coplanarPoint(cap.position);
       cap.renderOrder = order + 1;
@@ -108,10 +116,12 @@ export default function SectionCaps({
     });
     return root;
   }, [group, plane, orderBase]);
-  useEffect(() => {
+  useLayoutEffect(() => {
     caps.children.forEach((o) => {
-      if (o instanceof THREE.Mesh && o.geometry instanceof THREE.PlaneGeometry)
+      if (o instanceof THREE.Mesh && o.geometry instanceof THREE.PlaneGeometry) {
+        o.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), plane.normal);
         plane.coplanarPoint(o.position);
+      }
     });
   }, [caps, plane.constant]);
   useEffect(() => {

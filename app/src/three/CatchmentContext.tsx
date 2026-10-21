@@ -7,7 +7,6 @@ import {
   Shape,
   Path,
   ShapeGeometry,
-  type Plane,
   type Texture,
 } from 'three';
 import { drainDesign } from '../simulation/physics/design';
@@ -117,12 +116,10 @@ function Terrain({
   length,
   width,
   y,
-  plane,
 }: {
   length: number;
   width: number;
   y: number;
-  plane?: Plane;
 }) {
   const geometry = useMemo(() => {
     const s = new Shape();
@@ -153,18 +150,16 @@ function Terrain({
   );
   return (
     <mesh name="surrounding-terrain" geometry={geometry} position={[0, y, 0]} receiveShadow>
-      <meshStandardMaterial {...maps} roughness={0.94} clippingPlanes={plane ? [plane] : []} />
+      <meshStandardMaterial {...maps} roughness={0.94} />
     </mesh>
   );
 }
 export default function CatchmentContext({
   physics,
   low,
-  plane,
 }: {
   physics: ModelPhysics;
   low: boolean;
-  plane?: Plane;
 }) {
   const d = drainDesign(physics.config),
     c = d.catchment,
@@ -216,7 +211,7 @@ export default function CatchmentContext({
         kind="soil"
         wet={wet}
       />
-      <Terrain length={d.length} width={d.topWidth} y={c.kerbHeight - 0.02} plane={plane} />
+      <Terrain length={d.length} width={d.topWidth} y={c.kerbHeight - 0.02} />
       <SurfaceBox
         name="excavation-plinth"
         position={[0, ground + 0.005, 0]}

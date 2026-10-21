@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ComponentRef } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ComponentRef } from 'react';
 import { Canvas, useThree, useFrame } from '@react-three/fiber';
 import { DragControls, OrbitControls, Edges } from '@react-three/drei';
 import {
@@ -200,7 +200,7 @@ function Model(props: Props) {
         o.count = props.physicalFaults?.includes('planting') ? 145 : 580;
     });
   }, [groups, props.physicalFaults?.includes('planting')]);
-  useEffect(() => {
+  useLayoutEffect(() => {
     plane.normal.set(...normal);
     plane.constant = props.cutPosition;
     props.parts.forEach((part) => {
@@ -414,7 +414,6 @@ function Model(props: Props) {
         <CatchmentContext
           physics={props.physics}
           low={!!props.lowQuality}
-          plane={props.assembly === 'section' ? plane : undefined}
         />
       ) : (
         <mesh position={[1.2, -1.12, 0]}>
@@ -474,6 +473,7 @@ function Model(props: Props) {
                 part.installed &&
                 ['media', 'transition', 'drainage', 'mulch', 'liner', 'inlet'].includes(id) && (
                   <SectionCaps
+                    key={props.cutAxis}
                     group={geometry}
                     plane={plane}
                     physics={props.physics}
@@ -710,6 +710,24 @@ function RenderBudget({
       element.dataset.outlineParts = outlined.join(',');
       element.dataset.outlineClipped = String(outlines > 0 && clipped);
       element.dataset.drawCalls = String(gl.info.render.calls);
+      const planes = new Set<Plane>();
+      let contextClipped = 0, assemblyClipped = 0, assemblyMeshes = 0;
+      scene.getObjectByName('catchment-context')?.traverse((o) => {
+        if (o instanceof Mesh && (Array.isArray(o.material) ? o.material : [o.material]).some(m => m.clippingPlanes?.length)) contextClipped++;
+      });
+      scene.getObjectByName('drain-parts')?.traverse((o) => {
+        if (!(o instanceof Mesh) || o.userData.sectionPass) return;
+        const materials = Array.isArray(o.material) ? o.material : [o.material];
+        if (materials.some(m => m.clippingPlanes?.length)) {
+          assemblyClipped++;
+          materials.forEach(m => m.clippingPlanes?.forEach((p: Plane) => planes.add(p)));
+        }
+        assemblyMeshes++;
+      });
+      element.dataset.contextClipped = String(contextClipped);
+      element.dataset.assemblyClipped = String(assemblyClipped);
+      element.dataset.assemblyMeshes = String(assemblyMeshes);
+      element.dataset.activePlanes = String(planes.size);
       element.dataset.mistVisible = String(!!scene.getObjectByName('ground-mist'));
       const flows: Record<string, { discharge: number; width: number; velocity: number }> = {};
       scene.traverse((o) => {

@@ -298,12 +298,14 @@ export default function PhysicsSection({
             />
           )}
         {cutAxis === 'Z' && (
-          <g>
+          <g data-depth-plan={sliceLayer}>
             <rect
               x="55"
               y="25"
               width="390"
               height="160"
+              stroke="#5e564b"
+              strokeWidth="2"
               fill={
                 inlet || !solverSlice
                   ? cutSample(config, frame, cutAxis, cutPosition).layer === 'Chamber water'
@@ -335,6 +337,19 @@ export default function PhysicsSection({
                 strokeDasharray="4 3"
               />
             ))}
+            <path d="M55 32H445V178H55Z" fill="none" stroke="#5e564b" strokeWidth="2" />
+            <rect x="32" y="87" width="30" height="36" fill="#c4bdae" stroke="#5e564b" />
+            <path d="M445 99h26v12h-26" fill="#88afa5" stroke="#5e564b" />
+            {!inlet && <>
+              <path d="M86 40v130" stroke="#846f4e" strokeWidth="9" />
+              <path d="M182 32v146M322 32v146" stroke="#aaa18c" strokeWidth="4" strokeDasharray={cutPosition < 0 ? '4 4' : undefined} />
+              {Array.from({length: 7}, (_, i) => <ellipse key={i} cx={70 + (i % 2) * 8} cy={53 + i * 17} rx="4" ry="6" fill="#96988c" stroke="#5e564b" />)}
+            </>}
+            <text x="65" y="48" fill="#2f2b26" fontSize="10">{sliceLayer}</text>
+            <text x="18" y="137" fill="#2f2b26" fontSize="9">Inlet</text>
+            <text x="447" y="137" fill="#2f2b26" fontSize="9">Outlet</text>
+            <text x="65" y="173" fill="#2f2b26" fontSize="9">Water {(water * 1000).toFixed(0)} mm · plan outlines show asset locations</text>
+            {(frame?.rain ?? 0) > 0 && Array.from({length: 14}, (_, i) => <path key={i} d={`M${90 + i * 23} 52l3 9`} stroke="#527777" strokeWidth="1.2" />)}
           </g>
         )}
         <text x="12" y="208" fill="#5e564b" fontSize="10">

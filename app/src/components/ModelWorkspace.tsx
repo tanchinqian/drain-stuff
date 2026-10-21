@@ -107,7 +107,8 @@ export default function ModelWorkspace({
   }, [ownerId, cutAxis, cutPosition, !!physics]);
   const changeCut = (value: number) => {
     setCutPosition(value);
-    setAssembly('section');
+    const range = physics ? cutRange(drainDesign(physics.config), cutAxis, physics.config.kind === 'inlet') : [-Infinity, Infinity];
+    setAssembly(value <= range[0] || value >= range[1] ? 'assembled' : 'section');
   };
   const changeAxis = (axis: CutAxis) => {
     setCutAxis(axis);
@@ -117,7 +118,7 @@ export default function ModelWorkspace({
         axis,
         physics.config.kind === 'inlet',
       );
-      setCutPosition((p) => Math.max(min, Math.min(max, p)));
+      setCutPosition(axis === 'Z' ? (min + max) / 2 : 0);
     }
     setAssembly('section');
   };
@@ -357,6 +358,7 @@ export default function ModelWorkspace({
               position={cutPosition}
               onAxis={changeAxis}
               onChange={changeCut}
+              onReset={() => { setCutPosition(0); setAssembly('assembled'); }}
               onActive={setCutActive}
               sampleDepth={sampleDepth}
               sampleAcross={sampleAcross}
@@ -364,7 +366,7 @@ export default function ModelWorkspace({
           )}
           <p className="small">
             {physics
-              ? "Flow is drawn from the model's calculated discharge; it is not a fluid simulation. RL is the local level datum."
+              ? "Water motion is drawn from the model's calculated flows. It is not a fluid simulation of the real site. RL is the local level datum."
               : 'Select a part to inspect its readings and checks.'}
           </p>
           {physics && (

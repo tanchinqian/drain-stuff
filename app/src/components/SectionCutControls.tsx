@@ -7,6 +7,7 @@ export default function SectionCutControls({
   position,
   onAxis,
   onChange,
+  onReset,
   onActive,
   sampleDepth,
   sampleAcross,
@@ -16,6 +17,7 @@ export default function SectionCutControls({
   position: number;
   onAxis: (axis: CutAxis) => void;
   onChange: (position: number) => void;
+  onReset: () => void;
   onActive: (active: boolean) => void;
   sampleDepth?: number;
   sampleAcross?: number;
@@ -50,7 +52,7 @@ export default function SectionCutControls({
             </button>
           ))}
         </div>
-        <button onClick={() => onChange(0)}>Reset cut</button>
+        <button onClick={onReset}>Reset cut</button>
       </div>
       <input
         id="section-cut-slider"
