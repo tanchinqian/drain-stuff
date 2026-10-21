@@ -1,5 +1,15 @@
 import { test, expect } from '@playwright/test';
 import { mkdir } from 'node:fs/promises';
+for(const asset of ['S1','R1'])test('Round 9C roof and drain flow '+asset,async({page})=>{
+  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error'&&/THREE|shader|WebGL/i.test(m.text()))errors.push(m.text());});
+  await page.goto('/feature/'+asset);
+  const clock=page.getByRole('slider',{name:'Storm timeline',exact:true});await expect(clock).toBeEnabled({timeout:60000});await clock.fill('18');
+  await page.getByRole('checkbox',{name:'Roof runoff path',exact:true}).check();
+  if(asset==='R1')await expect(page.getByText('No roof connected in this scenario',{exact:false})).toBeVisible();
+  else await expect(page.getByText(/m² roof · .* L\/min at each step/)).toBeVisible();
+  await page.locator('.cad-scene').screenshot({path:`../docs/screens/round9c/${asset}-connected-flow.png`});
+  expect(errors).toEqual([]);
+});
 for (const asset of ['S1','R1']) test('Round 9C confirmed fault cues clear after verification '+asset,async({page})=>{
   test.setTimeout(90000);
   await page.goto('/feature/'+asset);
@@ -54,6 +64,7 @@ for (const id of ['S1', 'R1']) test('Round 9C section scope and thirty axis chan
   const scene = page.locator('.cad-scene'), cut = page.getByRole('slider', {name:'Section cut position', exact:true});
   const errors: string[] = [];
   page.on('pageerror', e => errors.push(e.message));
+  page.on('console',m=>{if(m.type()==='error'&&/THREE|shader|WebGL/i.test(m.text()))errors.push(m.text());});
   let seed = 913;
   const random = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; };
   for (let i=0; i<30; i++) {

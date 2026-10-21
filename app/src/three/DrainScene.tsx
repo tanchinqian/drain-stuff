@@ -41,6 +41,7 @@ export type Assembly = 'exploded' | 'assembled' | 'section';
 export type ViewMode = 'Operator' | 'Debug' | 'Troubleshoot';
 export type Offsets = Partial<Record<PartId, [number, number, number]>>;
 export interface Props {
+  roofPath?:boolean;
   sceneFaults?: Fault[];
   onShowFault?: (fault: Fault) => void;
   pulseFault?: string;
@@ -428,6 +429,7 @@ function Model(props: Props) {
       )}
       {props.physics ? (
         <CatchmentContext
+          roofPath={props.roofPath}
           physics={props.physics}
           low={!!props.lowQuality}
         />

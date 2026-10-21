@@ -1,12 +1,17 @@
 import { BufferGeometry, Float32BufferAttribute, Path, Shape, ShapeGeometry } from 'three';
+import {roofRunoffPath} from './flowPhysics';
 import type { DrainDesign } from '../simulation/physics/design';
 
 /** Visual excavation follows the assembly shell, including its inlet and outfall corridor. */
 export function streetExcavation(d: DrainDesign, chamber: boolean) {
   const l=d.length/2, w=chamber ? d.bedWidth/2+.1 : d.topWidth/2+.3;
   const lip=chamber ? .1 : .8, out=2.25, neck=Math.min(w,.55);
-  return [[-l-lip,-neck],[-l,-neck],[-l,-w],[l,-w],[l,-neck],[l+out,-neck],
-    [l+out,neck],[l,neck],[l,w],[-l,w],[-l,neck],[-l-lip,neck]] as [number,number][];
+  const main:[number,number][]=[[-l,-neck],[-l,-w],[l,-w],[l,-neck],[l+out,-neck],
+    [l+out,neck],[l,neck],[l,w],[-l,w],[-l,neck],[-l-lip,neck]];
+  if(d.catchment.roofArea<=0)return [[-l-lip,-neck],...main] as [number,number][];
+  const lot=roofRunoffPath(d)[4],gx=lot.end[0],z=lot.end[2];
+  return [[-l-lip,neck],[gx-.215,neck],[gx-.215,z-.14],[d.length*.4,z-.14],
+    [d.length*.4,z+.14],[gx+.215,z+.14],[gx+.215,-neck],...main.slice(0,-1)] as [number,number][];
 }
 export function streetGeometry(d: DrainDesign, chamber: boolean) {
   const points=streetExcavation(d,chamber), surface=d.catchment.kerbHeight,

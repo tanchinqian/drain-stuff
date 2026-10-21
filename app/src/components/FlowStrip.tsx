@@ -38,6 +38,8 @@ export default function FlowStrip({
       <h3>
         Water path · current minute <Term text="L/min" helpOnly />
       </h3>
+      {!inlet&&f.flux.drain<=0&&<p className="small">No underdrain flow yet: soil still absorbing</p>}
+      {f.pipeFill>=.999&&<p className="small">Pipe full: pressurised flow, no free surface</p>}
       <ol className="flow-strip" tabIndex={0} aria-label="Current stage flows and volumes">
         {stages.map((s) => (
           <li key={s.name} data-flow-stage={s.name} data-rate={s.q * 60000} data-litres={s.total}>

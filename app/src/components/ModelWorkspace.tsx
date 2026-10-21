@@ -20,6 +20,7 @@ import SectionCutControls from './SectionCutControls';
 import { cutRange, type CutAxis, type CameraPreset } from '../three/sceneMetrics';
 import { drainDesign } from '../simulation/physics/design';
 import { confirmed } from '../../../shared/src/physics/faults';
+import {roofDischarge} from '../three/flowPhysics';
 import { activeSceneFaults, faultTitle, faultWaterEffect } from '../three/faultCues';
 export default function ModelWorkspace({
   ownerId,
@@ -49,6 +50,7 @@ export default function ModelWorkspace({
       ),
     [sourceParts, sensors],
   );
+  const [roofPath,setRoofPath]=useState(false);
   const [flat, setFlat] = useState(false),
     [dimensionsVisible, setDimensionsVisible] = useState(false);
   const [inspectionActive, setInspectionActive] = useState(kind === 'compost');
@@ -291,6 +293,8 @@ export default function ModelWorkspace({
               >
                 Return to default
               </button>
+              <label><input type="checkbox" checked={roofPath} onChange={e=>setRoofPath(e.target.checked)}/> Roof runoff path</label>
+              {roofPath&&<span className="small">{physics.config.values.roofArea.value} m² roof · {(roofDischarge(drainDesign(physics.config),physics.frame)*60000).toFixed(1)} L/min at each step{physics.config.values.roofArea.value===0?' · No roof connected in this scenario':''}</span>}
               {!!sceneFaults.length && <button onClick={()=>showFault(selectedFault??sceneFaults[0])}>Show fault</button>}
             </div>
           )}
@@ -304,6 +308,7 @@ export default function ModelWorkspace({
             />
           ) : (
             <DrainScene
+              roofPath={roofPath}
               physics={physics}
               sceneFaults={params.get('mode')==='cleared' ? [] : sceneFaults}
               onShowFault={showFault}

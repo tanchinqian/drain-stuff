@@ -35,3 +35,9 @@ Replaced the separate deep ground slab and oversized rectangular hole with a con
 - Added conditional Marshall–Palmer sampling, Atlas terminal speeds, motion-stretched streaks, actual-mesh collision rays, rings, hard-surface splashes and intensity-driven mist. Rain moved outside the drain part visibility/clipping hierarchy.
 - TypeScript and statistical distribution/fall-speed checks passed. Rain is a representative population in the published speed-fit range; not every physical droplet is drawn.
 - Roof conveyance is completed with Stage 3A; impulse coupling depends on Stage 2. Those dependencies are not claimed complete here.
+
+## Stages 3 / 3A — connected flow
+- Added gravity/velocity outfall jets and droplets, dry/submerged gating, inlet lip falls, slope-following pipe water, full-pipe state and saturation-gated pore streaks. The strip states when soil is still absorbing and no underdrain flow exists.
+- Added a connected roof/gutter/downpipe/lot-drain/sump/covered-crossing route with a highlight and exact engine roof-discharge readout. R1's default roof area is zero and its UI says so.
+- Thirteen focused flow/ground/metric tests passed, including 2 mm segment continuity, ballistic trajectory, zero/submerged jets and saturation gating. TypeScript passed. Browser flow/section checks capture S1/R1 and inspect WebGL errors.
+- Surface distribution, obstacle head differences and rain impulse propagation remain Stage 2 work. Material-specific sock/dam behavior remains Stage 4 work. The pipe/roof route does not alter the engine.

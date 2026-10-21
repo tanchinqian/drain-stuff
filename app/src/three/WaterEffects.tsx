@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { drainDesign, terrainHeight, type DrainDesign } from '../simulation/physics/design';
 import type { ModelPhysics } from './PhysicsOverlay';
 import { rainBounds, rainColour } from './visibility';
+import { saturatedColumns } from './flowPhysics';
 import { dropDiameter, terminalSpeed, rainPhase, mistStrength } from './rainPhysics';
 
 export function useReducedMotion() {
@@ -130,6 +131,7 @@ export function WaterMaterial({
   low = false,
   velocity = 0,
   flow = false,
+  fullPipe = false,
 }: {
   depth: number;
   design: DrainDesign;
@@ -138,6 +140,7 @@ export function WaterMaterial({
   low?: boolean;
   velocity?: number;
   flow?: boolean;
+  fullPipe?: boolean;
 }) {
   const reduced = useReducedMotion(),
     invalidate = useThree((s) => s.invalidate);
@@ -147,14 +150,16 @@ export function WaterMaterial({
       waterRain: { value: rain * 3.6e6 },
       waterSpeed: { value: velocity },
       waterDepth: { value: depth },
+      waterFull: { value: fullPipe?1:0 },
     }),
     [],
   );
   uniforms.waterRain.value = rain * 3.6e6;
   uniforms.waterSpeed.value = velocity;
   uniforms.waterDepth.value = depth;
+  uniforms.waterFull.value = fullPipe?1:0;
   useFrame((_, delta) => {
-    if (!reduced && (flow ? velocity > 0 : depth > 0)) {
+    if (!reduced && !document.hidden && (velocity > 0 || rain > 0)) {
       uniforms.waterTime.value += Math.min(delta, 0.1);
       invalidate();
     }
@@ -209,7 +214,7 @@ export function WaterMaterial({
             '#include <begin_vertex>\nwaterPosition = position;',
           );
         shader.fragmentShader =
-          'varying vec3 waterPosition; uniform float waterTime; uniform float waterRain; uniform float waterSpeed; uniform float waterDepth;\n' +
+          'varying vec3 waterPosition; uniform float waterTime; uniform float waterRain; uniform float waterSpeed; uniform float waterDepth; uniform float waterFull;\n' +
           shader.fragmentShader
             .replace(
               '#include <color_fragment>',
@@ -233,7 +238,9 @@ export function WaterMaterial({
           vec2 rippleCentre = vec2(fract(rippleSeed * 37.3), fract(rippleSeed * 83.7));
           float ringRadius = length(fract(waterPosition.xz * 2.7) - rippleCentre);
           float rings = sin(ringRadius * 52.0 - waterTime * 9.0 + rippleSeed * 6.28) * exp(-ringRadius * 4.0) * min(waterRain / 100.0, 1.0);
-          normal = normalize(normal + vec3(waves + rings * 0.35, 0.0, cos(phase)) * 0.025);`,
+          float froude = abs(waterSpeed) / sqrt(9.81 * max(0.001, waterDepth));
+          float amplitude = (1.0-waterFull) * min(0.04, froude * 0.025);
+          normal = normalize(normal + vec3(waves*amplitude + rings*0.009, 0.0, cos(phase)*amplitude));`,
             )
             .replace(
               '#include <opaque_fragment>',
@@ -260,7 +267,8 @@ export function Seepage({
 }) {
   const q = physics.frame?.flux.drain ?? 0,
     d = drainDesign(physics.config);
-  const count = seepageCount(q, low);
+  const columns=saturatedColumns(d,physics.frame);
+  const count = columns.length ? seepageCount(q, low) : 0;
   const mesh = useRef<THREE.InstancedMesh>(null),
     object = useMemo(() => new THREE.Object3D(), []);
   const time = useRef(0),
@@ -274,7 +282,7 @@ export function Seepage({
       object.position.set(
         (random(i + 20) - 0.5) * d.length,
         d.pipeY + ((1 - phase) * d.gravelDepth) / 2,
-        (i % 2 ? 1 : -1) * (1 - phase) * 0.15,
+        ((columns[i%columns.length]+.5)/Math.max(1,physics.frame?.soil?.nx??1)-.5)*d.bedWidth*(1-phase),
       );
       object.scale.set(0.003, 0.02, 0.003);
       object.rotation.z = (i % 2 ? 1 : -1) * 0.35;

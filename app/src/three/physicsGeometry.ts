@@ -372,7 +372,8 @@ export function createInletGeometry(c: PhysicsConfig): ModelGroups {
       'concrete',
       palette.well,
     );
-  k.box('inlet', [0.1, depth, w], [-l / 2 - 0.05, depth / 2, 0], palette.well);
+  const opening=Math.min(.14,depth*.5);
+  k.box('inlet', [0.1, depth-opening, w], [-l / 2 - 0.05, (depth+opening)/2, 0], palette.well);
   k.grate('inlet', 0, depth + 0.02, 0, l, w);
   if (v.sediment.value > 0) {
     k.box('pretreat', [l, v.sediment.value, w], [0, v.sediment.value / 2, 0], sceneColours.soil);
@@ -393,7 +394,10 @@ export function createInletGeometry(c: PhysicsConfig): ModelGroups {
       palette.ink3,
     );
   k.pipe('outfall', 1.4, v.pipeDiameter.value / 2, [l / 2 + 0.7, v.pipeDiameter.value / 2, 0]);
-  k.box('outfall', [0.1, depth, w], [l / 2 + 0.05, depth / 2, 0], palette.well);
+  const wallShape=new THREE.Shape();wallShape.moveTo(-w/2,0);wallShape.lineTo(w/2,0);wallShape.lineTo(w/2,depth);wallShape.lineTo(-w/2,depth);wallShape.closePath();
+  const port=new THREE.Path();port.absarc(0,v.pipeDiameter.value/2,v.pipeDiameter.value*.49,0,Math.PI*2,true);wallShape.holes.push(port);
+  const wallGeometry=new THREE.ExtrudeGeometry(wallShape,{depth:.1,bevelEnabled:false,curveSegments:24});wallGeometry.rotateY(Math.PI/2);
+  k.mesh('outfall',wallGeometry,palette.well,[l/2,0,0]);
   k.box('overflow', [0.5, 0.04, w], [l / 2 + 0.35, depth, 0], palette.well2);
   k.box('ponding', [l, depth, w], [0, depth / 2, 0], palette.well, 0.02);
   return finish(k.groups);

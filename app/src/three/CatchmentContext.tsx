@@ -14,6 +14,8 @@ import { WaterMaterial } from './WaterEffects';
 import FlowTrace from './FlowTrace';
 import { contextAtlas, sceneColours, surfaceMaps, variation, type Surface } from './sceneMaterials';
 import { surfaceWetness } from './sceneMetrics';
+import RoofConveyance from './RoofConveyance';
+import {outfallPose} from './flowPhysics';
 import { streetGeometry } from './streetGeometry';
 
 function SurfaceBox({
@@ -143,9 +145,11 @@ function Terrain({
 export default function CatchmentContext({
   physics,
   low,
+  roofPath=false,
 }: {
   physics: ModelPhysics;
   low: boolean;
+  roofPath?:boolean;
 }) {
   const d = drainDesign(physics.config),
     c = d.catchment,
@@ -154,7 +158,7 @@ export default function CatchmentContext({
     footZ = -d.topWidth / 2 - c.footpathWidth / 2;
   const wet = surfaceWetness(physics.config, f),
     q = f?.flux.inlet ?? 0;
-  const roofQ = f?.links.find((l) => l.id === 'roof outlet to downpipe')?.discharge ?? 0;
+  const pose=outfallPose(d,physics.config);
   const roadQ = f?.links.find((l) => l.id === 'property drain to kerb flow')?.discharge ?? 0;
   const level = f?.network.find((n) => n.id === 'kerb flow')?.depth ?? 0;
   const ground = d.bottomY - d.nativeDepth - 0.08;
@@ -193,8 +197,8 @@ export default function CatchmentContext({
       <Terrain physics={physics} />
       <SurfaceBox
         name="road-foundation"
-        position={[roadX, (ground + c.kerbHeight - 0.12) / 2, 0]}
-        size={[c.roadWidth, c.kerbHeight - 0.12 - ground, Math.max(40, d.topWidth + 8)]}
+        position={[roadX-.1, (ground + c.kerbHeight - 0.12) / 2, 0]}
+        size={[Math.max(.1,c.roadWidth-.2), c.kerbHeight - 0.12 - ground, Math.max(40, d.topWidth + 8)]}
         kind="soil"
         wet={wet}
       />
@@ -207,8 +211,8 @@ export default function CatchmentContext({
       />
       <SurfaceBox
         name="road"
-        position={[roadX, c.kerbHeight - 0.06, 0]}
-        size={[c.roadWidth, 0.12, Math.max(40, d.topWidth + 8)]}
+        position={[roadX-.1, c.kerbHeight - 0.06, 0]}
+        size={[Math.max(.1,c.roadWidth-.2), 0.12, Math.max(40, d.topWidth + 8)]}
         kind="asphalt"
         wet={wet}
       />
@@ -229,13 +233,13 @@ export default function CatchmentContext({
           wet={wet}
         />
       ))}
-      <SurfaceBox
+      {c.roofArea<=0&&<SurfaceBox
         name="gutter"
         position={[-d.length / 2 - 0.78, c.kerbHeight - 0.018, 0]}
         size={[0.22, 0.035, d.topWidth + 5]}
         kind="concrete"
         wet={wet}
-      />
+      />}
       {built(
         'road-edge-line',
         [roadX - c.roadWidth / 2 + 0.15, c.kerbHeight + 0.001, 0],
@@ -271,12 +275,6 @@ export default function CatchmentContext({
             [d.length * 0.8, 0.18, c.roofEdgeDepth + 0.2],
             sceneColours.roof,
           )}
-          {built(
-            'rain-gutter',
-            [0, c.kerbHeight + houseHeight, houseZ + c.roofEdgeDepth / 2 + 0.12],
-            [d.length * 0.8, 0.09, 0.1],
-            sceneColours.trim,
-          )}
           <Instances name="terrace-windows" items={windows} colour={sceneColours.trim} />
           <Instances
             name="terrace-doors"
@@ -286,37 +284,9 @@ export default function CatchmentContext({
             }))}
             colour={sceneColours.roof}
           />
-          {built(
-            'downpipe',
-            [-d.length * 0.34, c.kerbHeight + houseHeight / 2, houseZ + c.roofEdgeDepth / 2 + 0.14],
-            [0.065, houseHeight, 0.065],
-            sceneColours.trim,
-          )}
-          {built(
-            'downpipe-shoe',
-            [-d.length * 0.34, c.kerbHeight + 0.05, (houseZ + c.roofEdgeDepth / 2 + footZ) / 2],
-            [0.08, 0.08, Math.abs(footZ - houseZ - c.roofEdgeDepth / 2)],
-            sceneColours.trim,
-          )}
         </group>
       )}
-      <FlowTrace
-        name="roof-runoff"
-        q={roofQ}
-        velocity={flowSpeed(roofQ)}
-        low={low}
-        points={[
-          [d.length * 0.35, c.kerbHeight + houseHeight + 0.13, houseZ + c.roofEdgeDepth / 2 + 0.17],
-          [
-            -d.length * 0.34,
-            c.kerbHeight + houseHeight + 0.13,
-            houseZ + c.roofEdgeDepth / 2 + 0.17,
-          ],
-          [-d.length * 0.34, c.kerbHeight + 0.07, houseZ + c.roofEdgeDepth / 2 + 0.17],
-          [-d.length * 0.34, c.kerbHeight + 0.07, footZ],
-          [-d.length / 2 - 0.78, c.kerbHeight + 0.015, footZ],
-        ]}
-      />
+      <RoofConveyance physics={physics} low={low} highlight={roofPath}/>
       <FlowTrace
         name="road-runoff"
         q={roadQ}
@@ -387,7 +357,7 @@ export default function CatchmentContext({
       />
       <SurfaceBox
         name="outfall-pool-bed"
-        position={[d.length / 2 + 1.75, d.pipeY - d.pipeDiameter / 2 - 0.15, 0]}
+        position={[pose.x + .25, pose.y - d.pipeDiameter / 2 - 0.15, 0]}
         size={[0.9, 0.05, 0.75]}
         kind="gravel"
         wet={wet}
@@ -395,7 +365,7 @@ export default function CatchmentContext({
       {(f?.flux.outfall ?? 0) > 0 && (
         <mesh
           name="outfall-pool"
-          position={[d.length / 2 + 1.75, d.pipeY - d.pipeDiameter / 2 - 0.12, 0]}
+          position={[pose.x + .25, pose.y - d.pipeDiameter / 2 - 0.12, 0]}
           rotation={[-Math.PI / 2, 0, 0]}
         >
           <planeGeometry args={[0.85, 0.7]} />

@@ -8,9 +8,6 @@ import {
   MeshStandardMaterial,
   type BufferGeometry,
   type Plane,
-  TubeGeometry,
-  CatmullRomCurve3,
-  Vector3,
 } from 'three';
 import type { PartId } from '../api/types';
 import type { PhysicsConfig } from '../simulation/physics/config';
@@ -21,6 +18,8 @@ import { WaterMaterial, Seepage } from './WaterEffects';
 import SectionCaps from './SectionCaps';
 import { flowSpeed } from './visibility';
 import FlowTrace from './FlowTrace';
+import BallisticFlow from './BallisticFlow';
+import {outfallJet,outfallPose} from './flowPhysics';
 import { flowVisual } from './sceneMetrics';
 function FluidCap({
   geometry,
@@ -49,6 +48,7 @@ function FluidCap({
   );
   return <SectionCaps group={group} plane={plane} orderBase={order} />;
 }
+const cappedLanding=(h:number,upstream:number)=>Math.min(upstream,Math.max(.002,h));
 export interface ModelPhysics {
   config: PhysicsConfig;
   frame?: PhysicsFrame;
@@ -71,7 +71,8 @@ export function PhysicsWater({
   const h = f?.ponding ?? 0,
     fill = f?.pipeFill ?? 0,
     r = d.pipeDiameter / 2;
-  const pipeLength = id === 'outfall' ? 1.5 : d.length;
+  const pose=outfallPose(d,physics.config);
+  const pipeLength = id === 'outfall' ? pose.length : d.length;
   const geometry = useMemo(
     () =>
       id === 'ponding'
@@ -81,7 +82,7 @@ export function PhysicsWater({
   );
   const pipeGeometry = useMemo(() => {
     if (id !== 'underdrain' && id !== 'outfall') return;
-    const angle = Math.acos(1 - 2 * Math.max(0.000001, fill)),
+    const angle = Math.acos(1 - 2 * Math.min(1,Math.max(0.000001, fill))),
       shape = new Shape();
     for (let i = 0; i <= 32; i++) {
       const a = -angle + (2 * angle * i) / 32;
@@ -94,31 +95,19 @@ export function PhysicsWater({
     const g = new ExtrudeGeometry(shape, { depth: pipeLength, bevelEnabled: false });
     g.rotateY(Math.PI / 2);
     g.translate(-pipeLength / 2, 0, 0);
+    if(id==='underdrain'){
+      const pos=g.getAttribute('position');
+      for(let i=0;i<pos.count;i++)pos.setY(i,pos.getY(i)-pos.getX(i)*v.pipeSlope.value);
+      pos.needsUpdate=true;g.computeVertexNormals();
+    }
     return g;
-  }, [id, fill, r, pipeLength]);
-  const jetGeometry = useMemo(() => {
-    if (id !== 'outfall' || !f || f.flux.outfall <= 0) return;
-    const y = d.pipeY - r + fill * d.pipeDiameter * 0.5;
-    const curve = new CatmullRomCurve3([
-      new Vector3(d.length / 2 + 1.5, y, 0),
-      new Vector3(d.length / 2 + 1.67, y - 0.035, 0),
-      new Vector3(d.length / 2 + 1.75, d.pipeY - r - 0.11, 0),
-    ]);
-    return new TubeGeometry(
-      curve,
-      12,
-      Math.min(r, Math.sqrt(f.flux.outfall / Math.max(0.01, f.pipeVelocity) / Math.PI)),
-      low ? 6 : 12,
-      false,
-    );
-  }, [id, d.length, d.pipeY, r, fill, d.pipeDiameter, f?.flux.outfall, f?.pipeVelocity, low]);
+  }, [id, fill, r, pipeLength, v.pipeSlope.value]);
   useEffect(
     () => () => {
       geometry?.dispose();
       pipeGeometry?.dispose();
-      jetGeometry?.dispose();
     },
-    [geometry, pipeGeometry, jetGeometry],
+    [geometry, pipeGeometry],
   );
   if (!f) return null;
   const water = (depth: number, velocity = 0) => (
@@ -129,6 +118,7 @@ export function PhysicsWater({
       plane={plane}
       low={low}
       velocity={velocity}
+      fullPipe={(id==='outfall'||id==='underdrain')&&fill>=.999}
       flow={
         id === 'outfall' ||
         id === 'underdrain' ||
@@ -196,7 +186,9 @@ export function PhysicsWater({
       </>
     );
   if (id === 'underdrain' || id === 'outfall') {
-    const x = id === 'outfall' ? d.length / 2 + 0.75 : 0;
+    const x = id === 'outfall' ? d.length / 2 + pose.length/2 : 0;
+    const pipeY=id==='outfall'?pose.y:d.pipeY;
+    const jet=outfallJet(d,physics.config,f);
     const tail = Math.max(0, v.tailwater.value - v.outfallInvert.value);
     return (
       <group>
@@ -204,8 +196,8 @@ export function PhysicsWater({
           <mesh
             name={'pipe-water-' + id}
             geometry={pipeGeometry}
-            position={[x, d.pipeY, 0]}
-            userData={{ fill, velocity: f.pipeVelocity }}
+            position={[x, pipeY, 0]}
+            userData={{ fill, velocity: f.pipeVelocity, pressurised: fill>=.999 }}
           >
             {water(fill * d.pipeDiameter, f.pipeVelocity)}
           </mesh>
@@ -214,18 +206,14 @@ export function PhysicsWater({
           <FluidCap
             geometry={pipeGeometry}
             plane={plane}
-            position={[x, d.pipeY, 0]}
+            position={[x, pipeY, 0]}
             order={id === 'outfall' ? 10200 : 10100}
           />
         )}
-        {id === 'outfall' && f.flux.outfall > 0 && (
-          <mesh name="outfall-jet" geometry={jetGeometry}>
-            {water(0.05, f.pipeVelocity)}
-          </mesh>
-        )}
+        {id === 'outfall' && jet.active && <BallisticFlow name="outfall-jet" start={jet.start} landing={jet.landing} velocity={jet.velocity} q={jet.discharge} plane={plane} low={low}/>}
         {id === 'outfall' && tail > 0 && (
           <group>
-            <mesh position={[d.length / 2 + 1.8, d.pipeY - r + tail / 2, 0]}>
+            <mesh position={[pose.x + .25, pipeY - r + tail / 2, 0]}>
               <boxGeometry args={[0.7, tail, 0.9]} />
               {water(tail)}
             </mesh>
@@ -272,6 +260,9 @@ export function PhysicsWater({
             {water(level)}
           </mesh>
         )}
+        {id==='inlet'&&q>0&&<mesh name="kerb-opening-sheet" position={[-d.length/2-.4,d.catchment.kerbHeight+level+.002,0]} rotation={[-Math.PI/2,0,0]}><planeGeometry args={[.78,Math.min(.5,width)]}/>{water(.005,flowSpeed(q))}</mesh>}
+        {id==='inlet'&&q>0&&cappedLanding(h,d.catchment.kerbHeight+level)<d.catchment.kerbHeight+level&&
+          <BallisticFlow name="kerb-lip-fall" start={[-d.length/2-.02,d.catchment.kerbHeight+level,0]} landing={cappedLanding(h,d.catchment.kerbHeight+level)} velocity={Math.min(1,Math.max(.1,flowSpeed(q)))} q={q} plane={plane} low={low}/>}
         {q > 0 && (
           <mesh
             name="inlet-stream"
