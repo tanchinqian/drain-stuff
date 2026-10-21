@@ -38,6 +38,7 @@ import SceneLabels, { type SceneLabel } from './SceneLabels';
 import FaultDeposits from './FaultDeposits';
 import StormAtmosphere from './StormAtmosphere';
 import CutPlane from './CutPlane';
+import {sockDarkening,mulchLift} from './materialInteractions';
 import { cutNormal, cutSample, type CameraPreset } from './sceneMetrics';
 export type Assembly = 'exploded' | 'assembled' | 'section';
 export type ViewMode = 'Operator' | 'Debug' | 'Troubleshoot';
@@ -115,6 +116,7 @@ function Model(props: Props) {
   const [draggingCut, setDraggingCut] = useState(false);
   const design = props.physics ? drainDesign(props.physics.config) : undefined;
   const invalidate = useThree((s) => s.invalidate);
+  const scene=useThree(s=>s.scene);
   const select = useSelection((s) => s.selectPart),
     selected = useSelection((s) => s.partId);
   const groups = useMemo(
@@ -173,8 +175,11 @@ function Model(props: Props) {
         o instanceof Mesh &&
         o.material instanceof MeshStandardMaterial &&
         o.material.userData.wind
-      )
+      ){
         o.material.userData.wind.value = windTime.current;
+        const flow=scene.userData.surfaceRender;
+        if(flow&&o.material.userData.flowField){o.material.userData.flowField.value=flow.texture;o.material.userData.flowBounds.value.set(flow.x0,flow.z0,flow.width,flow.height);o.material.userData.flowReady.value=1;}
+      }
     });
   });
   const e = props.assembly === 'exploded' ? props.explode / 100 : 0;
@@ -189,21 +194,26 @@ function Model(props: Props) {
     if (!texture || !field) return;
     for (const id of ['media', 'mulch', 'transition', 'drainage'] as const)
       groups[id]?.traverse((o) => {
-        if (o instanceof Mesh && o.material instanceof MeshStandardMaterial)
+        if (o instanceof Mesh && o.material instanceof MeshStandardMaterial){
+          if(o.name==='mulch-particles'){o.material.userData.mulchPond??={value:0};o.material.userData.mulchPond.value=mulchLift(props.physics?.frame?.ponding??0,1);}
           wetMaterial(o.material, texture, field.width, field.depth);
+        }
       });
     invalidate();
     return () => texture.dispose();
   }, [field, texture, groups, invalidate]);
   useEffect(() => {
-    const clog = props.physics?.frame?.cell.clog ?? 0;
-    groups.sock?.traverse((o) => {
-      if (o instanceof Mesh && o.material instanceof MeshStandardMaterial) {
-        o.material.userData.dryColor ??= o.material.color.clone();
-        o.material.color.copy(o.material.userData.dryColor).multiplyScalar(1 - 0.5 * clog);
+    const clog=props.physics?.frame?.cell.clog??0,wet=props.physics?.frame?.moisture??0;
+    groups.sock?.traverse(o=>{
+      if(!(o instanceof Mesh)||!(o.material instanceof MeshStandardMaterial))return;
+      const material=o.material;
+      if(!material.userData.sockShade){
+        const uniform={value:1},previous=material.onBeforeCompile;material.userData.sockShade=uniform;
+        material.onBeforeCompile=function(shader,renderer){previous.call(this,shader,renderer);shader.uniforms.sockShade=uniform;shader.fragmentShader='uniform float sockShade;\n'+shader.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\ndiffuseColor.rgb*=sockShade;');};material.needsUpdate=true;
       }
+      material.userData.sockShade.value=sockDarkening(clog,wet);
     });
-  }, [props.physics?.frame?.cell.clog, groups]);
+  },[props.physics?.frame?.cell.clog,props.physics?.frame?.moisture,groups]);
   useEffect(() => {
     groups.planting?.traverse((o) => {
       if (o instanceof InstancedMesh && o.name === 'tropical-groundcover')
@@ -736,7 +746,7 @@ function RenderBudget({
       const fluid=scene.userData.surfaceStats;
       if(fluid){element.dataset.surfaceBackend=fluid.backend;element.dataset.surfaceBedError=String(fluid.bedError??0);element.dataset.surfaceGutterError=String(fluid.gutterError??0);element.dataset.surfaceReferenceError=String(fluid.referenceError??0);element.dataset.surfaceSolverMs=String(fluid.solverMs??0);element.dataset.surfaceGpuMs=String(fluid.gpuMs??'unavailable');}
       const diagnostic=element.querySelector<HTMLOutputElement>('[data-water-debug]');
-      if(diagnostic&&fluid)diagnostic.textContent=`${fluid.backend} ${fluid.nx}×${fluid.nz} · bed ${(100*(fluid.bedError??0)).toFixed(2)}%, gutter ${(100*(fluid.gutterError??0)).toFixed(2)}% volume error · reference ${(1000*(fluid.referenceError??0)).toFixed(2)} mm · solver ${(fluid.solverMs??0).toFixed(2)} ms CPU${fluid.gpuMs==null?' · GPU timer unavailable':` / ${fluid.gpuMs.toFixed(2)} ms GPU`} · rain ${(scene.userData.rainMs??0).toFixed(2)} ms · particles ${(scene.userData.particleMs??0).toFixed(2)} ms`;
+      if(diagnostic&&fluid)diagnostic.textContent=`${fluid.backend} ${fluid.nx}Ã—${fluid.nz} Â· bed ${(100*(fluid.bedError??0)).toFixed(2)}%, gutter ${(100*(fluid.gutterError??0)).toFixed(2)}% volume error Â· reference ${(1000*(fluid.referenceError??0)).toFixed(2)} mm Â· solver ${(fluid.solverMs??0).toFixed(2)} ms CPU${fluid.gpuMs==null?' Â· GPU timer unavailable':` / ${fluid.gpuMs.toFixed(2)} ms GPU`} Â· rain ${(scene.userData.rainMs??0).toFixed(2)} ms Â· particles ${(scene.userData.particleMs??0).toFixed(2)} ms`;
       element.dataset.rainMs=String(scene.userData.rainMs??0);element.dataset.particleMs=String(scene.userData.particleMs??0);
       const outlined: string[] = [];
       let clipped = true;

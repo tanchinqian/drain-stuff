@@ -49,13 +49,14 @@ export function wetMaterial(
   material.userData.amendmentUniform = amendmentUniform;
   material.onBeforeCompile = (shader) => {
     shader.uniforms.soilWater = uniform;
+    shader.uniforms.mulchPond=material.userData.mulchPond??{value:0};
     shader.uniforms.wetBandHeight = bandUniform;
     shader.uniforms.soilAmendmentDepth = amendmentUniform;
     shader.vertexShader =
-      'varying vec3 soilPosition;\n' +
-      shader.vertexShader.replace(
+      'varying vec3 soilPosition; uniform float mulchPond;\n' +
+      shader.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\n#ifdef USE_INSTANCING\nfloat floatingChip=step(.85,fract(sin(dot(instanceMatrix[3].xz,vec2(127.1,311.7)))*43758.5453));transformed.y+=floatingChip*mulchPond;\n#endif').replace(
         '#include <worldpos_vertex>',
-        '#include <worldpos_vertex>\nsoilPosition = (modelMatrix * vec4(transformed, 1.0)).xyz;',
+        '#include <worldpos_vertex>\nvec4 wetPosition=vec4(transformed,1.);\n#ifdef USE_INSTANCING\nwetPosition=instanceMatrix*wetPosition;\n#endif\nsoilPosition=(modelMatrix*wetPosition).xyz;',
       );
     const height = texture.image.height;
     shader.fragmentShader =

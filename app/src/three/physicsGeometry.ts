@@ -183,6 +183,7 @@ export function createSwaleGeometry(c: PhysicsConfig): ModelGroups {
   layer('transition', t, -m - t / 2 - 0.05, 0xe8dec6, 'sand');
   layer('drainage', g, bottom + g / 2, 0xc5beaa, 'gravel');
   layer('mulch', 0.05, -0.025, 0xbba07c, 'mulch');
+  const textile=k.box('transition',[l,.003,w],[0,-m-t-.05+.002,0],0x8f927f);textile.name='geotextile';Object.assign(textile.material,surfaceMaps('fabric'));
   if (d.nativeDepth > 0)
     layer('media', d.nativeDepth, bottom - d.nativeDepth / 2, 0x9d8465, 'soil');
   // Banks define the 1:z section around the actual bottom width.
@@ -284,14 +285,22 @@ export function createSwaleGeometry(c: PhysicsConfig): ModelGroups {
   const material = k.mat(0x667d42),
     wind = { value: 0 };
   material.userData.wind = wind;
+  const flowField={value:null},flowBounds={value:new THREE.Vector4(0,0,1,1)},flowReady={value:0};material.userData.flowField=flowField;material.userData.flowBounds=flowBounds;material.userData.flowReady=flowReady;
   material.onBeforeCompile = (shader) => {
-    shader.uniforms.windTime = wind;
+    shader.uniforms.windTime = wind;shader.uniforms.plantFlowField=flowField;shader.uniforms.plantFlowBounds=flowBounds;shader.uniforms.plantFlowReady=flowReady;
     shader.vertexShader =
-      'uniform float windTime;\n' +
+      'uniform float windTime,plantFlowReady; uniform sampler2D plantFlowField; uniform vec4 plantFlowBounds; varying float plantWet;\n' +
       shader.vertexShader.replace(
         '#include <begin_vertex>',
-        '#include <begin_vertex>\ntransformed.x += sin(windTime * 1.1 + instanceMatrix[3].x * 2.0 + instanceMatrix[3].z) * position.y * position.y * 0.3;',
+        `#include <begin_vertex>
+        transformed.x += sin(windTime*1.1+instanceMatrix[3].x*2.+instanceMatrix[3].z)*position.y*position.y*.3;
+        vec2 flowUv=(instanceMatrix[3].xz-plantFlowBounds.xy)/plantFlowBounds.zw;
+        vec4 water=texture2D(plantFlowField,clamp(flowUv,0.,1.))*plantFlowReady;
+        vec2 velocity=water.yz/max(water.x,.001);
+        transformed.xz+=clamp(velocity,vec2(-1.),vec2(1.))*position.y*position.y*.4;
+        plantWet=water.x>.001?1.-smoothstep(water.x,water.x+.08,position.y):0.;`,
       );
+    shader.fragmentShader='varying float plantWet;\n'+shader.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\ndiffuseColor.rgb*=1.-plantWet*.3;');
   };
   const blades = new THREE.InstancedMesh(blade, material, 580),
     obj = new THREE.Object3D();
@@ -320,19 +329,6 @@ export function createSwaleGeometry(c: PhysicsConfig): ModelGroups {
   }
   blades.name = 'tropical-groundcover';
   k.groups.planting!.add(blades);
-  const leaves = new THREE.InstancedMesh(new THREE.SphereGeometry(0.12, 6, 4), k.mat(0x607a40), 48);
-  for (let i = 0; i < leaves.count; i++) {
-    obj.position.set(
-      (variation(i + 501) - 0.5) * l,
-      0.08 + variation(i + 600) * 0.09,
-      (variation(i + 700) - 0.5) * w,
-    );
-    obj.scale.set(0.4, 0.15, 1.4);
-    obj.rotation.set(0.3, variation(i + 800) * 6, 0.5);
-    obj.updateMatrix();
-    leaves.setMatrixAt(i, obj.matrix);
-  }
-  k.groups.planting!.add(leaves);
   for (const [id, count, kind] of [
     ['mulch', 120, 'mulch'],
     ['drainage', 90, 'gravel'],
@@ -356,6 +352,7 @@ export function createSwaleGeometry(c: PhysicsConfig): ModelGroups {
       obj.updateMatrix();
       bits.setMatrixAt(i, obj.matrix);
     }
+    bits.name=id+'-particles';
     k.groups[id]!.add(bits);
   }
   return finish(k.groups);

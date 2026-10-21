@@ -18,6 +18,7 @@ import { WaterMaterial, Seepage } from './WaterEffects';
 import SectionCaps from './SectionCaps';
 import { flowSpeed } from './visibility';
 import FlowTrace from './FlowTrace';
+import ObstacleWater from './ObstacleWater';
 import BallisticFlow from './BallisticFlow';
 import {outfallJet,outfallPose} from './flowPhysics';
 import { flowVisual } from './sceneMetrics';
@@ -140,6 +141,7 @@ export function PhysicsWater({
         {h > 0 && plane && geometry && <FluidCap geometry={geometry} plane={plane} order={10000} />}
       </group>
     );
+  if(id==='checkdam')return <ObstacleWater physics={physics} plane={plane} low={low}/>;
   if (id === 'media')
     return (
       <FlowTrace

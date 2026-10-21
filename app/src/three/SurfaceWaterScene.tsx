@@ -74,7 +74,7 @@ export default function SurfaceWater({physics,plane,low=false,record=false}:{phy
       const ix=Math.max(0,Math.min(nx-1,Math.floor((x-grid.x0)/grid.dx))),iz=Math.max(0,Math.min(nz-1,Math.floor((z-grid.z0)/grid.dz))),i=(iz*nx+ix)*4,h=r.state[i];
       return {depth:h,height:grid.terrain[i]+h,vx:h>1e-7?r.state[i+1]/h:0,vz:h>1e-7?r.state[i+2]/h:0};
     };
-    return ()=>{r.gpu?.dispose();r.worker?.terminate();runtime.current=undefined;delete scene.userData.surfaceSample;delete scene.userData.surfaceStats;};
+    return ()=>{r.gpu?.dispose();r.worker?.terminate();runtime.current=undefined;delete scene.userData.surfaceSample;delete scene.userData.surfaceStats;delete scene.userData.surfaceRender;delete scene.userData.surfaceRender;};
   },[grid,resources,gl,gpuCapable,scene,invalidate]);
   resources.uniforms.sectionEnabled.value=plane?1:0;
   if(plane)resources.uniforms.sectionPlane.value.set(plane.normal.x,plane.normal.y,plane.normal.z,plane.constant);
@@ -99,6 +99,8 @@ export default function SurfaceWater({physics,plane,low=false,record=false}:{phy
     }else if(r.worker&&!r.busy&&(changed||r.workerElapsed>=.05)){
       r.busy=true;r.worker.postMessage({kind:'step',seconds:r.workerElapsed,reset,source:surfaceSources(grid,r.state,physics.config,f),impulses:impulses.splice(0),...targets});r.workerElapsed=0;
     }
+    scene.userData.surfaceRender={texture:resources.uniforms.surfaceMap.value,x0:grid.x0,z0:grid.z0,width:grid.nx*grid.dx,height:grid.nz*grid.dz};
+    scene.userData.surfaceRender={texture:resources.uniforms.surfaceMap.value,x0:grid.x0,z0:grid.z0,width:grid.nx*grid.dx,height:grid.nz*grid.dz};
     r.lastSecond=f.second;
     if(targets.bedVolume>0||targets.gutterVolume>0||f.rain>0)invalidate();
   });

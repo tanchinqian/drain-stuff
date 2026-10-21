@@ -135,7 +135,7 @@ export default function ModelDetails({ ownerId }: { ownerId: string }) {
             The storm model uses your entered settings to calculate storage and flow. A compost dose
             does not set soil conductivity.
           </p>
-          <p>Water motion is drawn from the model's calculated flows. It is not a fluid simulation of the real site.</p>
+          <p>Water motion is drawn from the model's calculated flows. It is not a fluid simulation of the real site. The soil calculation is a cross-bed slice; that field is repeated along the asset length.</p>
           {error && <p role="alert">{error}</p>}
           {Object.entries(groups).map(([group, keys]) => (
             <details key={group} className="model-group">

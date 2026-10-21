@@ -1,3 +1,4 @@
+import {wetFinish} from './materialInteractions';
 import {useMemo,useEffect} from 'react';
 import {BufferGeometry,Float32BufferAttribute,Color} from 'three';
 import type {DrainDesign} from '../simulation/physics/design';
@@ -20,5 +21,5 @@ export default function StreetPavement({design:d,wet}:{design:DrainDesign;wet:nu
   },[d.length,d.catchment.roadWidth,d.catchment.gutterSlope,d.catchment.kerbHeight]);
   const maps=useMemo(()=>surfaceMaps('asphalt'),[]);
   useEffect(()=>()=>geometry.dispose(),[geometry]);useEffect(()=>()=>{maps.map.dispose();maps.normalMap.dispose();},[maps]);
-  return <mesh name="road" geometry={geometry} receiveShadow><meshStandardMaterial {...maps} color={new Color('white').multiplyScalar(1-wet*.38)} roughness={.95-wet*.55}/></mesh>;
+  return <mesh name="road" geometry={geometry} receiveShadow><meshStandardMaterial {...maps} color={new Color('white').multiplyScalar(wetFinish(wet).albedo)} roughness={wetFinish(wet).roughness}/></mesh>;
 }

@@ -1,3 +1,4 @@
+import {wetFinish} from './materialInteractions';
 import { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import {
   BoxGeometry,
@@ -48,8 +49,8 @@ function SurfaceBox({
       <boxGeometry args={size} />
       <meshStandardMaterial
         {...maps}
-        color={new Color('white').multiplyScalar(1 - wet * 0.38)}
-        roughness={0.95 - wet * 0.55}
+        color={new Color('white').multiplyScalar(wetFinish(wet).albedo)}
+        roughness={wetFinish(wet).roughness}
       />
     </mesh>
   );

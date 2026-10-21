@@ -37,7 +37,7 @@ for(const asset of ['S1','R1'])test('Round 9C roof and drain flow '+asset,async(
   const clock=page.getByRole('slider',{name:'Storm timeline',exact:true});await expect(clock).toBeEnabled({timeout:60000});await clock.fill('18');
   await page.getByRole('checkbox',{name:'Roof runoff path',exact:true}).check();
   if(asset==='R1')await expect(page.getByText('No roof connected in this scenario',{exact:false})).toBeVisible();
-  else await expect(page.getByText(/m² roof · .* L\/min at each step/)).toBeVisible();
+  else await expect(page.getByText(/mÂ² roof Â· .* L\/min at each step/)).toBeVisible();
   await page.locator('.cad-scene').screenshot({path:`../docs/screens/round9c/${asset}-connected-flow.png`});
   expect(errors).toEqual([]);
 });
