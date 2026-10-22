@@ -12,6 +12,7 @@ import RainCloud from './RainCloud';
 import { sensorMarkers } from '../api/sensorViews';
 import { featureCallouts, pilotByBuilding, roadLabels, site } from '../site/layout';
 import type { RainPlayback } from '../site/weather';
+import type { ForecastImpact } from '../../../shared/src/forecast';
 
 type Props = {
   sensors: Sensor[];
@@ -23,6 +24,10 @@ type Props = {
   layer: 'water' | 'rain';
   cloudOpacity: number;
   rainPlayback?: RainPlayback;
+  forecastImpacts?: ForecastImpact[];
+  faultCounts?: Record<string, number>;
+  onSelectHouse?: (id: string) => void;
+  assetCallouts?: Record<string, [number, number]>;
   reset: number;
   ranks?: Record<string, number>; selectedAsset?: string; onSelectAsset?: (id: string) => void;
 };
@@ -34,11 +39,15 @@ function SceneContent({
   layer,
   cloudOpacity,
   rainPlayback,
+  forecastImpacts,
+  faultCounts,
+  onSelectHouse,
+  assetCallouts = featureCallouts,
   sensors,
   showSensors,
   ranks = {}, selectedAsset, onSelectAsset,
 }: Props) {
-  const selected = useSelection((s) => s.houseId),
+  const selected = useSelection((s) => onSelectHouse ? selectedAsset : s.houseId),
     select = useSelection((s) => s.selectHouse),
     zoneId = useSelection((s) => s.zoneId);
   const [hover, setHover] = useState<string | null>(null);
@@ -66,7 +75,7 @@ function SceneContent({
     return { ...h, id, x: p[0], z: p[1], pilot, selected: id === selected };
   });
   const choose = (id: string, pilot?: House) => {
-    if (pilot) select(id);
+    if (pilot) { if (onSelectHouse) onSelectHouse(id); else select(id); }
   };
   return (
     <>
@@ -224,9 +233,14 @@ function SceneContent({
           );
         })()}
       {features.map((f) => {
-        const [x, z] = featureCallouts[f.id] || [f.x, f.y];
+        const [x, z] = assetCallouts[f.id] || [f.x, f.y];
+        const impact = forecastImpacts?.find(impact => impact.asset === f.id);
         return (
           <group key={f.id} position={[f.x, 0.08, f.y]}>
+            {impact && impact.peakMm > 0.5 && <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.03, 0]} raycast={() => undefined}>
+              <ringGeometry args={[0.7, 1.1, 32]} />
+              <meshBasicMaterial color="#61cce9" transparent opacity={0.8} depthWrite={false} />
+            </mesh>}
             <mesh
               onClick={(e) => {
                 e.stopPropagation();
@@ -253,11 +267,14 @@ function SceneContent({
             <Html center position={[x - f.x, 1.4, z - f.y]} zIndexRange={[10, 0]}>
               <button
                 className={'scene-label feature-pin' + (f.kind === 'swale' ? '' : ' secondary-pin')}
-                aria-label={'Open ' + f.id + ' ' + f.name}
+                aria-label={faultCounts ? `View ${f.id} faults` : 'Open ' + f.id + ' ' + f.name}
+                data-asset-id={f.id}
                 aria-pressed={selectedAsset === f.id}
                 onClick={() => onSelectAsset ? onSelectAsset(f.id) : navigate('/feature/' + f.id)}
               >
                 {ranks[f.id] ? ranks[f.id]+' · ' : ''}{f.id}
+                {faultCounts && <span className="fault-map-count">{faultCounts[f.id] ?? 0} open</span>}
+                {impact && <span className="forecast-pin-depth">{impact.peakMm.toFixed(0)} mm peak</span>}
               </button>
             </Html>
           </group>

@@ -1,4 +1,7 @@
 import { Hono } from "hono";
+import { createFaultChat, FaultChatError, type OllamaConfig } from './faultChat';
+import { faultChatInput } from '../../shared/src/faultChat';
+import { forecastUrl, parseForecast, type ForecastResponse } from "../../shared/src/forecast";
 import { cors } from "hono/cors";
 import { bodyLimit } from "hono/body-limit";
 import { secureHeaders } from "hono/secure-headers";
@@ -42,6 +45,8 @@ import { deviceApi } from "./iot";
 import { createDiagnosisService, type ProviderConfig } from "./diagnosis";
 import { buildParts } from "../../shared/src/api/parts";
 export interface ApiOptions {
+  ollama?: OllamaConfig;
+  ollamaFetch?: typeof fetch;
   llm?: ProviderConfig;
   diagnosisFetch?: typeof fetch;
   deviceSecret?: string;
@@ -49,6 +54,7 @@ export interface ApiOptions {
   corsOrigins?: string[];
   seed?: boolean;
   warningsFetch?: typeof fetch;
+  forecastFetch?: typeof fetch;
   rateLimit?: number;
 }
 export function createApi(repo: Repository, options: ApiOptions) {
@@ -110,6 +116,7 @@ export function createApi(repo: Repository, options: ApiOptions) {
     options.llm ?? { provider: "none" },
     options.diagnosisFetch,
   );
+  const faultChat = createFaultChat(options.ollama ?? { baseUrl: 'http://127.0.0.1:11434', model: 'llama3.2:latest' }, options.ollamaFetch);
   const iot = deviceApi(repo, {
     device: options.deviceSecret,
     simulated: options.simSecret,
@@ -136,6 +143,16 @@ export function createApi(repo: Repository, options: ApiOptions) {
         );
     }
     await next();
+  });
+  app.get('/api/v1/ai/fault-chat/status', async c => c.json(await faultChat.status()));
+  app.post('/api/v1/ai/fault-chat', async c => {
+    const input = faultChatInput.parse(await c.req.json());
+    const saved = input.diagnosisId ? repo.sql.prepare("SELECT body FROM suggestions WHERE id=?").get(input.diagnosisId) as {body: string} | undefined : undefined;
+    return c.json(await faultChat.answer(repo.load(), input, {
+      cases: repo.jsonRows<CaseRecord>("cases"),
+      guidance: repo.jsonRows<GuidanceRecord>("guidance"),
+      diagnosis: saved ? JSON.parse(saved.body) : undefined,
+    }));
   });
   const runOrThrow = (id: string, statusOnly = false) => {
     const run = queue.get(id, statusOnly);
@@ -234,6 +251,23 @@ export function createApi(repo: Repository, options: ApiOptions) {
       );
     })();
     return c.json({ ok: true, id });
+  });
+  let forecastCache: { until: number; payload: ForecastResponse } | undefined;
+  app.get("/api/v1/weather/forecast", async (c) => {
+    if (forecastCache && forecastCache.until > Date.now()) return c.json(forecastCache.payload);
+    try {
+      const response = await (options.forecastFetch ?? fetch)(forecastUrl, { signal: AbortSignal.timeout(10000) });
+      if (!response.ok) throw new Error("Forecast unavailable");
+      const raw = await response.text();
+      if (raw.length > 512000) throw new Error("Forecast too large");
+      const payload = parseForecast(JSON.parse(raw));
+      forecastCache = { until: Date.now() + 900000, payload };
+      return c.json(payload);
+    } catch {
+      const payload = { available: false } as const;
+      forecastCache = { until: Date.now() + 30000, payload };
+      return c.json(payload);
+    }
   });
   let warningCache: { until: number; payload: unknown } | undefined;
   app.get("/api/v1/weather/warnings", async (c) => {
@@ -781,6 +815,8 @@ export function createApi(repo: Repository, options: ApiOptions) {
         },
         422,
       );
+    if (error instanceof FaultChatError)
+      return c.json({ error: { code: 'OLLAMA_UNAVAILABLE', message: error.message } }, error.status);
     if (error instanceof ApiError)
       return c.json(
         { error: { code: "REQUEST_ERROR", message: error.message } },

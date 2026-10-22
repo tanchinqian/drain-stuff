@@ -1,5 +1,10 @@
 import SectionIndex from '../components/SectionIndex';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useSelection } from '../state';
+import FaultChatbot from '../components/FaultChatbot';
+import ChatReference from '../components/ChatReference';
+import type { FaultChatSource } from '../../../shared/src/faultChat';
 import { useParams, useSearchParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../api/client';
@@ -17,6 +22,9 @@ import { armName, dateOnly, testMean, trialDue } from '../utils';
 import { useSimulation } from '../simulation/physics/store';
 export default function FeatureDetail() {
   const { id = 'S1' } = useParams();
+  const navigate = useNavigate();
+  const selectedPart = useSelection(state => state.partId);
+  const [reference, setReference] = useState<FaultChatSource | null>(null);
   const [params, setParams] = useSearchParams();
   const jobId = params.get('stormRunId'), mode = params.get('mode') === 'cleared' ? 'cleared' : 'installed';
   const replay = useQuery({queryKey:['storm-job',jobId],enabled:!!jobId,queryFn:()=>api.stormResult(jobId!)});
@@ -50,6 +58,13 @@ export default function FeatureDetail() {
     <QueryState loading={result.isPending} error={result.error}>
       {data && (
         <>
+          <FaultChatbot key={id} assetId={id} partId={selectedPart}
+            faultId={data.faults.find(fault => fault.featureId === id && fault.partId === selectedPart && fault.status !== 'closed' && !fault.id.startsWith('SIM-'))?.id}
+            onSource={source => {
+              if (source.kind === 'fault' || source.kind === 'rule') navigate(`/faults?${source.kind}=${encodeURIComponent(source.id)}`);
+              else setReference(source);
+            }} />
+          {reference && <ChatReference source={reference} onClose={() => setReference(null)} />}
           <div className="page-heading">
             <div>
               <h1>
