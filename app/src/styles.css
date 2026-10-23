@@ -2738,6 +2738,7 @@ main > .about {
   }
 }
 .weather-view-switch { margin: 16px 0; }
+.triage-layout.forecast-layout { grid-template-columns: minmax(0, 1fr); }
 .forecast-map-controls { display: flex; align-items: end; flex-wrap: wrap; gap: 12px 18px; margin-top: 16px; }
 .forecast-map-day { display: grid; gap: 6px; font-size: 12px; flex: 0 0 190px; }
 .forecast-map-day select { width: 100%; min-height: 44px; }

@@ -274,7 +274,7 @@ export default function StormBoard() {
         <ModelDetails ownerId={selected} />
       </SectionIndex>
       <QueryState loading={data.isPending} error={data.error}>
-        <div className="triage-layout">
+        <div className={`triage-layout${mode === 'forecast' ? ' forecast-layout' : ''}`}>
           <section id="board-replay" className="panel triage-map" ref={mapRef}>
             <div className="panel-heading">
               <div>
