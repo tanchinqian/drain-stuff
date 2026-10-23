@@ -1,24 +1,36 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../api/client';
 import type { DiagnosisRequest } from '../../../shared/src/contract';
 import { stepLibrary } from '../../../shared/src/diagnosis';
 import { drawerSaved } from './Drawer';
 import Chip from './Chip';
+import type { Suggestion } from '../../../shared/src/contract';
 type Feedback = {choice: string; at: string};
-export default function DiagnosisPanel({ faultId, partContext, inline = false }: {
+export default function DiagnosisPanel({ faultId, partContext, inline = false, demoSuggestion, scrollIntoView = false }: {
   faultId: string; partContext?: DiagnosisRequest['partContext']; inline?: boolean;
+  demoSuggestion?: Suggestion; scrollIntoView?: boolean;
 }) {
   const panelRef=useRef<HTMLDetailsElement>(null), cache = useQueryClient(), snapshot = useRef(partContext);
   snapshot.current = partContext;
   const [open,setOpen]=useState(true), [review,setReview]=useState<'edit'|'reject'|null>(null),
     [ids,setIds]=useState<string[]>([]), [search,setSearch]=useState(''), [note,setNote]=useState(''),
     [busy,setBusy]=useState(false), [error,setError]=useState('');
-  const query=useQuery({queryKey:['diagnosis',faultId,partContext?.partId ?? 'fault'], enabled:open,
+  const query=useQuery({queryKey:['diagnosis',faultId,partContext?.partId ?? 'fault', demoSuggestion ? 'demo-deterministic' : 'model'], enabled:open&&!demoSuggestion,
     staleTime:Infinity, retry:false, refetchOnWindowFocus:false,
+    initialData: demoSuggestion ? {result:demoSuggestion,second:undefined} : undefined,
     queryFn:async()=>{const captured=snapshot.current; return {result:await api.diagnose(faultId,captured),second:captured?.model?.second};}});
   const result=query.data?.result;
+  useEffect(() => {
+    if (!scrollIntoView || !result) return;
+    requestAnimationFrame(() => panelRef.current?.scrollIntoView({ block: 'start' }));
+  }, [scrollIntoView, result]);
   const recorded=useQuery({queryKey:['diagnosis-feedback',result?.id],enabled:false,
+    initialData: () => {
+      if (!demoSuggestion) return undefined;
+      try { return JSON.parse(sessionStorage.getItem('demo-diagnosis-feedback-' + demoSuggestion.faultId) ?? 'null') as Feedback | null; }
+      catch { return null; }
+    },
     queryFn:async():Promise<Feedback|null>=>null});
   const stepIds=result?.insufficientInformation ? [] : [...new Set(result?.rankedStepIds ?? [])]
     .filter((id,index,all)=>stepLibrary[id] && all.findIndex(other=>stepLibrary[other]===stepLibrary[id])===index);
@@ -27,15 +39,20 @@ export default function DiagnosisPanel({ faultId, partContext, inline = false }:
     if(!result || (choice!=='accept'&&!note.trim())) return;
     setBusy(true);setError('');
     try {
-      await api.diagnosisFeedback({suggestionId:result.id,choice,note,...(choice==='edit'?{rankedStepIds:[...new Set(ids)]}:{})});
-      cache.setQueryData(['diagnosis-feedback',result.id],{choice,at:new Date().toISOString()});
+      const saved = {choice,at:new Date().toISOString()};
+      if (demoSuggestion) {
+        try { sessionStorage.setItem('demo-diagnosis-feedback-' + demoSuggestion.faultId, JSON.stringify(saved)); } catch { /* Keep the in-memory result. */ }
+      } else {
+        await api.diagnosisFeedback({suggestionId:result.id,choice,note,...(choice==='edit'?{rankedStepIds:[...new Set(ids)]}:{})});
+      }
+      cache.setQueryData(['diagnosis-feedback',result.id],saved);
       drawerSaved(panelRef.current);setReview(null);setNote('');await cache.invalidateQueries({queryKey:['faults']});
     } catch(e) {setError((e as Error).message);} finally {setBusy(false);}
   }
   return <details ref={panelRef} className="diagnosis-panel fault-section" open={open} onToggle={e=>setOpen(e.currentTarget.open)} aria-label={inline?'Selected part AI diagnosis':'Suggested diagnosis'}>
     <summary>{inline?'AI diagnosis':'Suggested diagnosis'}<span>{result ? result.confidence+' confidence · '+result.mode : 'Review the recorded finding and supporting sources'}</span></summary>
     <div className="diagnosis-content">
-      <div className="actions"><button className="text-action" disabled={query.isFetching||busy} onClick={()=>{setReview(null);void query.refetch();}}>{query.isFetching?'Analysing…':'Refresh'}</button></div>
+      {!demoSuggestion && <div className="actions"><button className="text-action" disabled={query.isFetching||busy} onClick={()=>{setReview(null);void query.refetch();}}>{query.isFetching?'Analysing…':'Refresh'}</button></div>}
       {inline && partContext && <button onClick={() => window.dispatchEvent(new CustomEvent('fault-chat-follow-up', {detail: {assetId: partContext.ownerId, partId: partContext.partId, faultId, diagnosisId: result?.id}}))}>Ask a follow-up</button>}
       {(error||query.error) && <p role="alert">{error||query.error?.message} Use Refresh to retry.</p>}
       {!result && query.isFetching && <p role="status">Comparing this finding with sourced cases and the configured model…</p>}
@@ -78,7 +95,7 @@ export default function DiagnosisPanel({ faultId, partContext, inline = false }:
           <button disabled={busy||!!recorded.data} onClick={()=>{setReview('edit');setIds(stepIds);}}>Edit</button>
           <button className="text-action" disabled={busy||!!recorded.data} onClick={()=>setReview('reject')}>Reject</button>
         </div>
-        {recorded.data && <p role="status">Recorded in the audit log · {recorded.data.choice} · {new Date(recorded.data.at).toLocaleString('en-MY')}</p>}
+        {recorded.data && <p role="status">{demoSuggestion ? 'Recorded in this browser session · demo only' : 'Recorded in the audit log'} · {recorded.data.choice} · {new Date(recorded.data.at).toLocaleString('en-MY')}</p>}
       </>}
     </div>
   </details>;

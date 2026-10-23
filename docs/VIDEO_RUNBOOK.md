@@ -1,5 +1,37 @@
 # Five-minute demonstration
 
+## Two-minute button path
+
+Open the local app with `?demo=1`. The docked panel stays hidden in normal use. Its number keys run the matching buttons while the panel is open. Start with **Reset demo**, then:
+
+| Button | Result |
+|---|---|
+| 1 · Reset demo | Restores the seeded browser data and returns to Overview. The live API has no reset route; with the local server connected, stop it and use `npm run demo:reset`, then restart it. |
+| 2 · Heavy storm, run | Runs the Heavy preset with seeded settings, plays the saved rainfall timeline from minute 0, and shows the ranked board. S1 is the fixable example and S2 is the capacity-limited example. |
+| 3 · Open fixable row in 3D | Opens S1’s saved replay at minute 0, with the Drain camera, Cutaway view, default section position and inlet fault highlight. Playback starts automatically. |
+| 4 · Open the fault and diagnosis | Opens F-001 at Suggested diagnosis. This button uses local deterministic matching and does not call the model endpoint or require a key. Accept, Edit and Reject stay available; their demo feedback is stored only for this browser session. |
+| 5 · Advance work order | Advances F-001 one lifecycle step per press, adding a seeded note and the **Demo operator** audit actor. The seed already records F-001 as confirmed, so the first press assigns the demo crew. Verification uses the saved storm run. |
+| 6 · Go to audit trail | Opens F-001 and expands the audit trail. |
+| 7 · Back to board | Returns to Overview. |
+| 8 · Show chatbot | Opens S1’s fault assistant with F-001 and inlet context. It does not send a message; the connection status reflects local Ollama availability. |
+
+After any button, the footer shows **Demo scenario (seeded)** for the rest of the browser session. Use **Hide for recording** to remove the panel; it reappears on a reload with `?demo=1`. The recording panel is outside the 3D canvas capture and is hidden for print.
+
+## Demo-control implementation status
+
+| Item | Status | Notes |
+|---|---|---|
+| 1 · Demo panel | Done | Hidden by default; URL and Ctrl+Shift+D opening; session-only state; collapse, numeric shortcuts and hide-for-recording control. |
+| 2 · Reset demo | Partly done | One-click reset restores the seeded browser mock. The existing local database reset is a stop-server CLI script, so no unauthenticated database-reset route was added. |
+| 3 · Heavy storm, run | Done | One-click Heavy run, automatic replay from minute 0, and a side-by-side ranked board. |
+| 4 · Open fixable row in 3D | Done | S1 replay opens with the specified camera, cutaway, initial cut and playback. If no saved run exists, the seeded default model opens. |
+| 5 · Open fault and diagnosis | Done | Deterministic local diagnosis is shown without a model request. Demo feedback stays in session storage. |
+| 6 · Advance work order | Done | One lifecycle transition per press; seeded notes and an explicit demo actor. The seed’s existing F-001 confirmation is retained. |
+| 7 · Audit trail and board | Done | Buttons open the expanded audit trail and return to Overview. |
+| 8 · Show chatbot | Done | Opens the S1 fault assistant with F-001 inlet context; it sends no message and reports the real Ollama connection state. |
+
+The floating panel is not included in the renderer’s Record preset capture because that capture exports the 3D canvas only. No engine, solver, scoring, AI, or 3D rendering logic is changed by these controls.
+
 ## Starting state
 
 1. Install with `npm ci` and `npm --prefix app ci` from the repository root.

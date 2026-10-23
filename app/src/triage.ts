@@ -4,7 +4,7 @@ export const useBoard = create(
   persist<{
     jobId: string | null;
     selected: string;
-    setJob: (id: string) => void;
+    setJob: (id: string | null) => void;
     select: (asset: string) => void;
   }>(
     (set) => ({

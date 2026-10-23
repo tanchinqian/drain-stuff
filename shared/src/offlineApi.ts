@@ -178,7 +178,8 @@ export function createOfflineApi(
     ) {
       const input = lifecycleInput.parse(raw),
         state = store.snapshot(),
-        fault = state.faults.find((f) => f.id === p[1]);
+        fault = state.faults.find((f) => f.id === p[1]),
+        lifecycleActor = input.actor === 'Demo operator' ? input.actor : actor;
       if (!fault) throw new Error("Fault not found");
       const { transition } = transitionAllowed(fault, p[2]);
       const originalFault = JSON.stringify(fault);
@@ -261,7 +262,7 @@ export function createOfflineApi(
       (fault.history ??= []).push({
         id: id(),
         t: now(),
-        user: actor,
+        user: lifecycleActor,
         action: p[2],
         note: input.note,
       });

@@ -3240,6 +3240,32 @@ main > .about {
 .scene-fault-detail p {
   margin: 7px 0;
 }
+
+.demo-controls {
+  position: fixed;
+  z-index: 1000;
+  inset: auto 16px 14px;
+  max-height: min(42vh, 320px);
+  overflow: auto;
+  padding: 10px 14px;
+  color: var(--ink);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 32px #0003;
+}
+.demo-controls > header,
+.demo-control-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.demo-controls > header .small { margin-right: auto; }
+.demo-control-actions button { min-height: 40px; padding: 7px 10px; }
+.demo-control-actions kbd { font-size: 11px; }
+.demo-controls > p { margin: 6px 0 0; min-height: 1em; }
+.demo-scenario-label { margin-left: 14px; font-size: 12px; }
+@media print { .demo-controls { display: none !important; } }
 @keyframes fault-badge-pulse {
   50% {
     stroke-width: 4;

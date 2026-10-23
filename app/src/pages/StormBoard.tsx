@@ -1,7 +1,7 @@
 import { sensorLabel } from '../utils';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '../api/client';
 import { confirmed } from '../../../shared/src/physics/faults';
 import { useBoard } from '../triage';
@@ -41,6 +41,8 @@ const parameterNames: Record<string, string> = {
 };
 export default function StormBoard() {
   const requestedJob = useRef<string | null>(null);
+  const demoHeavyStarted = useRef(false);
+  const [params, setParams] = useSearchParams();
   const mapRef = useRef<HTMLElement>(null);
   const revealMap = useCallback(() => {
     mapRef.current?.scrollIntoView({
@@ -162,7 +164,8 @@ export default function StormBoard() {
       setLayer('rain');
       revealMap();
       if (!matchMedia('(prefers-reduced-motion: reduce)').matches)
-        useSimulation.setState({ playing: true });
+        useSimulation.setState({ playing: true, second: 0, ...(demoHeavyStarted.current ? { speed: 600 } : {}) });
+      if (demoHeavyStarted.current) demoHeavyStarted.current = false;
     }
   }, [rows, jobId, revealMap, mode]);
   const watchStorm = () => {
@@ -191,6 +194,19 @@ export default function StormBoard() {
         : [],
     [data.data?.zones, mapPeak],
   );
+  useEffect(() => {
+    if (params.get('demoAction') !== 'heavy' || !data.data || demoHeavyStarted.current) return;
+    demoHeavyStarted.current = true;
+    setMode('simulator');
+    setPreset('heavy');
+    setPreview(false);
+    setRobustness(false);
+    setLayer('rain');
+    const next = new URLSearchParams(params);
+    next.delete('demoAction');
+    setParams(next, { replace: true });
+    void run('heavy', true);
+  }, [data.data, params, setParams]);
   const ranks = useMemo(() => Object.fromEntries(rows.map((r) => [r.asset, r.rank])), [rows]);
   const choose = useCallback(
     (id: string) => {
@@ -199,21 +215,26 @@ export default function StormBoard() {
     },
     [select],
   );
-  async function run() {
+  async function run(forcedPreset?: string, demoPlayback = false) {
     useSimulation.setState({ playing: false });
     setPending(true);
     setError('');
     try {
       const next = await api.stormRun({
-        ...(preset === 'custom'
+        ...(forcedPreset === 'custom' || (!forcedPreset && preset === 'custom')
           ? { custom: { peakMmHr: peak, durationMinutes: duration } }
-          : { preset: preset as keyof typeof stormPresets }),
+          : { preset: (forcedPreset ?? preset) as keyof typeof stormPresets }),
         assets: [...assets],
-        options: { robustness, previewUnconfirmed: preview, recoveryMinutes: 360 },
+        options: {
+          robustness: demoPlayback ? false : robustness,
+          previewUnconfirmed: demoPlayback ? false : preview,
+          recoveryMinutes: 360,
+        },
       });
       cache.setQueryData(['storm-job-status', next.id], { ...next, result: null });
       requestedJob.current = next.id;
       setJob(next.id);
+      if (demoPlayback) select('S1');
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -244,7 +265,7 @@ export default function StormBoard() {
       </div>
       <SectionIndex
         items={[
-          ['Overview', '#storm-heading'],
+          ['Storm setup', '#storm-heading'],
           ['Replay', '#board-replay'],
           ['Parts', '/feature/' + selected + '#feature-parts'],
           ['Sensors', '/sensors'],
@@ -361,7 +382,7 @@ export default function StormBoard() {
                       </label>
                     </>
                   )}
-                  <button className="primary" disabled={working} onClick={run}>
+                  <button className="primary" disabled={working} onClick={() => void run()}>
                     {working ? 'Calculating…' : 'Run storm'}
                   </button>
                   {rainPlayback && !working && <button onClick={watchStorm}>Watch storm</button>}
@@ -597,7 +618,7 @@ export default function StormBoard() {
             )}
           </section>
           {mode === 'simulator' && (
-            <section className="panel triage-register">
+            <section className="panel triage-register" id="triage-register">
               <h2>Upkeep priority</h2>
               <p className="sub">{label}. Capacity-limited assets need owner review.</p>
               <p className="small comparison-legend">
@@ -650,6 +671,9 @@ export default function StormBoard() {
                     <article
                       className={'triage-row' + (selected === row.asset ? ' selected' : '')}
                       key={row.asset}
+                      data-demo-asset={row.asset}
+                      data-demo-fixable={!row.capacityLimited && row.asInstalled.summary.overflowM3 > row.ifCleared.summary.overflowM3}
+                      data-demo-capacity-limited={row.capacityLimited}
                     >
                       <div className="panel-heading">
                         <button

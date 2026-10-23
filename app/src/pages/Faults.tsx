@@ -1,7 +1,7 @@
 import FaultTableRegister from '../components/FaultTableRegister';
 import FaultMapRegister from '../components/FaultMapRegister';
 import SearchableSelect from '../components/SearchableSelect';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useSearchParams } from 'react-router-dom';
 import { api } from '../api/client';
@@ -19,6 +19,8 @@ import Timestamp from '../components/Timestamp';
 import Chip from '../components/Chip';
 import { QueryState } from '../components/QueryState';
 import { drainParts, partName, partLink } from '../api/modelCatalog';
+import { deterministicDiagnosis } from '../../../shared/src/diagnosis';
+import { referenceCases, referenceGuidance } from '../../../shared/src/caseLibrary';
 export default function Faults() {
   const [params, setParams] = useSearchParams();
   const [tab, setTab] = useState<'faults' | 'rules'>('faults');
@@ -48,6 +50,24 @@ export default function Faults() {
   const active = selected
     ? (faults.data?.find((f) => f.id === selected.id) ?? selected)
     : (faults.data?.find((f) => f.id === params.get('fault')) ?? null);
+  const demoDiagnosis = useMemo(
+    () => params.get('demoDiagnosis') === '1' && active
+      ? deterministicDiagnosis(
+          active,
+          features.data?.find((feature) => feature.id === active.featureId)?.kind ?? 'inlet',
+          referenceCases,
+          referenceGuidance,
+        )
+      : undefined,
+    [params, active, features.data],
+  );
+  useEffect(() => {
+    if (!active || (params.get('demoDiagnosis') !== '1' && params.get('demoAudit') !== '1')) return;
+    requestAnimationFrame(() => {
+      const selector = params.get('demoAudit') === '1' ? '.record-history' : '.diagnosis-panel';
+      document.querySelector<HTMLElement>('.detail-drawer ' + selector)?.scrollIntoView({ block: 'start' });
+    });
+  }, [active?.id, params]);
   const rows = (faults.data ?? [])
     .filter(
       (fault) =>
@@ -273,7 +293,12 @@ export default function Faults() {
             {active.featureId.startsWith('B-') ? 'Inspect this part' : 'Show fault in 3D'}
           </Link>
           <WorkOrderPanel key={active.id} fault={active} />
-          <DiagnosisPanel key={'diagnosis-' + active.id} faultId={active.id} />
+          <DiagnosisPanel
+            key={'diagnosis-' + active.id}
+            faultId={active.id}
+            demoSuggestion={demoDiagnosis}
+            scrollIntoView={params.get('demoDiagnosis') === '1'}
+          />
           <details className="fault-section">
             <summary>
               Evidence and inputs <span>{active.sensorIds.length} recorded inputs</span>
@@ -316,7 +341,11 @@ export default function Faults() {
               readings.
             </p>
           </details>
-          <RecordHistory entries={active.history ?? []} title="Audit trail" />
+          <RecordHistory
+            entries={active.history ?? []}
+            title="Audit trail"
+            initiallyOpen={params.get('demoAudit') === '1'}
+          />
         </Drawer>
       )}
       {rule && (

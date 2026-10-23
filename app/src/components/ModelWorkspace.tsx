@@ -138,11 +138,17 @@ export default function ModelWorkspace({
         parts.find((p) => p.installed)!.partId,
     );
     setInspectionActive(kind === 'compost' || !!params.get('part'));
-    if (params.get('showFault') === '1') setCameraPreset('fault');
+    if (params.get('demoReplay') === '1') {
+      setAssembly('section');
+      setCutAxis('X');
+      setCutPosition(0);
+      setInspectionActive(true);
+      setCameraPreset(params.get('demoCamera') === 'drain' ? 'drain' : 'fault');
+    } else if (params.get('showFault') === '1') setCameraPreset('fault');
     setOffsets({});
     setHidden([]);
     setIsolate(false);
-  }, [ownerId, params.get('part'), select]);
+  }, [ownerId, params.get('part'), params.get('demoReplay'), params.get('demoCamera'), select]);
   const controlProps = {
     selected,
     mode,
@@ -188,6 +194,7 @@ export default function ModelWorkspace({
     <div
       id="feature-parts"
       className={'model-workspace ' + (kind === 'compost' ? 'compost-model' : '')}
+      data-demo-replay={params.get('demoReplay') === '1' ? 'true' : undefined}
     >
       <div className="field mobile-part-picker">
         <span>Model part</span>

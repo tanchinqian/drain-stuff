@@ -1,5 +1,5 @@
 import SectionIndex from '../components/SectionIndex';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelection } from '../state';
 import FaultChatbot from '../components/FaultChatbot';
@@ -25,11 +25,20 @@ export default function FeatureDetail() {
   const navigate = useNavigate();
   const selectedPart = useSelection(state => state.partId);
   const [reference, setReference] = useState<FaultChatSource | null>(null);
+  const demoPlaybackStarted = useRef(false);
   const [params, setParams] = useSearchParams();
   const jobId = params.get('stormRunId'), mode = params.get('mode') === 'cleared' ? 'cleared' : 'installed';
   const replay = useQuery({queryKey:['storm-job',jobId],enabled:!!jobId,queryFn:()=>api.stormResult(jobId!)});
   const row = replay.data?.result?.rows.find(r=>r.asset===id);
-  useEffect(()=>{ if(row && jobId) useSimulation.getState().loadReplay(mode==='cleared'?row.ifCleared.config:row.asInstalled.config,jobId,mode); },[row,jobId,mode]);
+  useEffect(()=>{
+    if(row && jobId) {
+      useSimulation.getState().loadReplay(mode==='cleared'?row.ifCleared.config:row.asInstalled.config,jobId,mode);
+      if(params.get('demoReplay')==='1'&&!demoPlaybackStarted.current) {
+        demoPlaybackStarted.current=true;
+        useSimulation.setState({second:0,playing:true});
+      }
+    }
+  },[row,jobId,mode,params]);
   const result = useQuery({
     queryKey: ['feature-detail', id],
     queryFn: async () => {
@@ -44,7 +53,13 @@ export default function FeatureDetail() {
     },
   });
   const data = result.data;
+  const chatPartId = params.get('demoChat') === '1' ? 'inlet' : selectedPart;
   const physics = usePhysics(id);
+  useEffect(()=>{
+    if(jobId||params.get('demoReplay')!=='1'||!physics.config||demoPlaybackStarted.current)return;
+    demoPlaybackStarted.current=true;
+    useSimulation.setState({second:0,playing:true});
+  },[jobId,params,physics.config]);
   const liveSensors = useLiveSensors(data?.sensors ?? emptySensors);
   const liveFaults =
     data && physics.config
@@ -58,8 +73,9 @@ export default function FeatureDetail() {
     <QueryState loading={result.isPending} error={result.error}>
       {data && (
         <>
-          <FaultChatbot key={id} assetId={id} partId={selectedPart}
-            faultId={data.faults.find(fault => fault.featureId === id && fault.partId === selectedPart && fault.status !== 'closed' && !fault.id.startsWith('SIM-'))?.id}
+          <FaultChatbot key={id} assetId={id} partId={chatPartId}
+            initiallyOpen={params.get('demoChat') === '1'}
+            faultId={data.faults.find(fault => fault.featureId === id && fault.partId === chatPartId && fault.status !== 'closed' && !fault.id.startsWith('SIM-'))?.id}
             onSource={source => {
               if (source.kind === 'fault' || source.kind === 'rule') navigate(`/faults?${source.kind}=${encodeURIComponent(source.id)}`);
               else setReference(source);

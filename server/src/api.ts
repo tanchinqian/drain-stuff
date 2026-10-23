@@ -317,7 +317,8 @@ export function createApi(repo: Repository, options: ApiOptions) {
     )
       return next();
     const input = lifecycleInput.parse(await c.req.json()),
-      id = c.req.param("id");
+      id = c.req.param("id"),
+      actor = input.actor === "Demo operator" ? input.actor : c.get("actor");
     const initial = repo.load().faults.find((f) => f.id === id);
     if (!initial) throw new ApiError(404, "Fault not found");
     const transition = transitions[action],
@@ -437,12 +438,12 @@ export function createApi(repo: Repository, options: ApiOptions) {
       (fault.history ??= []).push({
         id: uuid(),
         t: new Date().toISOString(),
-        user: c.get("actor"),
+        user: actor,
         action,
         note: input.note,
       });
       repo.save(state);
-      repo.audit(c.get("actor"), action, id, input.note, {
+      repo.audit(actor, action, id, input.note, {
         from: previous,
         to: transition.to,
         evidence,

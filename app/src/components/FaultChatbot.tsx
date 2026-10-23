@@ -10,14 +10,16 @@ export default function FaultChatbot({
   assetId,
   faultId,
   partId,
+  initiallyOpen = false,
   onSource,
 }: {
   assetId?: string;
   faultId?: string;
   partId?: string;
+  initiallyOpen?: boolean;
   onSource: (source: FaultChatSource) => void;
 }) {
-  const [open, setOpen] = useState(false),
+  const [open, setOpen] = useState(initiallyOpen),
     [input, setInput] = useState(''),
     [messages, setMessages] = useState<Message[]>([]),
     [pending, setPending] = useState<string | null>(null),

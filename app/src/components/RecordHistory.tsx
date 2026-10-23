@@ -4,9 +4,11 @@ import { timeLabel } from '../utils';
 export default function RecordHistory({
   entries,
   title = 'Record history',
+  initiallyOpen = false,
 }: {
   entries: AuditEntry[];
   title?: string;
+  initiallyOpen?: boolean;
 }) {
   const [all, setAll] = useState(false);
   const unique = new Map<string, AuditEntry>();
@@ -16,7 +18,7 @@ export default function RecordHistory({
   }
   const grouped = [...unique.values()];
   return (
-    <details className="record-history">
+    <details className="record-history" open={initiallyOpen || undefined}>
       <summary>
         {title} ({entries.length})
       </summary>
